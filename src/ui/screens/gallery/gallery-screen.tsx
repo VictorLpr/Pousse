@@ -58,12 +58,15 @@ export function GalleryScreen() {
               key={entry.id}
               accessible
               accessibilityLabel={`Photo souvenir, ${emotionLabel}, ${dateLabel}`}
-              style={[
-                styles.tile,
-                { backgroundColor: entry.emotionId === 'fier' ? colors.peach : colors.sage },
-              ]}>
-              <Text style={styles.tileBadge}>
-                {emotionLabel} · {dateLabel}
+              style={styles.item}>
+              <View
+                style={[
+                  styles.photo,
+                  { backgroundColor: entry.emotionId === 'fier' ? colors.peach : colors.sage },
+                ]}
+              />
+              <Text style={styles.caption}>
+                <Text style={styles.captionEmotion}>{emotionLabel}</Text> · {dateLabel}
               </Text>
             </View>
           );
@@ -75,9 +78,11 @@ export function GalleryScreen() {
           onPress={() =>
             Alert.alert('Bientôt disponible', "L'ajout de photos arrive dans une prochaine version.")
           }
-          style={({ pressed }) => [styles.tile, styles.addTile, pressed && styles.pressed]}>
-          <Plus size={26} color={colors.moss} strokeWidth={1.8} />
-          <Text style={styles.addLabel}>Ajouter</Text>
+          style={({ pressed }) => [styles.item, pressed && styles.pressed]}>
+          <View style={[styles.photo, styles.addTile]}>
+            <Plus size={26} color={colors.moss} strokeWidth={1.8} />
+          </View>
+          <Text style={[styles.caption, styles.addCaption]}>Ajouter</Text>
         </Pressable>
       </View>
     </ScreenContainer>
@@ -86,48 +91,43 @@ export function GalleryScreen() {
 
 const styles = StyleSheet.create({
   monthLabel: {
-    marginBottom: 12,
-    letterSpacing: 0.7,
+    marginBottom: 14,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    columnGap: 14,
+    rowGap: 18,
   },
-  tile: {
-    flexBasis: '45%',
+  item: {
+    flexBasis: '46%',
     flexGrow: 1,
+    gap: 7,
+  },
+  photo: {
     aspectRatio: 1,
     borderRadius: 20,
-    padding: 10,
-    justifyContent: 'flex-end',
-    alignItems: 'flex-start',
   },
-  tileBadge: {
+  caption: {
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
+  },
+  captionEmotion: {
     fontFamily: fonts.bodySemiBold,
-    fontSize: 11,
     color: colors.ink,
-    backgroundColor: colors.background,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 12,
-    overflow: 'hidden',
   },
   addTile: {
-    backgroundColor: colors.background,
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: colors.dashedBorder,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
   },
   pressed: {
-    opacity: 0.8,
+    opacity: 0.7,
   },
-  addLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 11,
+  addCaption: {
     color: colors.moss,
   },
 });

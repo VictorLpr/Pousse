@@ -70,15 +70,29 @@ couleur de texte), `peach #FFDAC4` (accents/sélection), `ink #2E4449` (texte pr
 Typography (`fonts`): Caveat 700 for headings/prénoms (`heading`), Quicksand 500/600/700
 for body (`body`, `bodySemiBold`, `bodyBold`). Fonts load in `src/app/_layout.tsx`.
 
-Recurring shapes: primary buttons coral, radius 20, bold 16; cards radius 20–22 with
-2px `border` borders; inputs radius 16 on white; "locked/add" tiles use dashed
-`dashedBorder` borders with `moss` text; ritual steps use the sage background + cream
-card layout (`RitualStepLayout`) with `ProgressDots`.
+**Layout philosophy — « carnet du soir » (flat & editorial). No boxes-in-boxes:**
+
+- Screens are open pages on the cream background. Avoid bordered cards and nested
+  containers; content sits directly on the page, structured by typography and whitespace.
+- Sections and list rows are separated by the `Divider` component (`hairline` filet,
+  `stitched` pointillé « couture », `sprout` ornament with the little plant), never by
+  wrapping each item in its own bordered box.
+- At most **one** filled accent surface per screen (a coral CTA pill or a peach block) —
+  if a screen already has one, everything else stays flat.
+- Icons are drawn bare (no circle/pastille behind them). A peach circle appears only to
+  mark a **selected** state (e.g. emotion choice) or an avatar/trophy.
+- Inputs are underlined (2px `border` bottom), not boxed. Selectable chips are underlined
+  with a 3px coral bar when selected (`ChoiceChip`).
+- Quotes/prompts use a 3px coral left bar (see pride step), not a tinted box.
+- Dashed `dashedBorder` + `moss` text remain the language for "locked/add" affordances.
+- Ritual steps use `RitualStepLayout`: open cream page, `ProgressDots`, large Caveat title.
+- Lean on Caveat for personality: headings, first names, emotion words in the journal.
 
 Reuse the existing components in `src/ui/components/` (`AppButton`, `ScreenHeader`,
 `ScreenContainer`, `Avatar`, `StreakBadge`, `ChoiceChip`, `SettingsRow`, `OverlineLabel`,
-`EmotionIcon`) before creating new ones. New reusable pieces go in `src/ui/components/`,
-styled with `StyleSheet.create` (no inline style objects except tiny dynamic values).
+`EmotionIcon`, `Divider`, `ProgressDots`) before creating new ones. New reusable pieces go
+in `src/ui/components/`, styled with `StyleSheet.create` (no inline style objects except
+tiny dynamic values).
 
 ## 4. Accessibility (required on every interactive element)
 

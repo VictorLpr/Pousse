@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { Camera, Image as ImageIcon } from 'lucide-react-native';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Camera, ChevronRight, Image as ImageIcon } from 'lucide-react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '@/ui/components/app-button';
+import { Divider } from '@/ui/components/divider';
 import { RitualStepLayout } from '@/ui/components/ritual-step-layout';
 import { useRitualDraft } from '@/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/ui/theme';
@@ -33,47 +34,50 @@ export function PhotoStepScreen() {
         accessibilityRole="button"
         accessibilityLabel="Prendre une photo"
         onPress={continueWithPhoto}
-        style={({ pressed }) => [styles.option, styles.cameraOption, pressed && styles.pressed]}>
-        <Camera size={34} color={colors.ink} strokeWidth={1.8} />
+        style={({ pressed }) => [styles.option, pressed && styles.pressed]}>
+        <Camera size={26} color={colors.ink} strokeWidth={1.8} />
         <Text style={styles.optionLabel}>Prendre une photo</Text>
+        <ChevronRight size={18} color={colors.overline} strokeWidth={2} />
       </Pressable>
+
+      <Divider />
 
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Choisir dans la galerie"
         onPress={continueWithPhoto}
-        style={({ pressed }) => [styles.option, styles.galleryOption, pressed && styles.pressed]}>
-        <ImageIcon size={34} color={colors.ink} strokeWidth={1.8} />
+        style={({ pressed }) => [styles.option, pressed && styles.pressed]}>
+        <ImageIcon size={26} color={colors.ink} strokeWidth={1.8} />
         <Text style={styles.optionLabel}>Choisir dans la galerie</Text>
+        <ChevronRight size={18} color={colors.overline} strokeWidth={2} />
       </Pressable>
 
-      <AppButton label="Passer cette étape" variant="ghost" onPress={skipPhoto} />
+      <Divider />
+
+      <View style={styles.footer}>
+        <AppButton label="Passer cette étape" variant="ghost" onPress={skipPhoto} />
+      </View>
     </RitualStepLayout>
   );
 }
 
 const styles = StyleSheet.create({
   option: {
-    borderRadius: 20,
-    paddingVertical: 28,
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 14,
-  },
-  cameraOption: {
-    backgroundColor: colors.peach,
-  },
-  galleryOption: {
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.border,
+    gap: 16,
+    paddingVertical: 24,
   },
   pressed: {
-    opacity: 0.85,
+    opacity: 0.6,
   },
   optionLabel: {
+    flex: 1,
     fontFamily: fonts.bodySemiBold,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.ink,
+  },
+  footer: {
+    marginTop: 'auto',
   },
 });

@@ -1,10 +1,11 @@
 import { Redirect } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { getEmotion } from '@/domain/entities/emotion';
 import type { JournalEntry } from '@/domain/entities/journal-entry';
 import { useServices } from '@/di/services-provider';
+import { Divider } from '@/ui/components/divider';
 import { EmotionIcon } from '@/ui/components/emotion-icon';
 import { OverlineLabel } from '@/ui/components/overline-label';
 import { ScreenContainer } from '@/ui/components/screen-container';
@@ -43,80 +44,65 @@ export function JournalScreen() {
       />
 
       <OverlineLabel style={styles.sectionLabel}>Cette semaine</OverlineLabel>
-      <View style={styles.list}>
-        {entries.map((entry, index) => {
-          const isLatest = index === 0;
-          return (
-            <View
-              key={entry.id}
-              accessible
-              accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, émotion ${getEmotion(entry.emotionId).label} : ${entry.prideText}`}
-              style={[styles.entryCard, isLatest && styles.latestEntryCard]}>
+
+      {entries.map((entry, index) => (
+        <Fragment key={entry.id}>
+          {index > 0 && <Divider />}
+          <View
+            accessible
+            accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, émotion ${getEmotion(entry.emotionId).label} : ${entry.prideText}`}
+            style={styles.entry}>
+            <View style={styles.entryIcon}>
+              <EmotionIcon emotionId={entry.emotionId} size={26} />
+            </View>
+            <View style={styles.entryContent}>
               <View style={styles.entryHeader}>
-                <View
-                  style={[
-                    styles.emotionCircle,
-                    { backgroundColor: isLatest ? colors.background : colors.sage },
-                  ]}>
-                  <EmotionIcon emotionId={entry.emotionId} size={20} />
-                </View>
-                <View>
-                  <Text style={styles.emotionLabel}>
-                    {capitalize(getEmotion(entry.emotionId).label)}
-                  </Text>
-                  <Text style={styles.entryDate}>{formatFullDate(entry.createdAt)}</Text>
-                </View>
+                <Text style={styles.emotionName}>
+                  {capitalize(getEmotion(entry.emotionId).label)}
+                </Text>
+                <Text style={styles.entryDate}>{formatFullDate(entry.createdAt)}</Text>
               </View>
               <Text style={styles.entryText}>{entry.prideText}</Text>
             </View>
-          );
-        })}
-        {entries.length === 0 && (
-          <Text style={styles.emptyText}>
-            Aucun souvenir pour l'instant. Le rituel du soir remplira ce journal !
-          </Text>
-        )}
-      </View>
+          </View>
+        </Fragment>
+      ))}
+
+      {entries.length === 0 && (
+        <Text style={styles.emptyText}>
+          Aucun souvenir pour l'instant. Le rituel du soir remplira ce journal !
+        </Text>
+      )}
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
   sectionLabel: {
-    marginTop: 8,
-    marginBottom: 12,
-    letterSpacing: 0.7,
+    marginBottom: 6,
   },
-  list: {
-    gap: 12,
+  entry: {
+    flexDirection: 'row',
+    gap: 14,
+    paddingVertical: 18,
   },
-  entryCard: {
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 20,
-    padding: 16,
-    gap: 9,
+  entryIcon: {
+    marginTop: 2,
   },
-  latestEntryCard: {
-    backgroundColor: colors.peach,
-    borderColor: colors.peach,
+  entryContent: {
+    flex: 1,
+    gap: 6,
   },
   entryHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 8,
   },
-  emotionCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emotionLabel: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 15,
+  emotionName: {
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    lineHeight: 26,
     color: colors.ink,
   },
   entryDate: {
@@ -126,8 +112,8 @@ const styles = StyleSheet.create({
   },
   entryText: {
     fontFamily: fonts.body,
-    fontSize: 13,
-    lineHeight: 20,
+    fontSize: 14,
+    lineHeight: 22,
     color: colors.ink,
   },
   emptyText: {

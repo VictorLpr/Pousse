@@ -6,6 +6,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { getEmotion } from '@/domain/entities/emotion';
 import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/ui/components/app-button';
+import { Divider } from '@/ui/components/divider';
 import { EmotionIcon } from '@/ui/components/emotion-icon';
 import { RitualStepLayout } from '@/ui/components/ritual-step-layout';
 import { useActiveChild } from '@/ui/state/active-child-context';
@@ -48,69 +49,73 @@ export function RecapStepScreen() {
 
   return (
     <RitualStepLayout step={4} title="Notre moment" subtitle="On le garde ensemble ?">
-      <View style={styles.recapCard}>
-        <View style={styles.emotionRow}>
-          <View style={styles.emotionCircle}>
-            <EmotionIcon emotionId={emotionId} size={24} />
-          </View>
-          <Text style={styles.emotionLabel}>{capitalize(getEmotion(emotionId).label)}</Text>
-        </View>
-        <Text style={styles.prideText}>{prideText}</Text>
-        {photoUri ? (
-          <View
-            accessible
-            accessibilityLabel="Photo du jour ajoutée"
-            style={styles.photoPlaceholder}>
-            <ImageIcon size={30} color={colors.overline} strokeWidth={1.8} />
-          </View>
-        ) : null}
+      <View style={styles.emotionRow}>
+        <EmotionIcon emotionId={emotionId} size={34} />
+        <Text style={styles.emotionLabel}>{capitalize(getEmotion(emotionId).label)}</Text>
       </View>
-      <AppButton label="On valide ensemble" disabled={isSaving} onPress={saveRitual} />
+
+      <Divider variant="stitched" spacing={20} />
+
+      <View style={styles.prideQuote}>
+        <View style={styles.quoteBar} />
+        <Text style={styles.prideText}>{prideText}</Text>
+      </View>
+
+      {photoUri ? (
+        <View
+          accessible
+          accessibilityLabel="Photo du jour ajoutée"
+          style={styles.photoPlaceholder}>
+          <ImageIcon size={30} color={colors.overline} strokeWidth={1.8} />
+        </View>
+      ) : null}
+
+      <View style={styles.footer}>
+        <AppButton label="On valide ensemble" disabled={isSaving} onPress={saveRitual} />
+      </View>
     </RitualStepLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  recapCard: {
-    flex: 1,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 22,
-    padding: 18,
-    gap: 14,
-    marginBottom: 16,
-  },
   emotionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-  },
-  emotionCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.peach,
-    alignItems: 'center',
     justifyContent: 'center',
+    gap: 12,
   },
   emotionLabel: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 16,
+    fontFamily: fonts.heading,
+    fontSize: 32,
+    lineHeight: 34,
     color: colors.ink,
   },
+  prideQuote: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  quoteBar: {
+    width: 3,
+    borderRadius: 2,
+    backgroundColor: colors.coral,
+  },
   prideText: {
+    flex: 1,
     fontFamily: fonts.body,
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 25,
     color: colors.ink,
   },
   photoPlaceholder: {
-    flex: 1,
-    minHeight: 110,
+    height: 130,
     backgroundColor: colors.sage,
-    borderRadius: 16,
+    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 20,
+  },
+  footer: {
+    marginTop: 'auto',
+    paddingTop: 20,
   },
 });

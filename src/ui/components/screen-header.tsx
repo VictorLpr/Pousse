@@ -20,9 +20,9 @@ export function ScreenHeader({ title, subtitle, showBackButton = true }: ScreenH
           accessibilityRole="button"
           accessibilityLabel="Revenir en arrière"
           onPress={() => router.back()}
-          style={styles.backButton}
-          hitSlop={8}>
-          <ChevronLeft size={20} color={colors.ink} strokeWidth={2.2} />
+          style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
+          hitSlop={12}>
+          <ChevronLeft size={26} color={colors.ink} strokeWidth={2} />
         </Pressable>
       )}
       <View style={styles.titles}>
@@ -38,25 +38,25 @@ export function ScreenHeader({ title, subtitle, showBackButton = true }: ScreenH
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 22,
+    alignItems: 'flex-start',
+    gap: 10,
+    marginBottom: 26,
   },
   backButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.sage,
-    alignItems: 'center',
-    justifyContent: 'center',
+    marginTop: 4,
+    marginLeft: -6,
+  },
+  pressed: {
+    opacity: 0.6,
   },
   titles: {
     flex: 1,
+    gap: 2,
   },
   title: {
     fontFamily: fonts.heading,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: 32,
+    lineHeight: 34,
     color: colors.ink,
   },
   subtitle: {

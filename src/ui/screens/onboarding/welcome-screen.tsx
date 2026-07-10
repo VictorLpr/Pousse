@@ -12,10 +12,8 @@ export function WelcomeScreen() {
   return (
     <ScreenContainer scrollable={false} contentStyle={styles.content}>
       <View style={styles.hero}>
-        <View accessible accessibilityLabel="Logo Pousse" style={styles.logoRing}>
-          <View style={styles.logoInner}>
-            <Sprout size={48} color={colors.ink} strokeWidth={1.8} />
-          </View>
+        <View accessible accessibilityLabel="Logo Pousse" style={styles.logoCircle}>
+          <Sprout size={56} color={colors.ink} strokeWidth={1.6} />
         </View>
         <View style={styles.titles}>
           <Text accessibilityRole="header" style={styles.appName}>
@@ -55,19 +53,11 @@ const styles = StyleSheet.create({
     gap: 26,
     marginTop: 26,
   },
-  logoRing: {
-    width: 132,
-    height: 132,
-    borderRadius: 66,
+  logoCircle: {
+    width: 124,
+    height: 124,
+    borderRadius: 62,
     backgroundColor: colors.peach,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoInner: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: colors.background,
     alignItems: 'center',
     justifyContent: 'center',
   },

@@ -9,7 +9,7 @@ interface ChoiceChipProps {
   accessibilityLabel?: string;
 }
 
-/** Puce sélectionnable (tranche d'âge, etc.), style « bouton radio ». */
+/** Choix « souligné » : pas de boîte, un trait corail marque la sélection. */
 export function ChoiceChip({ label, selected, onPress, accessibilityLabel }: ChoiceChipProps) {
   return (
     <Pressable
@@ -26,20 +26,17 @@ export function ChoiceChip({ label, selected, onPress, accessibilityLabel }: Cho
 const styles = StyleSheet.create({
   chip: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 14,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    paddingVertical: 10,
     alignItems: 'center',
+    borderBottomWidth: 3,
+    borderBottomColor: 'transparent',
   },
   selectedChip: {
-    backgroundColor: colors.coral,
-    borderColor: colors.coral,
+    borderBottomColor: colors.coral,
   },
   label: {
     fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
+    fontSize: 15,
     color: colors.inkSoft,
   },
   selectedLabel: {

@@ -10,6 +10,7 @@ import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { useServices } from '@/di/services-provider';
 import { Avatar } from '@/ui/components/avatar';
+import { Divider } from '@/ui/components/divider';
 import { ScreenContainer } from '@/ui/components/screen-container';
 import { ScreenHeader } from '@/ui/components/screen-header';
 import { SettingsRow } from '@/ui/components/settings-row';
@@ -41,8 +42,8 @@ export function SettingsScreen() {
     <ScreenContainer>
       <ScreenHeader title="Préférences" />
 
-      <View style={styles.profileCard}>
-        <Avatar initial={childInitial(activeChild.firstName)} size={48} />
+      <View style={styles.profileRow}>
+        <Avatar initial={childInitial(activeChild.firstName)} size={56} />
         <View style={styles.profileTexts}>
           <Text style={styles.profileName}>{activeChild.firstName}</Text>
           <Text style={styles.profileAge}>{ageRangeWithYears(activeChild.ageRange)}</Text>
@@ -51,90 +52,85 @@ export function SettingsScreen() {
           accessibilityRole="button"
           accessibilityLabel="Changer d'enfant"
           onPress={() => router.push('/children')}
-          style={({ pressed }) => [styles.switchChip, pressed && styles.pressed]}>
-          <Users size={16} color={colors.ink} strokeWidth={1.9} />
-          <Text style={styles.switchChipLabel}>Changer</Text>
+          style={({ pressed }) => [styles.switchLink, pressed && styles.pressed]}
+          hitSlop={8}>
+          <Users size={16} color={colors.inkSoft} strokeWidth={1.9} />
+          <Text style={styles.switchLinkLabel}>Changer</Text>
         </Pressable>
       </View>
 
-      <View style={styles.rows}>
-        <SettingsRow
-          icon={<Bell size={20} color={colors.ink} strokeWidth={1.9} />}
-          title="Rappel du soir"
-          subtitle={reminderLabel(activeChild)}
-          trailing={
-            <Switch
-              accessibilityLabel="Activer le rappel du soir"
-              value={activeChild.reminder.enabled}
-              onValueChange={toggleReminder}
-              trackColor={{ false: colors.border, true: colors.coral }}
-              thumbColor={colors.surface}
-            />
-          }
-        />
-        <SettingsRow
-          icon={<ImageIcon size={20} color={colors.ink} strokeWidth={1.9} />}
-          title="Galerie des souvenirs"
-          onPress={() => router.push('/gallery')}
-        />
-        <SettingsRow
-          icon={<Lock size={20} color={colors.ink} strokeWidth={1.9} />}
-          title="Confidentialité"
-          accessibilityHint="Bientôt disponible"
-          onPress={showComingSoon}
-        />
-        <SettingsRow
-          icon={<CircleQuestionMark size={20} color={colors.ink} strokeWidth={1.9} />}
-          title="Aide & contact"
-          accessibilityHint="Bientôt disponible"
-          onPress={showComingSoon}
-        />
-      </View>
+      <Divider variant="sprout" spacing={24} />
+
+      <SettingsRow
+        icon={<Bell size={20} color={colors.ink} strokeWidth={1.9} />}
+        title="Rappel du soir"
+        subtitle={reminderLabel(activeChild)}
+        trailing={
+          <Switch
+            accessibilityLabel="Activer le rappel du soir"
+            value={activeChild.reminder.enabled}
+            onValueChange={toggleReminder}
+            trackColor={{ false: colors.border, true: colors.coral }}
+            thumbColor={colors.surface}
+          />
+        }
+      />
+      <Divider />
+      <SettingsRow
+        icon={<ImageIcon size={20} color={colors.ink} strokeWidth={1.9} />}
+        title="Galerie des souvenirs"
+        onPress={() => router.push('/gallery')}
+      />
+      <Divider />
+      <SettingsRow
+        icon={<Lock size={20} color={colors.ink} strokeWidth={1.9} />}
+        title="Confidentialité"
+        accessibilityHint="Bientôt disponible"
+        onPress={showComingSoon}
+      />
+      <Divider />
+      <SettingsRow
+        icon={<CircleQuestionMark size={20} color={colors.ink} strokeWidth={1.9} />}
+        title="Aide & contact"
+        accessibilityHint="Bientôt disponible"
+        onPress={showComingSoon}
+      />
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  profileCard: {
+  profileRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: colors.sage,
-    borderRadius: 20,
-    padding: 14,
-    marginBottom: 22,
+    gap: 14,
   },
   profileTexts: {
     flex: 1,
   },
   profileName: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 16,
+    fontFamily: fonts.heading,
+    fontSize: 26,
+    lineHeight: 28,
     color: colors.ink,
   },
   profileAge: {
     fontFamily: fonts.body,
-    fontSize: 12,
+    fontSize: 13,
     color: colors.inkSoft,
   },
-  switchChip: {
+  switchLink: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    backgroundColor: colors.background,
   },
   pressed: {
-    opacity: 0.8,
+    opacity: 0.6,
   },
-  switchChipLabel: {
+  switchLinkLabel: {
     fontFamily: fonts.bodySemiBold,
-    fontSize: 12,
-    color: colors.ink,
-  },
-  rows: {
-    gap: 10,
+    fontSize: 13,
+    color: colors.inkSoft,
+    textDecorationLine: 'underline',
   },
 });

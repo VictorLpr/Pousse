@@ -35,7 +35,7 @@ export function RitualDoneScreen() {
           </Text>
           <Text style={styles.subtitle}>Votre moment est gardé dans le journal.</Text>
         </View>
-        <StreakBadge label={streakLabel(activeChild)} backgroundColor={colors.background} />
+        <StreakBadge label={streakLabel(activeChild)} />
         <Text style={styles.nextTrophy}>
           Encore {remainingEvenings} soir{remainingEvenings > 1 ? 's' : ''} et{' '}
           {activeChild.firstName} débloque un nouveau trophée.

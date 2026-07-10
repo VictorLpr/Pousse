@@ -14,6 +14,7 @@ interface SettingsRowProps {
   accessibilityHint?: string;
 }
 
+/** Rangée ouverte, sans encadré : les écrans les séparent par des filets. */
 export function SettingsRow({
   icon,
   title,
@@ -53,16 +54,11 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 16,
-    paddingVertical: 15,
-    paddingHorizontal: 16,
+    gap: 14,
+    paddingVertical: 18,
   },
   pressed: {
-    opacity: 0.8,
+    opacity: 0.6,
   },
   texts: {
     flex: 1,
@@ -76,5 +72,6 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 12,
     color: colors.inkSoft,
+    marginTop: 1,
   },
 });

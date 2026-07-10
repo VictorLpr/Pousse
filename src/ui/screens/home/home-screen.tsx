@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { RITUAL_STEP_COUNT } from '@/ui/components/ritual-step-layout';
 import { Avatar } from '@/ui/components/avatar';
+import { Divider } from '@/ui/components/divider';
 import { ScreenContainer } from '@/ui/components/screen-container';
 import { StreakBadge } from '@/ui/components/streak-badge';
 import { childInitial, streakLabel } from '@/ui/format/child';
@@ -38,24 +39,26 @@ export function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel="Ouvrir les préférences"
           onPress={() => router.push('/settings')}
-          style={styles.menuButton}
-          hitSlop={8}>
-          <Menu size={22} color={colors.ink} strokeWidth={2} />
+          style={({ pressed }) => pressed && styles.pressed}
+          hitSlop={12}>
+          <Menu size={24} color={colors.ink} strokeWidth={2} />
         </Pressable>
       </View>
 
       <View style={styles.childZone}>
-        <Avatar initial={childInitial(activeChild.firstName)} size={150} withRing />
+        <Avatar initial={childInitial(activeChild.firstName)} size={140} />
         <Text style={styles.childName}>{activeChild.firstName}</Text>
         <StreakBadge label={streakLabel(activeChild)} />
       </View>
+
+      <Divider variant="sprout" spacing={28} />
 
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Commencer notre moment du soir"
         accessibilityHint={`${RITUAL_STEP_COUNT} étapes, environ 5 minutes`}
         onPress={startRitual}
-        style={({ pressed }) => [styles.ritualCard, pressed && styles.pressed]}>
+        style={({ pressed }) => [styles.ritualCta, pressed && styles.pressed]}>
         <Text style={styles.ritualTitle}>Notre moment du soir</Text>
         <Text style={styles.ritualSubtitle}>{RITUAL_STEP_COUNT} étapes · environ 5 min</Text>
       </Pressable>
@@ -65,15 +68,16 @@ export function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel={`Ouvrir le journal de ${activeChild.firstName}`}
           onPress={() => router.push('/journal')}
-          style={({ pressed }) => [styles.shortcutCard, pressed && styles.pressed]}>
+          style={({ pressed }) => [styles.shortcut, pressed && styles.pressed]}>
           <BookOpen size={26} color={colors.ink} strokeWidth={1.9} />
           <Text style={styles.shortcutLabel}>Journal</Text>
         </Pressable>
+        <View style={styles.shortcutSeparator} />
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={`Ouvrir les défis de ${activeChild.firstName}`}
           onPress={() => router.push('/challenges')}
-          style={({ pressed }) => [styles.shortcutCard, pressed && styles.pressed]}>
+          style={({ pressed }) => [styles.shortcut, pressed && styles.pressed]}>
           <Trophy size={26} color={colors.ink} strokeWidth={1.9} />
           <Text style={styles.shortcutLabel}>Défis</Text>
         </Pressable>
@@ -85,46 +89,36 @@ export function HomeScreen() {
 const styles = StyleSheet.create({
   topBar: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    marginBottom: 26,
+    marginBottom: 30,
   },
   title: {
-    fontFamily: fonts.heading,
-    fontSize: 30,
-    lineHeight: 32,
-    color: colors.ink,
-    maxWidth: 200,
-  },
-  menuButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.sage,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  childZone: {
-    alignItems: 'center',
-    gap: 14,
-    marginBottom: 28,
-  },
-  childName: {
     fontFamily: fonts.heading,
     fontSize: 34,
     lineHeight: 36,
     color: colors.ink,
-  },
-  ritualCard: {
-    backgroundColor: colors.coral,
-    borderRadius: 22,
-    padding: 18,
-    alignItems: 'center',
-    gap: 5,
-    marginBottom: 16,
+    maxWidth: 220,
   },
   pressed: {
-    opacity: 0.85,
+    opacity: 0.6,
+  },
+  childZone: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  childName: {
+    fontFamily: fonts.heading,
+    fontSize: 40,
+    lineHeight: 42,
+    color: colors.ink,
+  },
+  ritualCta: {
+    backgroundColor: colors.coral,
+    borderRadius: 24,
+    paddingVertical: 20,
+    alignItems: 'center',
+    gap: 4,
   },
   ritualTitle: {
     fontFamily: fonts.bodyBold,
@@ -139,17 +133,19 @@ const styles = StyleSheet.create({
   },
   shortcuts: {
     flexDirection: 'row',
-    gap: 12,
-  },
-  shortcutCard: {
-    flex: 1,
-    paddingVertical: 20,
-    borderRadius: 20,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.background,
     alignItems: 'center',
-    gap: 9,
+    marginTop: 26,
+  },
+  shortcut: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 10,
+  },
+  shortcutSeparator: {
+    width: 1,
+    height: 44,
+    backgroundColor: colors.border,
   },
   shortcutLabel: {
     fontFamily: fonts.bodySemiBold,

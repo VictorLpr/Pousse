@@ -13,43 +13,38 @@ interface RitualStepLayoutProps extends PropsWithChildren {
   subtitle: string;
 }
 
-/** Gabarit des étapes du rituel : fond sauge, points d'avancement, carte crème. */
+/** Gabarit des étapes du rituel : page crème ouverte, points d'avancement, grand titre. */
 export function RitualStepLayout({ step, title, subtitle, children }: RitualStepLayoutProps) {
   return (
-    <ScreenContainer scrollable={false} backgroundColor={colors.sage}>
+    <ScreenContainer scrollable={false}>
       <ProgressDots stepCount={RITUAL_STEP_COUNT} currentStep={step} />
-      <View style={styles.card}>
-        <Text accessibilityRole="header" style={styles.title}>
-          {title}
-        </Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
-        {children}
-      </View>
+      <Text accessibilityRole="header" style={styles.title}>
+        {title}
+      </Text>
+      <Text style={styles.subtitle}>{subtitle}</Text>
+      <View style={styles.body}>{children}</View>
     </ScreenContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    flex: 1,
-    marginTop: 22,
-    backgroundColor: colors.background,
-    borderRadius: 28,
-    padding: 22,
-  },
   title: {
     fontFamily: fonts.heading,
-    fontSize: 30,
-    lineHeight: 32,
+    fontSize: 36,
+    lineHeight: 40,
     textAlign: 'center',
     color: colors.ink,
+    marginTop: 30,
   },
   subtitle: {
     fontFamily: fonts.body,
-    fontSize: 13,
+    fontSize: 14,
     textAlign: 'center',
     color: colors.inkSoft,
-    marginTop: 6,
-    marginBottom: 20,
+    marginTop: 4,
+    marginBottom: 28,
+  },
+  body: {
+    flex: 1,
   },
 });

@@ -8,6 +8,7 @@ import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/ui/components/app-button';
 import { Avatar } from '@/ui/components/avatar';
 import { ChoiceChip } from '@/ui/components/choice-chip';
+import { Divider } from '@/ui/components/divider';
 import { OverlineLabel } from '@/ui/components/overline-label';
 import { ScreenContainer } from '@/ui/components/screen-container';
 import { ScreenHeader } from '@/ui/components/screen-header';
@@ -56,9 +57,7 @@ export function ChildProfileScreen() {
         </View>
       </View>
 
-      <OverlineLabel color={colors.inkSoft} style={styles.fieldLabel}>
-        Prénom
-      </OverlineLabel>
+      <OverlineLabel style={styles.fieldLabel}>Prénom</OverlineLabel>
       <TextInput
         accessibilityLabel="Prénom de l'enfant"
         value={firstName}
@@ -69,9 +68,7 @@ export function ChildProfileScreen() {
         style={styles.input}
       />
 
-      <OverlineLabel color={colors.inkSoft} style={styles.fieldLabel}>
-        Tranche d'âge
-      </OverlineLabel>
+      <OverlineLabel style={styles.fieldLabel}>Tranche d'âge</OverlineLabel>
       <View accessibilityRole="radiogroup" accessibilityLabel="Tranche d'âge" style={styles.ageRow}>
         {AGE_RANGES.map((range) => (
           <ChoiceChip
@@ -84,9 +81,9 @@ export function ChildProfileScreen() {
         ))}
       </View>
 
-      <OverlineLabel color={colors.inkSoft} style={styles.fieldLabel}>
-        Notre rendez-vous du soir
-      </OverlineLabel>
+      <Divider variant="stitched" spacing={26} />
+
+      <OverlineLabel style={styles.fieldLabel}>Notre rendez-vous du soir</OverlineLabel>
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`Rendez-vous du soir : tous les soirs à ${DEFAULT_REMINDER_TIME}`}
@@ -106,60 +103,47 @@ export function ChildProfileScreen() {
 const styles = StyleSheet.create({
   avatarZone: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 30,
   },
   cameraBadge: {
     position: 'absolute',
-    right: -2,
-    bottom: -2,
+    right: -4,
+    bottom: -4,
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: colors.background,
-    borderWidth: 2,
-    borderColor: colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
   fieldLabel: {
-    fontSize: 12,
-    letterSpacing: 0.5,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   input: {
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 16,
-    backgroundColor: colors.surface,
-    paddingVertical: 15,
-    paddingHorizontal: 16,
+    borderBottomWidth: 2,
+    borderBottomColor: colors.border,
+    paddingVertical: 12,
     fontFamily: fonts.bodySemiBold,
-    fontSize: 16,
+    fontSize: 18,
     color: colors.ink,
-    marginBottom: 20,
+    marginBottom: 26,
   },
   ageRow: {
     flexDirection: 'row',
     gap: 8,
-    marginBottom: 20,
   },
   reminderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    borderWidth: 2,
-    borderColor: colors.border,
-    borderRadius: 16,
-    backgroundColor: colors.surface,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
+    paddingVertical: 12,
   },
   reminderText: {
     fontFamily: fonts.bodySemiBold,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.ink,
   },
   submit: {
-    marginTop: 28,
+    marginTop: 34,
   },
 });

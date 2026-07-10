@@ -27,8 +27,10 @@ export function EmotionStepScreen() {
               accessibilityLabel={`Émotion ${emotion.label}`}
               accessibilityState={{ selected }}
               onPress={() => setEmotion(emotion.id)}
-              style={[styles.cell, selected && styles.selectedCell]}>
-              <EmotionIcon emotionId={emotion.id} />
+              style={styles.cell}>
+              <View style={[styles.iconHalo, selected && styles.selectedHalo]}>
+                <EmotionIcon emotionId={emotion.id} size={32} />
+              </View>
               <Text style={[styles.cellLabel, selected && styles.selectedCellLabel]}>
                 {emotion.label}
               </Text>
@@ -51,26 +53,26 @@ const styles = StyleSheet.create({
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    rowGap: 26,
   },
   cell: {
-    flexBasis: '30%',
-    flexGrow: 1,
-    paddingVertical: 14,
-    borderRadius: 18,
-    borderWidth: 2,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
+    flexBasis: '33%',
     alignItems: 'center',
-    gap: 7,
+    gap: 8,
   },
-  selectedCell: {
+  iconHalo: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  selectedHalo: {
     backgroundColor: colors.peach,
-    borderColor: colors.coral,
   },
   cellLabel: {
     fontFamily: fonts.bodySemiBold,
-    fontSize: 12,
+    fontSize: 13,
     color: colors.inkSoft,
   },
   selectedCellLabel: {

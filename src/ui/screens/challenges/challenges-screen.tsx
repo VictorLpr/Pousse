@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Trophy } from '@/domain/entities/trophy';
 import type { WeeklyChallenge } from '@/domain/entities/weekly-challenge';
 import { useServices } from '@/di/services-provider';
+import { Divider } from '@/ui/components/divider';
 import { OverlineLabel } from '@/ui/components/overline-label';
 import { ScreenContainer } from '@/ui/components/screen-container';
 import { ScreenHeader } from '@/ui/components/screen-header';
@@ -56,10 +57,8 @@ export function ChallengesScreen() {
       <ScreenHeader title={`Les défis de ${activeChild.firstName}`} />
 
       {challenge && (
-        <View style={styles.challengeCard}>
-          <OverlineLabel color={colors.ink} style={styles.challengeOverline}>
-            Le défi de la semaine
-          </OverlineLabel>
+        <View style={styles.challengeBlock}>
+          <OverlineLabel>Le défi de la semaine</OverlineLabel>
           <Text style={styles.challengeTitle}>{challenge.title}</Text>
           <Pressable
             accessibilityRole="button"
@@ -82,6 +81,8 @@ export function ChallengesScreen() {
         </View>
       )}
 
+      <Divider variant="sprout" spacing={28} />
+
       <View style={styles.trophiesHeader}>
         <View style={styles.trophiesTitle}>
           <TrophyIcon size={18} color={colors.ink} strokeWidth={1.9} />
@@ -103,12 +104,14 @@ export function ChallengesScreen() {
               accessibilityLabel={
                 isEarned ? `Trophée gagné : ${trophy.name}` : 'Trophée à venir, encore verrouillé'
               }
-              style={[styles.trophyCell, isEarned ? styles.earnedTrophy : styles.lockedTrophy]}>
-              {isEarned ? (
-                <Icon size={24} color={colors.ink} strokeWidth={1.8} />
-              ) : (
-                <Lock size={24} color={colors.moss} strokeWidth={1.8} />
-              )}
+              style={styles.trophyCell}>
+              <View style={[styles.trophyCircle, isEarned ? styles.earnedCircle : styles.lockedCircle]}>
+                {isEarned ? (
+                  <Icon size={26} color={colors.ink} strokeWidth={1.8} />
+                ) : (
+                  <Lock size={24} color={colors.moss} strokeWidth={1.8} />
+                )}
+              </View>
               <Text style={[styles.trophyName, !isEarned && styles.lockedTrophyName]}>
                 {trophy.name}
               </Text>
@@ -121,21 +124,13 @@ export function ChallengesScreen() {
 }
 
 const styles = StyleSheet.create({
-  challengeCard: {
-    backgroundColor: colors.peach,
-    borderRadius: 22,
-    padding: 18,
+  challengeBlock: {
     gap: 12,
-    marginBottom: 24,
-  },
-  challengeOverline: {
-    fontSize: 11,
-    letterSpacing: 0.9,
   },
   challengeTitle: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 18,
-    lineHeight: 24,
+    fontFamily: fonts.heading,
+    fontSize: 30,
+    lineHeight: 34,
     color: colors.ink,
   },
   challengeButton: {
@@ -143,9 +138,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: colors.background,
-    borderRadius: 14,
-    paddingVertical: 12,
+    backgroundColor: colors.peach,
+    borderRadius: 18,
+    paddingVertical: 14,
+    marginTop: 4,
   },
   challengeButtonDone: {
     backgroundColor: colors.coral,
@@ -162,7 +158,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: 20,
   },
   trophiesTitle: {
     flexDirection: 'row',
@@ -182,28 +178,31 @@ const styles = StyleSheet.create({
   trophyGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    rowGap: 22,
   },
   trophyCell: {
-    flexBasis: '30%',
-    flexGrow: 1,
-    paddingVertical: 16,
-    borderRadius: 18,
+    flexBasis: '33%',
     alignItems: 'center',
     gap: 8,
   },
-  earnedTrophy: {
+  trophyCircle: {
+    width: 66,
+    height: 66,
+    borderRadius: 33,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  earnedCircle: {
     backgroundColor: colors.peach,
   },
-  lockedTrophy: {
-    backgroundColor: colors.background,
+  lockedCircle: {
     borderWidth: 2,
     borderStyle: 'dashed',
     borderColor: colors.dashedBorder,
   },
   trophyName: {
     fontFamily: fonts.bodySemiBold,
-    fontSize: 11,
+    fontSize: 12,
     color: colors.ink,
   },
   lockedTrophyName: {
