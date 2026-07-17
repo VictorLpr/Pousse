@@ -5,6 +5,7 @@ import type { TrophyRepository } from '@/domain/ports/trophy-repository';
 import type { WeeklyChallengeRepository } from '@/domain/ports/weekly-challenge-repository';
 
 export interface CreateChildProfileInput {
+  readonly householdId: string;
   readonly firstName: string;
   readonly ageRange: AgeRange;
   readonly reminderTime: string;
@@ -33,6 +34,7 @@ export class CreateChildProfile {
 
     const child: Child = {
       id: this.idGenerator.next(),
+      householdId: input.householdId,
       firstName,
       ageRange: input.ageRange,
       reminder: { time: input.reminderTime, enabled: true },

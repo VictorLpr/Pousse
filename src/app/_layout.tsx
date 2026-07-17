@@ -13,6 +13,7 @@ import { useEffect } from 'react';
 import { ServicesProvider } from '@/di/services-provider';
 import { ActiveChildProvider } from '@/ui/state/active-child-context';
 import { RitualDraftProvider } from '@/ui/state/ritual-draft-context';
+import { SessionProvider } from '@/ui/state/session-context';
 import { colors } from '@/ui/theme';
 
 SplashScreen.preventAutoHideAsync();
@@ -37,8 +38,9 @@ export default function RootLayout() {
 
   return (
     <ServicesProvider>
-      <ActiveChildProvider>
-        <RitualDraftProvider>
+      <SessionProvider>
+        <ActiveChildProvider>
+          <RitualDraftProvider>
           <StatusBar style="dark" />
           <Stack
             screenOptions={{
@@ -46,8 +48,9 @@ export default function RootLayout() {
               contentStyle: { backgroundColor: colors.background },
             }}
           />
-        </RitualDraftProvider>
-      </ActiveChildProvider>
+          </RitualDraftProvider>
+        </ActiveChildProvider>
+      </SessionProvider>
     </ServicesProvider>
   );
 }

@@ -12,4 +12,5 @@ export const colors = {
   overline: '#7C8F84',
   dashedBorder: '#B7BCA2',
   moss: '#5E7168',
+  error: '#C25B3F',
 } as const;

@@ -1,7 +1,7 @@
 import type { Child } from '../entities/child';
 
 export interface ChildRepository {
-  findAll(): Promise<Child[]>;
+  findByHouseholdId(householdId: string): Promise<Child[]>;
   findById(id: string): Promise<Child | null>;
   save(child: Child): Promise<void>;
 }

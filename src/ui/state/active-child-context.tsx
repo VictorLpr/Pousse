@@ -1,21 +1,15 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-  type PropsWithChildren,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
 import type { Child } from '@/domain/entities/child';
 import { useServices } from '@/di/services-provider';
 
 interface ActiveChildContextValue {
   readonly activeChild: Child | null;
+  /** Conservé pour les gardes d'écrans ; l'enfant actif est choisi sur la page du foyer. */
   readonly isLoading: boolean;
   selectChild(childId: string): Promise<void>;
   adoptChild(child: Child): void;
-  refreshActiveChild(): Promise<void>;
+  clearActiveChild(): void;
 }
 
 const ActiveChildContext = createContext<ActiveChildContextValue | null>(null);
@@ -23,20 +17,6 @@ const ActiveChildContext = createContext<ActiveChildContextValue | null>(null);
 export function ActiveChildProvider({ children }: PropsWithChildren) {
   const services = useServices();
   const [activeChild, setActiveChild] = useState<Child | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-    services.listChildren.execute().then((allChildren) => {
-      if (isMounted) {
-        setActiveChild(allChildren[0] ?? null);
-        setIsLoading(false);
-      }
-    });
-    return () => {
-      isMounted = false;
-    };
-  }, [services]);
 
   const selectChild = useCallback(
     async (childId: string) => {
@@ -49,18 +29,16 @@ export function ActiveChildProvider({ children }: PropsWithChildren) {
     setActiveChild(child);
   }, []);
 
-  const refreshActiveChild = useCallback(async () => {
-    if (activeChild) {
-      setActiveChild(await services.getChild.execute(activeChild.id));
-    }
-  }, [services, activeChild]);
+  const clearActiveChild = useCallback(() => {
+    setActiveChild(null);
+  }, []);
 
-  return (
-    <ActiveChildContext.Provider
-      value={{ activeChild, isLoading, selectChild, adoptChild, refreshActiveChild }}>
-      {children}
-    </ActiveChildContext.Provider>
+  const value = useMemo(
+    () => ({ activeChild, isLoading: false, selectChild, adoptChild, clearActiveChild }),
+    [activeChild, selectChild, adoptChild, clearActiveChild],
   );
+
+  return <ActiveChildContext.Provider value={value}>{children}</ActiveChildContext.Provider>;
 }
 
 export function useActiveChild(): ActiveChildContextValue {

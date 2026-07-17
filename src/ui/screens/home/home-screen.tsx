@@ -2,6 +2,7 @@ import { Redirect, useRouter } from 'expo-router';
 import { BookOpen, Menu, Trophy } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { AppShell, useInShell } from '@/ui/components/app-shell';
 import { RITUAL_STEP_COUNT } from '@/ui/components/ritual-step-layout';
 import { Avatar } from '@/ui/components/avatar';
 import { Divider } from '@/ui/components/divider';
@@ -30,20 +31,9 @@ export function HomeScreen() {
   };
 
   return (
-    <ScreenContainer>
-      <View style={styles.topBar}>
-        <Text accessibilityRole="header" style={styles.title}>
-          C'est l'heure de Pousse
-        </Text>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Ouvrir les préférences"
-          onPress={() => router.push('/settings')}
-          style={({ pressed }) => pressed && styles.pressed}
-          hitSlop={12}>
-          <Menu size={24} color={colors.ink} strokeWidth={2} />
-        </Pressable>
-      </View>
+    <AppShell route="home">
+      <HomeTopBar />
+
 
       <View style={styles.childZone}>
         <Avatar initial={childInitial(activeChild.firstName)} size={140} />
@@ -82,7 +72,31 @@ export function HomeScreen() {
           <Text style={styles.shortcutLabel}>Défis</Text>
         </Pressable>
       </View>
-    </ScreenContainer>
+    </AppShell>
+  );
+}
+
+/** Titre + accès aux préférences ; le menu disparaît quand la sidebar est là. */
+function HomeTopBar() {
+  const router = useRouter();
+  const inShell = useInShell();
+
+  return (
+    <View style={styles.topBar}>
+      <Text accessibilityRole="header" style={styles.title}>
+        C'est l'heure de Pousse
+      </Text>
+      {!inShell && (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ouvrir les préférences"
+          onPress={() => router.push('/settings')}
+          style={({ pressed }) => pressed && styles.pressed}
+          hitSlop={12}>
+          <Menu size={24} color={colors.ink} strokeWidth={2} />
+        </Pressable>
+      )}
+    </View>
   );
 }
 

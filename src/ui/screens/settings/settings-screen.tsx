@@ -4,11 +4,13 @@ import {
   CircleQuestionMark,
   Image as ImageIcon,
   Lock,
+  LogOut,
   Users,
 } from 'lucide-react-native';
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { useServices } from '@/di/services-provider';
+import { AppShell } from '@/ui/components/app-shell';
 import { Avatar } from '@/ui/components/avatar';
 import { Divider } from '@/ui/components/divider';
 import { ScreenContainer } from '@/ui/components/screen-container';
@@ -16,6 +18,7 @@ import { ScreenHeader } from '@/ui/components/screen-header';
 import { SettingsRow } from '@/ui/components/settings-row';
 import { ageRangeWithYears, childInitial, reminderLabel } from '@/ui/format/child';
 import { useActiveChild } from '@/ui/state/active-child-context';
+import { useSession } from '@/ui/state/session-context';
 import { colors, fonts } from '@/ui/theme';
 
 function showComingSoon() {
@@ -25,7 +28,8 @@ function showComingSoon() {
 export function SettingsScreen() {
   const router = useRouter();
   const services = useServices();
-  const { activeChild, adoptChild, isLoading } = useActiveChild();
+  const { activeChild, adoptChild, clearActiveChild, isLoading } = useActiveChild();
+  const { signOut } = useSession();
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -38,8 +42,14 @@ export function SettingsScreen() {
     adoptChild(await services.setEveningReminder.execute(activeChild.id, enabled));
   };
 
+  const logOut = () => {
+    signOut();
+    clearActiveChild();
+    router.dismissAll();
+  };
+
   return (
-    <ScreenContainer>
+    <AppShell route="settings">
       <ScreenHeader title="Préférences" />
 
       <View style={styles.profileRow}>
@@ -51,7 +61,7 @@ export function SettingsScreen() {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Changer d'enfant"
-          onPress={() => router.push('/children')}
+          onPress={() => router.push('/household')}
           style={({ pressed }) => [styles.switchLink, pressed && styles.pressed]}
           hitSlop={8}>
           <Users size={16} color={colors.inkSoft} strokeWidth={1.9} />
@@ -95,7 +105,14 @@ export function SettingsScreen() {
         accessibilityHint="Bientôt disponible"
         onPress={showComingSoon}
       />
-    </ScreenContainer>
+      <Divider />
+      <SettingsRow
+        icon={<LogOut size={20} color={colors.ink} strokeWidth={1.9} />}
+        title="Se déconnecter"
+        accessibilityHint="Revient à l'écran de bienvenue"
+        onPress={logOut}
+      />
+    </AppShell>
   );
 }
 

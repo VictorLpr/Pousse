@@ -5,6 +5,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { getEmotion } from '@/domain/entities/emotion';
 import type { JournalEntry } from '@/domain/entities/journal-entry';
 import { useServices } from '@/di/services-provider';
+import { AppShell } from '@/ui/components/app-shell';
 import { Divider } from '@/ui/components/divider';
 import { EmotionIcon } from '@/ui/components/emotion-icon';
 import { OverlineLabel } from '@/ui/components/overline-label';
@@ -37,7 +38,7 @@ export function JournalScreen() {
   }
 
   return (
-    <ScreenContainer>
+    <AppShell route="journal">
       <ScreenHeader
         title={`Le journal de ${activeChild.firstName}`}
         subtitle={`${entries.length} souvenir${entries.length > 1 ? 's' : ''} gardé${entries.length > 1 ? 's' : ''}`}
@@ -73,7 +74,7 @@ export function JournalScreen() {
           Aucun souvenir pour l'instant. Le rituel du soir remplira ce journal !
         </Text>
       )}
-    </ScreenContainer>
+    </AppShell>
   );
 }
 

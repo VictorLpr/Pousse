@@ -109,6 +109,13 @@ tiny dynamic values).
 
 ## 5. Screen patterns & pitfalls
 
+- Session (parent account + foyer) lives in `useSession()`; the active child in
+  `useActiveChild()`. Both are in-memory: a full reload logs the user out — expected.
+  Screens behind login guard with `if (!household) return <Redirect href="/" />` (or
+  `!activeChild` for child-scoped screens). Children always belong to a household
+  (`householdId`); list them via `listChildren.execute(household.id)`.
+- Passwords are stored in plain text in the in-memory adapter on purpose (front-only
+  demo); hashing (Argon2) arrives with the API. Don't add crypto client-side.
 - Screens needing the active child use `useActiveChild()` and must handle **both** states:
   `isLoading` → render an empty `ScreenContainer` (never redirect while loading — this
   broke deep links once), then `!activeChild` → `<Redirect href="/" />`.

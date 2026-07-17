@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { Trophy } from '@/domain/entities/trophy';
 import type { WeeklyChallenge } from '@/domain/entities/weekly-challenge';
 import { useServices } from '@/di/services-provider';
+import { AppShell } from '@/ui/components/app-shell';
 import { Divider } from '@/ui/components/divider';
 import { OverlineLabel } from '@/ui/components/overline-label';
 import { ScreenContainer } from '@/ui/components/screen-container';
@@ -53,7 +54,7 @@ export function ChallengesScreen() {
   const earnedCount = trophies.filter((trophy) => trophy.status === 'earned').length;
 
   return (
-    <ScreenContainer>
+    <AppShell route="challenges">
       <ScreenHeader title={`Les défis de ${activeChild.firstName}`} />
 
       {challenge && (
@@ -119,7 +120,7 @@ export function ChallengesScreen() {
           );
         })}
       </View>
-    </ScreenContainer>
+    </AppShell>
   );
 }
 

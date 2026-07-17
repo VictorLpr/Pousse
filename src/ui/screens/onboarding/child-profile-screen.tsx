@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Camera, ChevronRight } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -13,7 +13,7 @@ import { OverlineLabel } from '@/ui/components/overline-label';
 import { ScreenContainer } from '@/ui/components/screen-container';
 import { ScreenHeader } from '@/ui/components/screen-header';
 import { ageRangeLabel, childInitial } from '@/ui/format/child';
-import { useActiveChild } from '@/ui/state/active-child-context';
+import { useSession } from '@/ui/state/session-context';
 import { colors, fonts } from '@/ui/theme';
 
 const DEFAULT_REMINDER_TIME = '20:00';
@@ -21,24 +21,33 @@ const DEFAULT_REMINDER_TIME = '20:00';
 export function ChildProfileScreen() {
   const router = useRouter();
   const services = useServices();
-  const { adoptChild } = useActiveChild();
+  const { household } = useSession();
+  const { from } = useLocalSearchParams<{ from?: string }>();
 
   const [firstName, setFirstName] = useState('');
   const [ageRange, setAgeRange] = useState<AgeRange>('7-9');
   const [isSaving, setIsSaving] = useState(false);
+
+  if (!household) {
+    return <Redirect href="/" />;
+  }
 
   const canSubmit = firstName.trim().length > 0 && !isSaving;
 
   const createProfile = async () => {
     setIsSaving(true);
     try {
-      const child = await services.createChildProfile.execute({
+      await services.createChildProfile.execute({
+        householdId: household.id,
         firstName,
         ageRange,
         reminderTime: DEFAULT_REMINDER_TIME,
       });
-      adoptChild(child);
-      router.replace('/home');
+      if (from === 'foyer') {
+        router.back();
+      } else {
+        router.replace('/household');
+      }
     } finally {
       setIsSaving(false);
     }
@@ -46,7 +55,11 @@ export function ChildProfileScreen() {
 
   return (
     <ScreenContainer>
-      <ScreenHeader title="Pour qui ce soir ?" subtitle="On crée le profil de l'enfant" />
+      <ScreenHeader
+        title="Un nouvel enfant"
+        subtitle={`On crée son profil dans le foyer ${household.name}`}
+        showBackButton={from === 'foyer'}
+      />
 
       <View style={styles.avatarZone}>
         <View>

@@ -36,11 +36,13 @@ adaptateurs HTTP dans `src/infrastructure/`, puis les substituer dans
 
 ## Écrans
 
-- Onboarding : bienvenue, création du profil enfant
-- Accueil : enfant actif, série de soirs, lancement du rituel
+- Onboarding : bienvenue, inscription (email + mot de passe), création du foyer, profil enfant
+- Connexion : email + mot de passe (compte démo : `parent@demo.fr` / `pousse123`)
+- Foyer : page d'accueil listant les enfants du foyer, sélection de l'enfant du soir
+- Accueil enfant : série de soirs, lancement du rituel
 - Rituel du soir (4 étapes) : émotion → fierté → photo → récap, puis écran « Bravo »
 - Journal des souvenirs, Défis & trophées, Galerie
-- Préférences et changement d'enfant
+- Préférences (rappel, déconnexion) et changement d'enfant via la page foyer
 
 ## Accessibilité
 

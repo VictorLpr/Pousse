@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { ChevronLeft } from 'lucide-react-native';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useInShell } from '@/ui/components/app-shell';
 import { colors, fonts } from '@/ui/theme';
 
 interface ScreenHeaderProps {
@@ -12,10 +13,11 @@ interface ScreenHeaderProps {
 
 export function ScreenHeader({ title, subtitle, showBackButton = true }: ScreenHeaderProps) {
   const router = useRouter();
+  const inShell = useInShell();
 
   return (
     <View style={styles.header}>
-      {showBackButton && (
+      {showBackButton && !inShell && (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Revenir en arrière"

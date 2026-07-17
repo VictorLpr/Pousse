@@ -10,6 +10,7 @@ export interface EveningReminder {
 
 export interface Child {
   readonly id: string;
+  readonly householdId: string;
   readonly firstName: string;
   readonly ageRange: AgeRange;
   readonly reminder: EveningReminder;

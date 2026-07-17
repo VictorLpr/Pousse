@@ -1,12 +1,32 @@
 import type { Child } from '@/domain/entities/child';
+import type { Household } from '@/domain/entities/household';
 import type { JournalEntry } from '@/domain/entities/journal-entry';
+import type { ParentAccount } from '@/domain/entities/parent-account';
 import type { Trophy } from '@/domain/entities/trophy';
 import type { WeeklyChallenge } from '@/domain/entities/weekly-challenge';
 
 export const SEED_PHOTO_URI = 'memory://photo-placeholder';
 
+/** Compte de démonstration affiché sur l'écran de connexion. */
+export const DEMO_EMAIL = 'parent@demo.fr';
+export const DEMO_PASSWORD = 'pousse123';
+
+const HOUSEHOLD_ID = 'household-dupont';
 const LEA_ID = 'child-lea';
 const TOM_ID = 'child-tom';
+
+export const seedHouseholds: readonly Household[] = [
+  { id: HOUSEHOLD_ID, name: 'Dupont' },
+];
+
+export const seedParentAccounts: readonly ParentAccount[] = [
+  {
+    id: 'parent-demo',
+    email: DEMO_EMAIL,
+    password: DEMO_PASSWORD,
+    householdId: HOUSEHOLD_ID,
+  },
+];
 
 function daysAgo(days: number): Date {
   const date = new Date();
@@ -18,6 +38,7 @@ function daysAgo(days: number): Date {
 export const seedChildren: readonly Child[] = [
   {
     id: LEA_ID,
+    householdId: HOUSEHOLD_ID,
     firstName: 'Léa',
     ageRange: '7-9',
     reminder: { time: '20:00', enabled: true },
@@ -25,6 +46,7 @@ export const seedChildren: readonly Child[] = [
   },
   {
     id: TOM_ID,
+    householdId: HOUSEHOLD_ID,
     firstName: 'Tom',
     ageRange: '4-6',
     reminder: { time: '20:00', enabled: true },

@@ -8,8 +8,10 @@ export class InMemoryChildRepository implements ChildRepository {
     seed.forEach((child) => this.childrenById.set(child.id, child));
   }
 
-  async findAll(): Promise<Child[]> {
-    return [...this.childrenById.values()];
+  async findByHouseholdId(householdId: string): Promise<Child[]> {
+    return [...this.childrenById.values()].filter(
+      (child) => child.householdId === householdId,
+    );
   }
 
   async findById(id: string): Promise<Child | null> {

@@ -6,6 +6,7 @@ import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { getEmotion } from '@/domain/entities/emotion';
 import type { JournalEntry } from '@/domain/entities/journal-entry';
 import { useServices } from '@/di/services-provider';
+import { AppShell } from '@/ui/components/app-shell';
 import { OverlineLabel } from '@/ui/components/overline-label';
 import { ScreenContainer } from '@/ui/components/screen-container';
 import { ScreenHeader } from '@/ui/components/screen-header';
@@ -41,7 +42,7 @@ export function GalleryScreen() {
   const monthLabel = photoCount > 0 ? formatMonth(entriesWithPhoto[0].createdAt) : null;
 
   return (
-    <ScreenContainer>
+    <AppShell route="gallery">
       <ScreenHeader
         title={`Galerie de ${activeChild.firstName}`}
         subtitle={`${photoCount} photo${photoCount > 1 ? 's' : ''} gardée${photoCount > 1 ? 's' : ''}`}
@@ -85,7 +86,7 @@ export function GalleryScreen() {
           <Text style={[styles.caption, styles.addCaption]}>Ajouter</Text>
         </Pressable>
       </View>
-    </ScreenContainer>
+    </AppShell>
   );
 }
 

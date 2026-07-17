@@ -29,13 +29,13 @@ export function WelcomeScreen() {
       <View style={styles.actions}>
         <AppButton
           label="Commencer"
-          accessibilityHint="Crée le profil de votre enfant"
-          onPress={() => router.push('/onboarding/child-profile')}
+          accessibilityHint="Crée votre compte et votre foyer"
+          onPress={() => router.push('/onboarding/register')}
         />
         <AppButton
           label="J'ai déjà un compte"
           variant="ghost"
-          onPress={() => router.replace('/home')}
+          onPress={() => router.push('/login')}
         />
       </View>
     </ScreenContainer>
