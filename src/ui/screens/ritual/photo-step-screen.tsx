@@ -34,7 +34,8 @@ export function PhotoStepScreen() {
         accessibilityRole="button"
         accessibilityLabel="Prendre une photo"
         onPress={continueWithPhoto}
-        style={({ pressed }) => [styles.option, pressed && styles.pressed]}>
+        style={({ pressed }) => [styles.option, pressed && styles.pressed]}
+      >
         <Camera size={26} color={colors.ink} strokeWidth={1.8} />
         <Text style={styles.optionLabel}>Prendre une photo</Text>
         <ChevronRight size={18} color={colors.overline} strokeWidth={2} />
@@ -46,7 +47,8 @@ export function PhotoStepScreen() {
         accessibilityRole="button"
         accessibilityLabel="Choisir dans la galerie"
         onPress={continueWithPhoto}
-        style={({ pressed }) => [styles.option, pressed && styles.pressed]}>
+        style={({ pressed }) => [styles.option, pressed && styles.pressed]}
+      >
         <ImageIcon size={26} color={colors.ink} strokeWidth={1.8} />
         <Text style={styles.optionLabel}>Choisir dans la galerie</Text>
         <ChevronRight size={18} color={colors.overline} strokeWidth={2} />

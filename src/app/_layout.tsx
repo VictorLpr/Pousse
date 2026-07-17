@@ -41,13 +41,13 @@ export default function RootLayout() {
       <SessionProvider>
         <ActiveChildProvider>
           <RitualDraftProvider>
-          <StatusBar style="dark" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: colors.background },
-            }}
-          />
+            <StatusBar style="dark" />
+            <Stack
+              screenOptions={{
+                headerShown: false,
+                contentStyle: { backgroundColor: colors.background },
+              }}
+            />
           </RitualDraftProvider>
         </ActiveChildProvider>
       </SessionProvider>

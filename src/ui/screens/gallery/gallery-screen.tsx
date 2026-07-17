@@ -59,7 +59,8 @@ export function GalleryScreen() {
               key={entry.id}
               accessible
               accessibilityLabel={`Photo souvenir, ${emotionLabel}, ${dateLabel}`}
-              style={styles.item}>
+              style={styles.item}
+            >
               <View
                 style={[
                   styles.photo,
@@ -77,9 +78,13 @@ export function GalleryScreen() {
           accessibilityLabel="Ajouter une photo"
           accessibilityHint="Bientôt disponible"
           onPress={() =>
-            Alert.alert('Bientôt disponible', "L'ajout de photos arrive dans une prochaine version.")
+            Alert.alert(
+              'Bientôt disponible',
+              "L'ajout de photos arrive dans une prochaine version.",
+            )
           }
-          style={({ pressed }) => [styles.item, pressed && styles.pressed]}>
+          style={({ pressed }) => [styles.item, pressed && styles.pressed]}
+        >
           <View style={[styles.photo, styles.addTile]}>
             <Plus size={26} color={colors.moss} strokeWidth={1.8} />
           </View>

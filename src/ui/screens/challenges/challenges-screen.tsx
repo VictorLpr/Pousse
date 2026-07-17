@@ -1,5 +1,13 @@
 import { Redirect } from 'expo-router';
-import { Check, Heart, Lock, PenTool, Star, Trophy as TrophyIcon, Users } from 'lucide-react-native';
+import {
+  Check,
+  Heart,
+  Lock,
+  PenTool,
+  Star,
+  Trophy as TrophyIcon,
+  Users,
+} from 'lucide-react-native';
 import { useEffect, useState, type ComponentType } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
@@ -64,7 +72,9 @@ export function ChallengesScreen() {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={
-              challenge.completedTogether ? 'Défi relevé ensemble' : "Marquer le défi comme fait ensemble"
+              challenge.completedTogether
+                ? 'Défi relevé ensemble'
+                : 'Marquer le défi comme fait ensemble'
             }
             accessibilityState={{ disabled: challenge.completedTogether }}
             disabled={challenge.completedTogether}
@@ -73,7 +83,8 @@ export function ChallengesScreen() {
               styles.challengeButton,
               challenge.completedTogether && styles.challengeButtonDone,
               pressed && !challenge.completedTogether && styles.pressed,
-            ]}>
+            ]}
+          >
             <Check size={17} color={colors.ink} strokeWidth={2.4} />
             <Text style={styles.challengeButtonLabel}>
               {challenge.completedTogether ? 'Défi relevé ensemble !' : "On l'a fait ensemble"}
@@ -105,8 +116,11 @@ export function ChallengesScreen() {
               accessibilityLabel={
                 isEarned ? `Trophée gagné : ${trophy.name}` : 'Trophée à venir, encore verrouillé'
               }
-              style={styles.trophyCell}>
-              <View style={[styles.trophyCircle, isEarned ? styles.earnedCircle : styles.lockedCircle]}>
+              style={styles.trophyCell}
+            >
+              <View
+                style={[styles.trophyCircle, isEarned ? styles.earnedCircle : styles.lockedCircle]}
+              >
                 {isEarned ? (
                   <Icon size={26} color={colors.ink} strokeWidth={1.8} />
                 ) : (

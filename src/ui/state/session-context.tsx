@@ -1,4 +1,11 @@
-import { createContext, useCallback, useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useMemo,
+  useState,
+  type PropsWithChildren,
+} from 'react';
 
 import type { Household } from '@/domain/entities/household';
 import type { ParentAccount } from '@/domain/entities/parent-account';

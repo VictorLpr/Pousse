@@ -44,7 +44,8 @@ export function SettingsRow({
       accessibilityLabel={title}
       accessibilityHint={accessibilityHint}
       onPress={onPress}
-      style={({ pressed }) => [styles.row, pressed && styles.pressed]}>
+      style={({ pressed }) => [styles.row, pressed && styles.pressed]}
+    >
       {content}
     </Pressable>
   );

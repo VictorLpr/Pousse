@@ -63,7 +63,8 @@ export function SettingsScreen() {
           accessibilityLabel="Changer d'enfant"
           onPress={() => router.push('/household')}
           style={({ pressed }) => [styles.switchLink, pressed && styles.pressed]}
-          hitSlop={8}>
+          hitSlop={8}
+        >
           <Users size={16} color={colors.inkSoft} strokeWidth={1.9} />
           <Text style={styles.switchLinkLabel}>Changer</Text>
         </Pressable>

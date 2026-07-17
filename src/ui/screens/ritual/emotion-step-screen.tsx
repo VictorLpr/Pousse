@@ -14,10 +14,7 @@ export function EmotionStepScreen() {
 
   return (
     <RitualStepLayout step={1} title="Comment tu te sens ?" subtitle="Choisis ton émotion du soir">
-      <View
-        accessibilityRole="radiogroup"
-        accessibilityLabel="Émotion du soir"
-        style={styles.grid}>
+      <View accessibilityRole="radiogroup" accessibilityLabel="Émotion du soir" style={styles.grid}>
         {EMOTIONS.map((emotion) => {
           const selected = emotion.id === emotionId;
           return (
@@ -27,7 +24,8 @@ export function EmotionStepScreen() {
               accessibilityLabel={`Émotion ${emotion.label}`}
               accessibilityState={{ selected }}
               onPress={() => setEmotion(emotion.id)}
-              style={styles.cell}>
+              style={styles.cell}
+            >
               <View style={[styles.iconHalo, selected && styles.selectedHalo]}>
                 <EmotionIcon emotionId={emotion.id} size={32} />
               </View>

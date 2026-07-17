@@ -34,7 +34,6 @@ export function HomeScreen() {
     <AppShell route="home">
       <HomeTopBar />
 
-
       <View style={styles.childZone}>
         <Avatar initial={childInitial(activeChild.firstName)} size={140} />
         <Text style={styles.childName}>{activeChild.firstName}</Text>
@@ -48,7 +47,8 @@ export function HomeScreen() {
         accessibilityLabel="Commencer notre moment du soir"
         accessibilityHint={`${RITUAL_STEP_COUNT} étapes, environ 5 minutes`}
         onPress={startRitual}
-        style={({ pressed }) => [styles.ritualCta, pressed && styles.pressed]}>
+        style={({ pressed }) => [styles.ritualCta, pressed && styles.pressed]}
+      >
         <Text style={styles.ritualTitle}>Notre moment du soir</Text>
         <Text style={styles.ritualSubtitle}>{RITUAL_STEP_COUNT} étapes · environ 5 min</Text>
       </Pressable>
@@ -58,7 +58,8 @@ export function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel={`Ouvrir le journal de ${activeChild.firstName}`}
           onPress={() => router.push('/journal')}
-          style={({ pressed }) => [styles.shortcut, pressed && styles.pressed]}>
+          style={({ pressed }) => [styles.shortcut, pressed && styles.pressed]}
+        >
           <BookOpen size={26} color={colors.ink} strokeWidth={1.9} />
           <Text style={styles.shortcutLabel}>Journal</Text>
         </Pressable>
@@ -67,7 +68,8 @@ export function HomeScreen() {
           accessibilityRole="button"
           accessibilityLabel={`Ouvrir les défis de ${activeChild.firstName}`}
           onPress={() => router.push('/challenges')}
-          style={({ pressed }) => [styles.shortcut, pressed && styles.pressed]}>
+          style={({ pressed }) => [styles.shortcut, pressed && styles.pressed]}
+        >
           <Trophy size={26} color={colors.ink} strokeWidth={1.9} />
           <Text style={styles.shortcutLabel}>Défis</Text>
         </Pressable>
@@ -92,7 +94,8 @@ function HomeTopBar() {
           accessibilityLabel="Ouvrir les préférences"
           onPress={() => router.push('/settings')}
           style={({ pressed }) => pressed && styles.pressed}
-          hitSlop={12}>
+          hitSlop={12}
+        >
           <Menu size={24} color={colors.ink} strokeWidth={2} />
         </Pressable>
       )}

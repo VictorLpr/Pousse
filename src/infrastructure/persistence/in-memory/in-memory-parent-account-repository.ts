@@ -9,9 +9,7 @@ export class InMemoryParentAccountRepository implements ParentAccountRepository 
   }
 
   async findByEmail(email: string): Promise<ParentAccount | null> {
-    const account = [...this.accountsById.values()].find(
-      (candidate) => candidate.email === email,
-    );
+    const account = [...this.accountsById.values()].find((candidate) => candidate.email === email);
     return account ?? null;
   }
 

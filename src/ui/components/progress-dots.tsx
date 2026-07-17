@@ -13,12 +13,11 @@ export function ProgressDots({ stepCount, currentStep }: ProgressDotsProps) {
     <View
       accessibilityRole="progressbar"
       accessibilityLabel={`Étape ${currentStep} sur ${stepCount}`}
-      style={styles.row}>
+      style={styles.row}
+    >
       {Array.from({ length: stepCount }, (_, index) => {
         const isCurrent = index + 1 === currentStep;
-        return (
-          <View key={index} style={[styles.dot, isCurrent && styles.currentDot]} />
-        );
+        return <View key={index} style={[styles.dot, isCurrent && styles.currentDot]} />;
       })}
     </View>
   );

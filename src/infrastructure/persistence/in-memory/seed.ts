@@ -15,9 +15,7 @@ const HOUSEHOLD_ID = 'household-dupont';
 const LEA_ID = 'child-lea';
 const TOM_ID = 'child-tom';
 
-export const seedHouseholds: readonly Household[] = [
-  { id: HOUSEHOLD_ID, name: 'Dupont' },
-];
+export const seedHouseholds: readonly Household[] = [{ id: HOUSEHOLD_ID, name: 'Dupont' }];
 
 export const seedParentAccounts: readonly ParentAccount[] = [
   {

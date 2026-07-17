@@ -101,7 +101,8 @@ export function ChildProfileScreen() {
         accessibilityRole="button"
         accessibilityLabel={`Rendez-vous du soir : tous les soirs à ${DEFAULT_REMINDER_TIME}`}
         accessibilityHint="Le choix de l'horaire arrive bientôt"
-        style={styles.reminderRow}>
+        style={styles.reminderRow}
+      >
         <Text style={styles.reminderText}>Tous les soirs · {DEFAULT_REMINDER_TIME}</Text>
         <ChevronRight size={18} color={colors.inkSoft} strokeWidth={2} />
       </Pressable>

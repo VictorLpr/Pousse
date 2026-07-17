@@ -56,7 +56,8 @@ export function HouseholdHomeScreen() {
             accessibilityRole="button"
             accessibilityLabel={`Commencer la soirée avec ${child.firstName}, ${ageRangeWithYears(child.ageRange)}`}
             onPress={() => chooseChild(child.id)}
-            style={({ pressed }) => [styles.childRow, pressed && styles.pressed]}>
+            style={({ pressed }) => [styles.childRow, pressed && styles.pressed]}
+          >
             <Avatar initial={childInitial(child.firstName)} size={56} />
             <View style={styles.childTexts}>
               <Text style={styles.childName}>{child.firstName}</Text>
@@ -81,7 +82,8 @@ export function HouseholdHomeScreen() {
         accessibilityRole="button"
         accessibilityLabel="Ajouter un enfant"
         onPress={() => router.push('/onboarding/child-profile?from=foyer')}
-        style={({ pressed }) => [styles.addRow, pressed && styles.pressed]}>
+        style={({ pressed }) => [styles.addRow, pressed && styles.pressed]}
+      >
         <Plus size={22} color={colors.moss} strokeWidth={1.9} />
         <Text style={styles.addLabel}>Ajouter un enfant</Text>
       </Pressable>

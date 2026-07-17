@@ -17,7 +17,8 @@ export function ChoiceChip({ label, selected, onPress, accessibilityLabel }: Cho
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={[styles.chip, selected && styles.selectedChip]}>
+      style={[styles.chip, selected && styles.selectedChip]}
+    >
       <Text style={[styles.label, selected && styles.selectedLabel]}>{label}</Text>
     </Pressable>
   );

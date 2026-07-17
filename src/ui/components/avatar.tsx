@@ -16,7 +16,8 @@ export function Avatar({ initial, size = 52, backgroundColor = colors.peach }: A
       style={[
         styles.circle,
         { width: size, height: size, borderRadius: size / 2, backgroundColor },
-      ]}>
+      ]}
+    >
       <Text style={[styles.initial, { fontSize: size * 0.52 }]}>{initial}</Text>
     </View>
   );

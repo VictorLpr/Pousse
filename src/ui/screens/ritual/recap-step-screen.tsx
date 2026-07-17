@@ -62,10 +62,7 @@ export function RecapStepScreen() {
       </View>
 
       {photoUri ? (
-        <View
-          accessible
-          accessibilityLabel="Photo du jour ajoutée"
-          style={styles.photoPlaceholder}>
+        <View accessible accessibilityLabel="Photo du jour ajoutée" style={styles.photoPlaceholder}>
           <ImageIcon size={30} color={colors.overline} strokeWidth={1.8} />
         </View>
       ) : null}

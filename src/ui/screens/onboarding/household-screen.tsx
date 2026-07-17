@@ -55,9 +55,7 @@ export function HouseholdScreen() {
         style={styles.input}
       />
 
-      <Text style={styles.helper}>
-        Vous ajouterez ensuite le profil de votre premier enfant.
-      </Text>
+      <Text style={styles.helper}>Vous ajouterez ensuite le profil de votre premier enfant.</Text>
 
       {errorMessage ? (
         <Text accessibilityRole="alert" style={styles.error}>

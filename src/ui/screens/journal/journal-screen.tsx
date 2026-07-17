@@ -52,7 +52,8 @@ export function JournalScreen() {
           <View
             accessible
             accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, émotion ${getEmotion(entry.emotionId).label} : ${entry.prideText}`}
-            style={styles.entry}>
+            style={styles.entry}
+          >
             <View style={styles.entryIcon}>
               <EmotionIcon emotionId={entry.emotionId} size={26} />
             </View>

@@ -24,7 +24,11 @@ export function RitualDoneScreen() {
   const remainingEvenings = eveningsUntilNextTrophy(activeChild);
 
   return (
-    <ScreenContainer scrollable={false} backgroundColor={colors.coral} contentStyle={styles.content}>
+    <ScreenContainer
+      scrollable={false}
+      backgroundColor={colors.coral}
+      contentStyle={styles.content}
+    >
       <View style={styles.celebration}>
         <View style={styles.checkCircle}>
           <Check size={52} color={colors.ink} strokeWidth={2} />

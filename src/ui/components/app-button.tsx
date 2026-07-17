@@ -35,7 +35,8 @@ export function AppButton({
         variantStyles[variant],
         disabled && styles.disabled,
         pressed && !disabled && styles.pressed,
-      ]}>
+      ]}
+    >
       {icon ? <View style={styles.icon}>{icon}</View> : null}
       <Text style={[styles.label, variant === 'ghost' && styles.ghostLabel]}>{label}</Text>
     </Pressable>

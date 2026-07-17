@@ -87,7 +87,8 @@ export function AppShell({ route, children }: AppShellProps) {
                 accessibilityRole="button"
                 accessibilityLabel={`Enfant actif : ${activeChild.firstName}. Changer d'enfant`}
                 onPress={() => router.push('/household')}
-                style={({ pressed }) => [styles.childSwitcher, pressed && styles.pressed]}>
+                style={({ pressed }) => [styles.childSwitcher, pressed && styles.pressed]}
+              >
                 <Avatar initial={childInitial(activeChild.firstName)} size={34} />
                 <Text style={styles.childName}>{activeChild.firstName}</Text>
                 <ChevronDown size={16} color={colors.inkSoft} strokeWidth={2} />
@@ -111,7 +112,8 @@ export function AppShell({ route, children }: AppShellProps) {
                       styles.navItem,
                       selected && styles.navItemActive,
                       pressed && styles.pressed,
-                    ]}>
+                    ]}
+                  >
                     <Icon size={20} color={colors.ink} strokeWidth={1.9} />
                     <Text style={[styles.navLabel, selected && styles.navLabelActive]}>
                       {item.label}
@@ -124,7 +126,8 @@ export function AppShell({ route, children }: AppShellProps) {
                 accessibilityRole="button"
                 accessibilityLabel="Commencer le rituel du soir"
                 onPress={startRitual}
-                style={({ pressed }) => [styles.navItem, pressed && styles.pressed]}>
+                style={({ pressed }) => [styles.navItem, pressed && styles.pressed]}
+              >
                 <Sprout size={20} color={colors.ink} strokeWidth={1.9} />
                 <Text style={styles.navLabel}>Le rituel</Text>
               </Pressable>
@@ -139,7 +142,8 @@ export function AppShell({ route, children }: AppShellProps) {
                 styles.navItem,
                 route === 'settings' && styles.navItemActive,
                 pressed && styles.pressed,
-              ]}>
+              ]}
+            >
               <Settings size={20} color={colors.ink} strokeWidth={1.9} />
               <Text style={[styles.navLabel, route === 'settings' && styles.navLabelActive]}>
                 Préférences
@@ -151,7 +155,8 @@ export function AppShell({ route, children }: AppShellProps) {
             style={styles.main}
             contentContainerStyle={styles.mainContent}
             keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}>
+            showsVerticalScrollIndicator={false}
+          >
             {children}
           </ScrollView>
         </View>

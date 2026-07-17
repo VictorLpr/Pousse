@@ -9,9 +9,7 @@ export class InMemoryChildRepository implements ChildRepository {
   }
 
   async findByHouseholdId(householdId: string): Promise<Child[]> {
-    return [...this.childrenById.values()].filter(
-      (child) => child.householdId === householdId,
-    );
+    return [...this.childrenById.values()].filter((child) => child.householdId === householdId);
   }
 
   async findById(id: string): Promise<Child | null> {

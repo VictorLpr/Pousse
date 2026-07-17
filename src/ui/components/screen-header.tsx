@@ -23,7 +23,8 @@ export function ScreenHeader({ title, subtitle, showBackButton = true }: ScreenH
           accessibilityLabel="Revenir en arrière"
           onPress={() => router.back()}
           style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
-          hitSlop={12}>
+          hitSlop={12}
+        >
           <ChevronLeft size={26} color={colors.ink} strokeWidth={2} />
         </Pressable>
       )}
