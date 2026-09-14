@@ -1,10 +1,10 @@
 import Fastify, { type FastifyInstance } from 'fastify';
 
-import { authModule } from '@/modules/auth';
-import { defisModule } from '@/modules/defis';
-import { journalModule } from '@/modules/journal';
-import { lettresModule } from '@/modules/lettres';
-import { souvenirsModule } from '@/modules/souvenirs';
+import { authModule } from '#/modules/auth/index.js';
+import { defisModule } from '#/modules/defis/index.js';
+import { journalModule } from '#/modules/journal/index.js';
+import { lettresModule } from '#/modules/lettres/index.js';
+import { souvenirsModule } from '#/modules/souvenirs/index.js';
 
 /**
  * Construit l'instance Fastify et enregistre chaque module comme un plugin
