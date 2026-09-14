@@ -1,0 +1,144 @@
+<style>
+#erd4 svg.erDiagram .divider path { stroke-opacity: 0.5; }
+#erd4 svg.erDiagram .row-rect-odd path,
+#erd4 svg.erDiagram .row-rect-odd rect,
+#erd4 svg.erDiagram .row-rect-even path,
+#erd4 svg.erDiagram .row-rect-even rect { stroke: none !important; }
+</style>
+<div id="erd4"></div>
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+await document.fonts.ready;
+mermaid.initialize({
+  startOnLoad: false,
+  theme: 'base',
+  fontFamily: '"Anthropic Sans", sans-serif',
+  themeVariables: {
+    darkMode: dark,
+    fontSize: '13px',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    lineColor: dark ? '#9c9a92' : '#73726c',
+    textColor: dark ? '#c2c0b6' : '#3d3d3a',
+  },
+});
+const { svg } = await mermaid.render('erd4-svg', `erDiagram
+  PARENT ||--o{ ENFANT : "gerer (0,n)/(1,1)"
+  ENFANT ||--|| CONSENTEMENT : "consentir (1,1)/(1,1)"
+  ENFANT ||--o{ ENTREE_JOURNAL : "relater (0,n)/(1,1)"
+  EMOTION ||--o{ ENTREE_JOURNAL : "exprimer (0,n)/(1,1)"
+  ENTREE_JOURNAL ||--o| PHOTO : "illustrer (0,1)/(1,1)"
+  ENFANT ||--o{ DEFI_ENFANT : "proposer (0,n)"
+  DEFI ||--o{ DEFI_ENFANT : "proposer (0,n)"
+  ENFANT ||--o{ OBTENTION : "obtenir (0,n)"
+  BADGE ||--o{ OBTENTION : "obtenir (0,n)"
+  ENFANT ||--o{ LETTRE_FIERTE : "concerner (0,n)/(1,1)"
+  PARENT {
+    UUID id PK
+    AN email "unique"
+    AN mdp "hashe"
+    A prenom
+    AN nom_famille
+    B email_verifie
+    DH date_creation
+    DH derniere_connexion
+  }
+  ENFANT {
+    UUID id PK
+    A prenom
+    D date_naissance
+    AN avatar
+    DH date_creation
+    N age "calcule"
+    E tranche_age "calcule"
+  }
+  CONSENTEMENT {
+    UUID id PK
+    DH date
+    AN version_politique
+    B atteste_representant
+  }
+  EMOTION {
+    N id PK
+    A code "unique"
+    A libelle
+    AN emoji
+    AN couleur
+  }
+  ENTREE_JOURNAL {
+    UUID id PK
+    D date
+    AN texte
+    E statut
+    DH cree_le
+    DH modifie_le
+    DH modifiable_jusqu_a "calcule"
+  }
+  PHOTO {
+    UUID id PK
+    AN cle_stockage
+    AN mime
+  }
+  DEFI {
+    N id PK
+    AN titre
+    AN description
+    E tranche_age
+    AN categorie
+  }
+  DEFI_ENFANT {
+    UUID id PK
+    AN semaine
+    D date_debut
+    D date_fin
+    E statut
+    DH date_choix
+    DH date_validation
+  }
+  BADGE {
+    N id PK
+    A code "unique"
+    AN libelle
+    AN description
+    AN icone
+    AN condition
+  }
+  OBTENTION {
+    DH date
+    UUID declencheur
+  }
+  LETTRE_FIERTE {
+    UUID id PK
+    D mois "AAAA-MM"
+    AN contenu
+    E statut
+    DH genere_le
+    AN modele_ia
+    UUID id_anonyme
+  }`);
+document.getElementById('erd4').innerHTML = svg;
+
+document.querySelectorAll('#erd4 svg.erDiagram .node').forEach(node => {
+  const firstPath = node.querySelector('path[d]');
+  if (!firstPath) return;
+  const d = firstPath.getAttribute('d');
+  const nums = d.match(/-?[\d.]+/g)?.map(Number);
+  if (!nums || nums.length < 8) return;
+  const xs = [nums[0], nums[2], nums[4], nums[6]];
+  const ys = [nums[1], nums[3], nums[5], nums[7]];
+  const x = Math.min(...xs), y = Math.min(...ys);
+  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+  rect.setAttribute('x', x); rect.setAttribute('y', y);
+  rect.setAttribute('width', w); rect.setAttribute('height', h);
+  rect.setAttribute('rx', '8');
+  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+  }
+  firstPath.replaceWith(rect);
+});
+
+document.querySelectorAll('#erd4 svg.erDiagram .row-rect-odd path, #erd4 svg.erDiagram .row-rect-even path').forEach(p => {
+  p.setAttribute('stroke', 'none');
+});
+</script>
