@@ -1,52 +1,30 @@
 # Pousse 🌱
 
-Le rituel du soir, ensemble — application mobile (React Native + Expo) issue de la maquette « Cocon ».
+Le rituel du soir, ensemble — monorepo npm workspaces (ADR-0009) contenant le
+client mobile et l'API.
+
+```
+apps/
+  mobile/   React Native + Expo, issu de la maquette « Cocon » — voir apps/mobile/README.md
+  api/      API Fastify + Drizzle + BetterAuth (scaffold) — voir apps/api/AGENTS.md
+docs/
+  adr/            décisions d'architecture
+  modelisation/   modèle conceptuel/logique de données (Merise)
+```
 
 ## Lancer le projet
 
 ```bash
 npm install
-npm start          # puis choisir Android / iOS / web
+npm run mobile:web   # client Expo (web) — ou npm run mobile pour choisir Android/iOS/web
+npm run api          # API en mode watch (scaffold, pas encore de route métier)
 ```
 
-## Architecture hexagonale
+## Documentation
 
-Le code applique une séparation stricte ports / adaptateurs. Les dépendances pointent
-toujours vers le domaine, jamais l'inverse :
-
-```
-src/
-├── domain/           # Cœur métier, sans dépendance externe
-│   ├── entities/     # Child, JournalEntry, Emotion, WeeklyChallenge, Trophy
-│   └── ports/        # Interfaces : repositories, IdGenerator, Clock
-├── application/
-│   └── use-cases/    # CreateChildProfile, CompleteEveningRitual, GetJournalEntries…
-├── infrastructure/   # Adaptateurs concrets
-│   ├── persistence/in-memory/   # Repositories en mémoire + données de démo
-│   ├── ids/          # SequentialIdGenerator
-│   └── time/         # SystemClock
-├── di/               # Racine de composition (container) + provider React
-├── ui/               # Présentation : thème, composants, écrans, état
-└── app/              # Routes expo-router (fichiers minces qui pointent vers ui/screens)
-```
-
-**Brancher l'API plus tard** : implémenter les ports de `src/domain/ports/` avec des
-adaptateurs HTTP dans `src/infrastructure/`, puis les substituer dans
-`src/di/container.ts`. Rien d'autre ne change.
-
-## Écrans
-
-- Onboarding : bienvenue, inscription (email + mot de passe), création du foyer, profil enfant
-- Connexion : email + mot de passe (compte démo : `parent@demo.fr` / `pousse123`)
-- Foyer : page d'accueil listant les enfants du foyer, sélection de l'enfant du soir
-- Accueil enfant : série de soirs, lancement du rituel
-- Rituel du soir (4 étapes) : émotion → fierté → photo → récap, puis écran « Bravo »
-- Journal des souvenirs, Défis & trophées, Galerie
-- Préférences (rappel, déconnexion) et changement d'enfant via la page foyer
-
-## Accessibilité
-
-Tous les éléments interactifs portent `accessibilityRole`, `accessibilityLabel` et,
-quand utile, `accessibilityState` / `accessibilityHint` (sélections, désactivations).
-Les groupes de choix utilisent `radiogroup` / `radio`, les titres `header`, la
-progression du rituel `progressbar`.
+- [`docs/adr/`](docs/adr/README.md) : historique des décisions d'architecture,
+  y compris le choix d'Expo (ADR-0008) et l'organisation en monorepo
+  (ADR-0009).
+- [`apps/mobile/AGENTS.md`](apps/mobile/AGENTS.md) et
+  [`apps/api/AGENTS.md`](apps/api/AGENTS.md) : règles d'architecture et de
+  convention propres à chaque application.
