@@ -1,5 +1,5 @@
-import { buildApp } from '@/app';
-import { loadEnv } from '@/shared/config/env';
+import { buildApp } from '#/app.js';
+import { loadEnv } from '#/shared/config/env.js';
 
 const env = loadEnv();
 const app = buildApp();
