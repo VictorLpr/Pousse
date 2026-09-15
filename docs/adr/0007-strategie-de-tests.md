@@ -35,11 +35,11 @@ continue.
 
 ## Découpage
 
-| Niveau | Portée | Base |
-|---|---|---|
-| Unitaire | logique métier pure des services : calcul de tranche d'âge, fenêtre de vingt-quatre heures, tirage des défis | aucune |
-| Intégration | routes complètes, dépôts de données, contraintes | conteneur PostgreSQL |
-| Bout en bout | parcours principaux depuis l'application mobile | environnement dédié |
+| Niveau       | Portée                                                                                                       | Base                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------ | -------------------- |
+| Unitaire     | logique métier pure des services : calcul de tranche d'âge, fenêtre de vingt-quatre heures, tirage des défis | aucune               |
+| Intégration  | routes complètes, dépôts de données, contraintes                                                             | conteneur PostgreSQL |
+| Bout en bout | parcours principaux depuis l'application mobile                                                              | environnement dédié  |
 
 ## Conséquences
 

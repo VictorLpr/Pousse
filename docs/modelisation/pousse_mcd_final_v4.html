@@ -1,28 +1,34 @@
 <style>
-#erd4 svg.erDiagram .divider path { stroke-opacity: 0.5; }
-#erd4 svg.erDiagram .row-rect-odd path,
-#erd4 svg.erDiagram .row-rect-odd rect,
-#erd4 svg.erDiagram .row-rect-even path,
-#erd4 svg.erDiagram .row-rect-even rect { stroke: none !important; }
+  #erd4 svg.erDiagram .divider path {
+    stroke-opacity: 0.5;
+  }
+  #erd4 svg.erDiagram .row-rect-odd path,
+  #erd4 svg.erDiagram .row-rect-odd rect,
+  #erd4 svg.erDiagram .row-rect-even path,
+  #erd4 svg.erDiagram .row-rect-even rect {
+    stroke: none !important;
+  }
 </style>
 <div id="erd4"></div>
 <script type="module">
-import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
-const dark = matchMedia('(prefers-color-scheme: dark)').matches;
-await document.fonts.ready;
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'base',
-  fontFamily: '"Anthropic Sans", sans-serif',
-  themeVariables: {
-    darkMode: dark,
-    fontSize: '13px',
+  import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  await document.fonts.ready;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
     fontFamily: '"Anthropic Sans", sans-serif',
-    lineColor: dark ? '#9c9a92' : '#73726c',
-    textColor: dark ? '#c2c0b6' : '#3d3d3a',
-  },
-});
-const { svg } = await mermaid.render('erd4-svg', `erDiagram
+    themeVariables: {
+      darkMode: dark,
+      fontSize: '13px',
+      fontFamily: '"Anthropic Sans", sans-serif',
+      lineColor: dark ? '#9c9a92' : '#73726c',
+      textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    },
+  });
+  const { svg } = await mermaid.render(
+    'erd4-svg',
+    `erDiagram
   PARENT ||--o{ ENFANT : "gerer (0,n)/(1,1)"
   ENFANT ||--|| CONSENTEMENT : "consentir (1,1)/(1,1)"
   ENFANT ||--o{ ENTREE_JOURNAL : "relater (0,n)/(1,1)"
@@ -115,30 +121,39 @@ const { svg } = await mermaid.render('erd4-svg', `erDiagram
     DH genere_le
     AN modele_ia
     UUID id_anonyme
-  }`);
-document.getElementById('erd4').innerHTML = svg;
+  }`,
+  );
+  document.getElementById('erd4').innerHTML = svg;
 
-document.querySelectorAll('#erd4 svg.erDiagram .node').forEach(node => {
-  const firstPath = node.querySelector('path[d]');
-  if (!firstPath) return;
-  const d = firstPath.getAttribute('d');
-  const nums = d.match(/-?[\d.]+/g)?.map(Number);
-  if (!nums || nums.length < 8) return;
-  const xs = [nums[0], nums[2], nums[4], nums[6]];
-  const ys = [nums[1], nums[3], nums[5], nums[7]];
-  const x = Math.min(...xs), y = Math.min(...ys);
-  const w = Math.max(...xs) - x, h = Math.max(...ys) - y;
-  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-  rect.setAttribute('x', x); rect.setAttribute('y', y);
-  rect.setAttribute('width', w); rect.setAttribute('height', h);
-  rect.setAttribute('rx', '8');
-  for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
-    if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
-  }
-  firstPath.replaceWith(rect);
-});
+  document.querySelectorAll('#erd4 svg.erDiagram .node').forEach((node) => {
+    const firstPath = node.querySelector('path[d]');
+    if (!firstPath) return;
+    const d = firstPath.getAttribute('d');
+    const nums = d.match(/-?[\d.]+/g)?.map(Number);
+    if (!nums || nums.length < 8) return;
+    const xs = [nums[0], nums[2], nums[4], nums[6]];
+    const ys = [nums[1], nums[3], nums[5], nums[7]];
+    const x = Math.min(...xs),
+      y = Math.min(...ys);
+    const w = Math.max(...xs) - x,
+      h = Math.max(...ys) - y;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', x);
+    rect.setAttribute('y', y);
+    rect.setAttribute('width', w);
+    rect.setAttribute('height', h);
+    rect.setAttribute('rx', '8');
+    for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+      if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+    }
+    firstPath.replaceWith(rect);
+  });
 
-document.querySelectorAll('#erd4 svg.erDiagram .row-rect-odd path, #erd4 svg.erDiagram .row-rect-even path').forEach(p => {
-  p.setAttribute('stroke', 'none');
-});
+  document
+    .querySelectorAll(
+      '#erd4 svg.erDiagram .row-rect-odd path, #erd4 svg.erDiagram .row-rect-even path',
+    )
+    .forEach((p) => {
+      p.setAttribute('stroke', 'none');
+    });
 </script>

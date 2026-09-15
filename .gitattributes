@@ -1,0 +1,2 @@
+# Fins de ligne LF partout (oxfmt les exige), quel que soit l OS.
+* text=auto eol=lf

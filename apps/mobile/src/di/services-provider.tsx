@@ -1,16 +1,14 @@
-import { createContext, useContext, useRef, type PropsWithChildren } from 'react';
+import { createContext, useContext, useState, type PropsWithChildren } from 'react';
 
 import { createAppServices, type AppServices } from './container';
 
 const ServicesContext = createContext<AppServices | null>(null);
 
 export function ServicesProvider({ children }: PropsWithChildren) {
-  const servicesRef = useRef<AppServices | null>(null);
-  servicesRef.current ??= createAppServices();
+  // Initialisation paresseuse : le conteneur n'est créé qu'une fois par montage.
+  const [services] = useState(createAppServices);
 
-  return (
-    <ServicesContext.Provider value={servicesRef.current}>{children}</ServicesContext.Provider>
-  );
+  return <ServicesContext.Provider value={services}>{children}</ServicesContext.Provider>;
 }
 
 export function useServices(): AppServices {
