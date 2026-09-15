@@ -1,0 +1,22 @@
+# Contexte de build Docker : racine du monorepo (npm workspaces, ADR-0009).
+# Tout ce qui n'est pas nécessaire à la construction d'une image est exclu.
+
+**/node_modules
+**/dist
+**/.expo
+**/web-build
+**/*.tsbuildinfo
+
+.git
+.github
+.vscode
+.claude
+docs
+
+# Secrets : jamais dans une image, passés à l'exécution
+**/.env
+**/.env.*
+!**/.env.example
+
+**/npm-debug.*
+**/.DS_Store

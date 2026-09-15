@@ -1,14 +1,26 @@
-/**
- * Lecture des variables d'environnement. Placeholder : le schéma de
- * validation (Zod) sera ajouté au démarrage du chantier API.
- */
+import { z } from 'zod';
+
+const envSchema = z.object({
+  PORT: z.coerce.number().int().positive().default(3000),
+  DATABASE_URL: z.string().url(),
+});
+
 export interface Env {
   readonly port: number;
   readonly databaseUrl: string;
 }
 
+/**
+ * Lit et valide les variables d'environnement. Une variable manquante ou
+ * invalide fait échouer le démarrage plutôt que la première requête.
+ */
 export function loadEnv(): Env {
-  const port = Number(process.env.PORT ?? 3000);
-  const databaseUrl = process.env.DATABASE_URL ?? '';
-  return { port, databaseUrl };
+  const result = envSchema.safeParse(process.env);
+  if (!result.success) {
+    const details = result.error.issues
+      .map((issue) => `${issue.path.join('.')} : ${issue.message}`)
+      .join(', ');
+    throw new Error(`Variables d'environnement invalides — ${details}`);
+  }
+  return { port: result.data.PORT, databaseUrl: result.data.DATABASE_URL };
 }
