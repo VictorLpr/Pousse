@@ -1,9 +1,11 @@
+import { drizzle } from 'drizzle-orm/node-postgres';
+
 /**
- * Connexion Drizzle (ADR-0002). Placeholder : le schéma des onze relations
- * n'est pas encore écrit (voir docs/modelisation/pousse_mcd_final_v4.html) ;
- * ce fichier sera remplacé par `drizzle({ connection, schema })` une fois le
- * schéma déclaré.
+ * Connexion Drizzle (ADR-0002) sur un pool `pg`. Le pool est exposé via
+ * `db.$client` pour être fermé à l'arrêt du serveur.
  */
-export function createDbClient(): never {
-  throw new Error('Base de données non branchée : schéma Drizzle à venir (ADR-0002).');
+export function createDbClient(databaseUrl: string) {
+  return drizzle({ connection: databaseUrl });
 }
+
+export type Db = ReturnType<typeof createDbClient>;
