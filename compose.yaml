@@ -1,12 +1,21 @@
-# Environnement de développement local.
-# Pour l'instant : PostgreSQL 16 seul (ADR-0002). L'API continue de tourner
-# sur l'hôte via `npm run api` et s'y connecte par DATABASE_URL.
-#
-#   docker compose up -d      # démarre la base
-#   docker compose down       # l'arrête (les données sont conservées)
-#   docker compose down -v    # l'arrête ET supprime les données
-
 name: pousse
+
+x-api-dev: &api-dev
+  image: pousse-api:dev
+  build:
+    context: .
+    dockerfile: apps/api/Dockerfile
+    target: dev
+  environment:
+    DATABASE_URL: postgres://${POSTGRES_USER:-pousse}:${POSTGRES_PASSWORD:-pousse}@db:5432/${POSTGRES_DB:-pousse}
+    PORT: 3000
+
+    CHOKIDAR_USEPOLLING: 'true'
+  volumes:
+    - ./apps/api:/repo/apps/api
+    - ./tsconfig.base.json:/repo/tsconfig.base.json:ro
+
+    - /repo/apps/api/node_modules
 
 services:
   db:
@@ -17,14 +26,37 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-pousse}
       POSTGRES_DB: ${POSTGRES_DB:-pousse}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test: ['CMD-SHELL', 'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}']
       interval: 5s
       timeout: 5s
       retries: 10
+
+  # Applique les migrations générées (apps/api/drizzle) puis s'arrête.
+  migrate:
+    <<: *api-dev
+    command: ['npm', 'run', 'db:migrate']
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    <<: *api-dev
+    restart: unless-stopped
+    ports:
+      - '${API_PORT:-3000}:3000'
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -qO- http://127.0.0.1:3000/health || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   db-data:

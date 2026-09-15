@@ -94,6 +94,12 @@ prefix: '/x' })`, voir `src/app.ts`). Le franchissement d'une frontière de
 ## 6. Conventions
 
 - Kebab-case pour les fichiers, un service/dépôt/route par fichier.
+- Imports internes via le mapping natif Node `#/*` (`package.json` →
+  `imports`), **avec l'extension `.js`** et `/index.js` pour un module :
+  `import { buildApp } from '#/app.js'`. En développement, la condition
+  `development` résout vers `src/` (tsx) ; en production, vers `dist/`
+  (`node dist/server.js`). Ne pas réintroduire d'alias `paths` de tsconfig :
+  `tsc` ne les réécrit pas et le code compilé ne démarrerait plus.
 - `import type` pour les imports de type uniquement.
 - `npx tsc --noEmit` doit passer avant de considérer un changement terminé.
 - Le code et les messages d'erreur renvoyés au client sont en français, comme
