@@ -26,14 +26,14 @@ version exacte pour la durée du projet.
 **Drizzle exprime nativement l'intégralité des contraintes du modèle** dans le schéma
 TypeScript :
 
-| Besoin | Expression |
-|---|---|
-| Unicités composites | `unique()` / `uniqueIndex()` |
-| Un seul défi engagé par enfant et par semaine | ``uniqueIndex().on(...).where(sql`...`)`` |
-| Attestation de représentant légal obligatoirement vraie | `check()` |
-| Cohérence entre statut et dates associées | `check()` conditionnel |
-| Clé primaire composite de `OBTENTION` | `primaryKey({ columns: [...] })` |
-| Suppression complète des données | `references(..., { onDelete: 'cascade' })` |
+| Besoin                                                  | Expression                                 |
+| ------------------------------------------------------- | ------------------------------------------ |
+| Unicités composites                                     | `unique()` / `uniqueIndex()`               |
+| Un seul défi engagé par enfant et par semaine           | ``uniqueIndex().on(...).where(sql`...`)``  |
+| Attestation de représentant légal obligatoirement vraie | `check()`                                  |
+| Cohérence entre statut et dates associées               | `check()` conditionnel                     |
+| Clé primaire composite de `OBTENTION`                   | `primaryKey({ columns: [...] })`           |
+| Suppression complète des données                        | `references(..., { onDelete: 'cascade' })` |
 
 **Les migrations générées sont du SQL lisible et versionné**, dérivé du schéma. Le
 schéma reste la source unique, et le SQL appliqué à la base est inspectable en revue.

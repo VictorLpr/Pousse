@@ -23,7 +23,7 @@ Candidats évalués : Express 5, Fastify 5, NestJS 11, Hono.
 ### Justification
 
 **La sérialisation par schéma est la garantie la plus forte disponible sur la
-confidentialité des réponses.** Fastify valide les entrées *et* sérialise les sorties
+confidentialité des réponses.** Fastify valide les entrées _et_ sérialise les sorties
 à partir d'un schéma déclaré : un champ non déclaré dans le schéma de réponse est
 retiré de la charge utile. La protection passe de « le développeur a pensé à ne pas
 exposer `date_naissance` » à « la couche de transport ne peut pas l'exposer ». Sur une
