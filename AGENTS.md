@@ -27,7 +27,8 @@ sans avoir lu le fichier correspondant.
 ```bash
 npm install               # installe les deux workspaces
 npm run mobile:web        # démarre le client Expo (web)
-npm run api               # démarre l'API en mode watch
+docker compose up --build # PostgreSQL + migrations + API (watch) sur :3000
+npm run db:generate -w apps/api   # génère une migration depuis le schéma Drizzle
 npm run typecheck         # tsc --noEmit sur chaque workspace qui l'expose
 npm run lint               # oxlint sur tout le dépôt
 ```
