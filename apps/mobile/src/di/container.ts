@@ -23,7 +23,10 @@ import {
   seedHouseholds,
   seedParentAccounts,
 } from '@/modules/auth/infrastructure/persistence/in-memory/seed';
-import { seedTrophies, seedWeeklyChallenges } from '@/modules/defis/infrastructure/persistence/in-memory/seed';
+import {
+  seedTrophies,
+  seedWeeklyChallenges,
+} from '@/modules/defis/infrastructure/persistence/in-memory/seed';
 import { seedJournalEntries } from '@/modules/journal/infrastructure/persistence/in-memory/seed';
 import { SystemClock } from '@/shared/infrastructure/time/system-clock';
 
@@ -66,7 +69,11 @@ export function createAppServices(): AppServices {
     signInParent: new SignInParent(accountRepository, householdRepository),
     registerParent: new RegisterParent(accountRepository, idGenerator),
     createHousehold: new CreateHousehold(householdRepository, accountRepository, idGenerator),
-    createChildProfile: new CreateChildProfile(childRepository, idGenerator, initializeChildProgress),
+    createChildProfile: new CreateChildProfile(
+      childRepository,
+      idGenerator,
+      initializeChildProgress,
+    ),
     listChildren: new ListChildren(childRepository),
     getChild: new GetChild(childRepository),
     completeEveningRitual: new CompleteEveningRitual(

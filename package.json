@@ -10,6 +10,7 @@
     "mobile:web": "npm exec -w apps/mobile -- expo start --web",
     "api": "npm exec -w apps/api -- tsx watch src/server.ts",
     "typecheck": "npm run typecheck --workspaces --if-present",
+    "build": "npm run build --workspaces --if-present",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "format": "oxfmt --write",

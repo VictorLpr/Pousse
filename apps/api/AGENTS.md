@@ -71,7 +71,7 @@ src/
 - `shared/` ne contient que de l'infrastructure (connexion base, types
   d'erreur, configuration) — aucune logique métier.
 - Un module est exposé comme un plugin Fastify (`app.register(xModule, {
-  prefix: '/x' })`, voir `src/app.ts`). Le franchissement d'une frontière de
+prefix: '/x' })`, voir `src/app.ts`). Le franchissement d'une frontière de
   module doit échouer au démarrage, pas seulement en revue.
 - Émotions et badges n'appartiennent naturellement à aucun module : ils sont
   rattachés au module qui les consomme principalement (badges → `defis`)

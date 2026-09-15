@@ -4,7 +4,17 @@
     {
       "name": "pousse-web",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["exec", "-w", "apps/mobile", "--", "expo", "start", "--web", "--port", "8081"],
+      "runtimeArgs": [
+        "exec",
+        "-w",
+        "apps/mobile",
+        "--",
+        "expo",
+        "start",
+        "--web",
+        "--port",
+        "8081"
+      ],
       "port": 8081
     }
   ]

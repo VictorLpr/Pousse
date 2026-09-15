@@ -38,26 +38,26 @@ service.
 
 Restent déclaratives dans le schéma :
 
-| Règle | Expression |
-|---|---|
-| Un seul souvenir par jour et par enfant | `unique(enfant_id, date)` |
-| Une seule lettre par mois et par enfant | `unique(enfant_id, mois)` |
-| Un badge attribué une seule fois par enfant | clé primaire composite |
-| Un consentement et un seul par enfant | `unique(enfant_id)` |
-| Un même défi non proposé deux fois dans la semaine | `unique(enfant_id, defi_id, semaine)` |
-| Un seul défi engagé par enfant et par semaine | index unique partiel |
-| Attestation de représentant légal obligatoirement vraie | contrainte de vérification |
-| Cohérence entre statut et dates associées | contrainte de vérification conditionnelle |
-| Suppression complète des données | suppression en cascade depuis le parent |
+| Règle                                                   | Expression                                |
+| ------------------------------------------------------- | ----------------------------------------- |
+| Un seul souvenir par jour et par enfant                 | `unique(enfant_id, date)`                 |
+| Une seule lettre par mois et par enfant                 | `unique(enfant_id, mois)`                 |
+| Un badge attribué une seule fois par enfant             | clé primaire composite                    |
+| Un consentement et un seul par enfant                   | `unique(enfant_id)`                       |
+| Un même défi non proposé deux fois dans la semaine      | `unique(enfant_id, defi_id, semaine)`     |
+| Un seul défi engagé par enfant et par semaine           | index unique partiel                      |
+| Attestation de représentant légal obligatoirement vraie | contrainte de vérification                |
+| Cohérence entre statut et dates associées               | contrainte de vérification conditionnelle |
+| Suppression complète des données                        | suppression en cascade depuis le parent   |
 
 Appliquées dans la couche service :
 
-| Règle | Emplacement |
-|---|---|
-| Trois défis proposés par enfant et par semaine | service de tirage hebdomadaire |
-| Entrée modifiable pendant vingt-quatre heures | service journal, comparaison à `cree_le` |
-| Âge compris entre quatre et douze ans à la création | validation Zod puis service |
-| Défi conforme à la tranche d'âge | service de tirage hebdomadaire |
+| Règle                                               | Emplacement                              |
+| --------------------------------------------------- | ---------------------------------------- |
+| Trois défis proposés par enfant et par semaine      | service de tirage hebdomadaire           |
+| Entrée modifiable pendant vingt-quatre heures       | service journal, comparaison à `cree_le` |
+| Âge compris entre quatre et douze ans à la création | validation Zod puis service              |
+| Défi conforme à la tranche d'âge                    | service de tirage hebdomadaire           |
 
 ## Conséquences
 
