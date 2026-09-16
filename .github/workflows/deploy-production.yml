@@ -121,6 +121,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.132.0'
           workingDirectory: apps/mobile
           command: deploy --env production --var API_ORIGIN:${{ secrets.API_ORIGIN }}
 
