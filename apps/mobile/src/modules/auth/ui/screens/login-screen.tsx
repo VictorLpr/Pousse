@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '@/shared/ui/components/app-button';
+import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
@@ -38,27 +39,25 @@ export function LoginScreen() {
       <ScreenHeader title="Bon retour !" subtitle="Retrouvez votre foyer" />
 
       <OverlineLabel style={styles.fieldLabel}>Email</OverlineLabel>
-      <TextInput
+      <AppTextInput
         accessibilityLabel="Adresse email"
         value={email}
         onChangeText={setEmail}
         placeholder="vous@exemple.fr"
-        placeholderTextColor={colors.overline}
         autoCapitalize="none"
         autoComplete="email"
         keyboardType="email-address"
-        style={styles.input}
+        spacing={24}
       />
 
       <OverlineLabel style={styles.fieldLabel}>Mot de passe</OverlineLabel>
-      <TextInput
+      <AppTextInput
         accessibilityLabel="Mot de passe"
         value={password}
         onChangeText={setPassword}
         placeholder="••••••••"
-        placeholderTextColor={colors.overline}
         secureTextEntry
-        style={styles.input}
+        spacing={24}
       />
 
       {errorMessage ? (
@@ -84,15 +83,6 @@ export function LoginScreen() {
 const styles = StyleSheet.create({
   fieldLabel: {
     marginBottom: 6,
-  },
-  input: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.border,
-    paddingVertical: 12,
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 17,
-    color: colors.ink,
-    marginBottom: 24,
   },
   error: {
     fontFamily: fonts.bodySemiBold,

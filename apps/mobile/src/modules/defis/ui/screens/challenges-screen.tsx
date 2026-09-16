@@ -19,6 +19,7 @@ import { Divider } from '@/shared/ui/components/divider';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
+import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -118,14 +119,24 @@ export function ChallengesScreen() {
               }
               style={styles.trophyCell}
             >
-              <View
-                style={[styles.trophyCircle, isEarned ? styles.earnedCircle : styles.lockedCircle]}
-              >
+              <View style={styles.trophyCircle}>
                 {isEarned ? (
-                  <Icon size={26} color={colors.ink} strokeWidth={1.8} />
+                  <SketchShape shape="circle" fill={colors.peach} stroke={colors.ink} strokeWidth={1.6} />
                 ) : (
-                  <Lock size={24} color={colors.moss} strokeWidth={1.8} />
+                  <SketchShape
+                    shape="circle"
+                    stroke={colors.dashedBorder}
+                    strokeWidth={2}
+                    dashed
+                  />
                 )}
+                <View>
+                  {isEarned ? (
+                    <Icon size={26} color={colors.ink} strokeWidth={1.8} />
+                  ) : (
+                    <Lock size={24} color={colors.moss} strokeWidth={1.8} />
+                  )}
+                </View>
               </View>
               <Text style={[styles.trophyName, !isEarned && styles.lockedTrophyName]}>
                 {trophy.name}
@@ -203,17 +214,8 @@ const styles = StyleSheet.create({
   trophyCircle: {
     width: 66,
     height: 66,
-    borderRadius: 33,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  earnedCircle: {
-    backgroundColor: colors.peach,
-  },
-  lockedCircle: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: colors.dashedBorder,
   },
   trophyName: {
     fontFamily: fonts.bodySemiBold,
