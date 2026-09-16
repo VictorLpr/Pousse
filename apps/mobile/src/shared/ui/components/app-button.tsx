@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { ReactNode } from 'react';
 
+import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { colors, fonts } from '@/shared/ui/theme';
 
 type ButtonVariant = 'coral' | 'cream' | 'ghost';
@@ -32,41 +33,45 @@ export function AppButton({
       onPress={onPress}
       style={({ pressed }) => [
         styles.base,
-        variantStyles[variant],
         disabled && styles.disabled,
         pressed && !disabled && styles.pressed,
       ]}
     >
-      {icon ? <View style={styles.icon}>{icon}</View> : null}
-      <Text style={[styles.label, variant === 'ghost' && styles.ghostLabel]}>{label}</Text>
+      {({ pressed }) => (
+        <>
+          {variant !== 'ghost' ? (
+            <SketchShape
+              shape="rectangle"
+              radius={20}
+              // Décalage de graine à l'appui : le trait « frémit » comme un dessin refait.
+              seedOffset={pressed && !disabled ? 1 : 0}
+              {...sketchStyles[variant]}
+            />
+          ) : null}
+          {icon ? <View style={styles.icon}>{icon}</View> : null}
+          <Text style={[styles.label, variant === 'ghost' && styles.ghostLabel]}>{label}</Text>
+        </>
+      )}
     </Pressable>
   );
 }
 
-const variantStyles = StyleSheet.create({
-  coral: {
-    backgroundColor: colors.coral,
-  },
-  cream: {
-    backgroundColor: colors.background,
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-  },
-});
+const sketchStyles = {
+  coral: { fill: colors.coral, stroke: colors.ink, strokeWidth: 1.6 },
+  cream: { fill: colors.background, stroke: colors.sageDeep, strokeWidth: 1.6 },
+} as const;
 
 const styles = StyleSheet.create({
   base: {
     width: '100%',
     flexDirection: 'row',
     paddingVertical: 17,
-    borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
   pressed: {
-    opacity: 0.8,
+    transform: [{ translateY: 1 }],
   },
   disabled: {
     opacity: 0.45,

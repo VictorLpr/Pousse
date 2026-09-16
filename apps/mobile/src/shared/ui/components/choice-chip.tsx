@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 
+import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { colors, fonts } from '@/shared/ui/theme';
 
 interface ChoiceChipProps {
@@ -9,7 +10,7 @@ interface ChoiceChipProps {
   accessibilityLabel?: string;
 }
 
-/** Choix « souligné » : pas de boîte, un trait corail marque la sélection. */
+/** Choix « souligné » : pas de boîte, un trait corail tracé à la main marque la sélection. */
 export function ChoiceChip({ label, selected, onPress, accessibilityLabel }: ChoiceChipProps) {
   return (
     <Pressable
@@ -17,8 +18,11 @@ export function ChoiceChip({ label, selected, onPress, accessibilityLabel }: Cho
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ selected }}
       onPress={onPress}
-      style={[styles.chip, selected && styles.selectedChip]}
+      style={styles.chip}
     >
+      {selected ? (
+        <SketchShape shape="underline" stroke={colors.coral} strokeWidth={3} roughness={1.6} />
+      ) : null}
       <Text style={[styles.label, selected && styles.selectedLabel]}>{label}</Text>
     </Pressable>
   );
@@ -29,11 +33,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     alignItems: 'center',
-    borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
-  },
-  selectedChip: {
-    borderBottomColor: colors.coral,
   },
   label: {
     fontFamily: fonts.bodySemiBold,

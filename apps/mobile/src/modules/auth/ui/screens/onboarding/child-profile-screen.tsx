@@ -1,11 +1,12 @@
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Camera, ChevronRight } from 'lucide-react-native';
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { AGE_RANGES, type AgeRange } from '@/modules/auth/domain/entities/child';
 import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/shared/ui/components/app-button';
+import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { Avatar } from '@/shared/ui/components/avatar';
 import { ChoiceChip } from '@/shared/ui/components/choice-chip';
 import { Divider } from '@/shared/ui/components/divider';
@@ -71,14 +72,14 @@ export function ChildProfileScreen() {
       </View>
 
       <OverlineLabel style={styles.fieldLabel}>Prénom</OverlineLabel>
-      <TextInput
+      <AppTextInput
         accessibilityLabel="Prénom de l'enfant"
         value={firstName}
         onChangeText={setFirstName}
         placeholder="Léa"
-        placeholderTextColor={colors.overline}
         autoCapitalize="words"
-        style={styles.input}
+        style={styles.inputText}
+        spacing={26}
       />
 
       <OverlineLabel style={styles.fieldLabel}>Tranche d'âge</OverlineLabel>
@@ -133,14 +134,8 @@ const styles = StyleSheet.create({
   fieldLabel: {
     marginBottom: 6,
   },
-  input: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.border,
-    paddingVertical: 12,
-    fontFamily: fonts.bodySemiBold,
+  inputText: {
     fontSize: 18,
-    color: colors.ink,
-    marginBottom: 26,
   },
   ageRow: {
     flexDirection: 'row',
