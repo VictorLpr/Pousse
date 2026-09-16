@@ -106,10 +106,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           scw container container update "$CONTAINER_ID" region=fr-par \
-            port=3000 health-check.http.path=/health \
-            registry-image="$IMAGE:$VERSION" \
-            "secret-environment-variables.0.key=DATABASE_URL" \
-            "secret-environment-variables.0.value=$DATABASE_URL" > /dev/null
+            port=3000 liveness-probe.http.path=/health \
+            image="$IMAGE:$VERSION" \
+            "secret-environment-variables.DATABASE_URL=$DATABASE_URL" > /dev/null
 
       # --- Web ------------------------------------------------------------
       - name: Exporter la PWA
