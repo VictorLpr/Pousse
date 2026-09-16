@@ -1,6 +1,6 @@
 # ADR-0008 — Choix d'Expo (React Native) pour le client mobile
 
-- **Statut** : Accepté
+- **Statut** : Remplacé par [ADR-0010](0010-pwa-d-abord-natif-ensuite.md)
 - **Date** : 2026-09-14
 
 ## Contexte
