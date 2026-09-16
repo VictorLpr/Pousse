@@ -1,12 +1,13 @@
-import { Sprout } from 'lucide-react-native';
 import { StyleSheet, View } from 'react-native';
 
+import { SketchShape } from '@/shared/ui/components/sketch-shape';
+import { SketchSprout } from '@/shared/ui/components/sketch-sprout';
 import { colors } from '@/shared/ui/theme';
 
 type DividerVariant = 'hairline' | 'stitched' | 'sprout';
 
 interface DividerProps {
-  /** hairline : filet fin · stitched : pointillé « couture » · sprout : ornement central. */
+  /** hairline : filet fin tracé à main levée · stitched : pointillé « couture » · sprout : ornement central. */
   variant?: DividerVariant;
   spacing?: number;
 }
@@ -16,26 +17,26 @@ export function Divider({ variant = 'hairline', spacing = 0 }: DividerProps) {
     return (
       <View style={[styles.ornamentRow, { marginVertical: spacing }]}>
         <View style={styles.stitchedLine} />
-        <Sprout size={18} color={colors.sageDeep} strokeWidth={1.8} />
+        <SketchSprout size={18} color={colors.sageDeep} strokeWidth={1.8} />
         <View style={styles.stitchedLine} />
       </View>
     );
   }
 
+  if (variant === 'stitched') {
+    return <View style={[styles.stitched, { marginVertical: spacing }]} />;
+  }
+
   return (
-    <View
-      style={[
-        variant === 'stitched' ? styles.stitched : styles.hairline,
-        { marginVertical: spacing },
-      ]}
-    />
+    <View style={[styles.hairlineWrapper, { marginVertical: spacing }]}>
+      <SketchShape shape="underline" stroke={colors.border} strokeWidth={1.4} roughness={1} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  hairline: {
+  hairlineWrapper: {
     height: 1,
-    backgroundColor: colors.border,
   },
   stitched: {
     height: 1,

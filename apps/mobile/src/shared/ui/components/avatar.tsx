@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from 'react-native';
 
+import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { colors, fonts } from '@/shared/ui/theme';
 
 interface AvatarProps {
@@ -13,11 +14,9 @@ export function Avatar({ initial, size = 52, backgroundColor = colors.peach }: A
     <View
       accessible
       accessibilityLabel={`Avatar de l'enfant, initiale ${initial}`}
-      style={[
-        styles.circle,
-        { width: size, height: size, borderRadius: size / 2, backgroundColor },
-      ]}
+      style={[styles.circle, { width: size, height: size }]}
     >
+      <SketchShape shape="circle" fill={backgroundColor} stroke={colors.ink} strokeWidth={1.6} />
       <Text style={[styles.initial, { fontSize: size * 0.52 }]}>{initial}</Text>
     </View>
   );
