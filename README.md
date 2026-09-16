@@ -23,8 +23,8 @@ npm run api          # API en mode watch (scaffold, pas encore de route métier)
 ## Documentation
 
 - [`docs/adr/`](docs/adr/README.md) : historique des décisions d'architecture,
-  y compris le choix d'Expo (ADR-0008) et l'organisation en monorepo
-  (ADR-0009).
+  y compris le choix d'Expo (ADR-0008), l'organisation en monorepo
+  (ADR-0009) et la livraison en PWA d'abord, natif ensuite (ADR-0010).
 - [`apps/mobile/AGENTS.md`](apps/mobile/AGENTS.md) et
   [`apps/api/AGENTS.md`](apps/api/AGENTS.md) : règles d'architecture et de
   convention propres à chaque application.
