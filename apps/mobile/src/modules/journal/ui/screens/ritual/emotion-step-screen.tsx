@@ -5,6 +5,7 @@ import { EMOTIONS } from '@/modules/journal/domain/entities/emotion';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
+import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -26,8 +27,13 @@ export function EmotionStepScreen() {
               onPress={() => setEmotion(emotion.id)}
               style={styles.cell}
             >
-              <View style={[styles.iconHalo, selected && styles.selectedHalo]}>
-                <EmotionIcon emotionId={emotion.id} size={32} />
+              <View style={styles.iconHalo}>
+                {selected ? (
+                  <SketchShape shape="circle" fill={colors.peach} stroke={colors.ink} strokeWidth={1.6} />
+                ) : null}
+                <View>
+                  <EmotionIcon emotionId={emotion.id} size={32} />
+                </View>
               </View>
               <Text style={[styles.cellLabel, selected && styles.selectedCellLabel]}>
                 {emotion.label}
@@ -61,12 +67,8 @@ const styles = StyleSheet.create({
   iconHalo: {
     width: 64,
     height: 64,
-    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  selectedHalo: {
-    backgroundColor: colors.peach,
   },
   cellLabel: {
     fontFamily: fonts.bodySemiBold,

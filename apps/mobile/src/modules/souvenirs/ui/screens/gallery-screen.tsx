@@ -10,6 +10,7 @@ import { AppShell } from '@/shared/ui/components/app-shell';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
+import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { formatMonth, formatShortDate } from '@/shared/ui/format/date';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -86,7 +87,10 @@ export function GalleryScreen() {
           style={({ pressed }) => [styles.item, pressed && styles.pressed]}
         >
           <View style={[styles.photo, styles.addTile]}>
-            <Plus size={26} color={colors.moss} strokeWidth={1.8} />
+            <SketchShape shape="rectangle" radius={20} stroke={colors.dashedBorder} strokeWidth={2} dashed />
+            <View>
+              <Plus size={26} color={colors.moss} strokeWidth={1.8} />
+            </View>
           </View>
           <Text style={[styles.caption, styles.addCaption]}>Ajouter</Text>
         </Pressable>
@@ -124,9 +128,6 @@ const styles = StyleSheet.create({
     color: colors.ink,
   },
   addTile: {
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: colors.dashedBorder,
     alignItems: 'center',
     justifyContent: 'center',
   },

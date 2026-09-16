@@ -1,8 +1,9 @@
 import { Redirect, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '@/shared/ui/components/app-button';
+import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
@@ -45,14 +46,14 @@ export function HouseholdScreen() {
       />
 
       <OverlineLabel style={styles.fieldLabel}>Nom du foyer</OverlineLabel>
-      <TextInput
+      <AppTextInput
         accessibilityLabel="Nom du foyer"
         value={name}
         onChangeText={setName}
         placeholder="Dupont"
-        placeholderTextColor={colors.overline}
         autoCapitalize="words"
-        style={styles.input}
+        style={styles.inputText}
+        spacing={14}
       />
 
       <Text style={styles.helper}>Vous ajouterez ensuite le profil de votre premier enfant.</Text>
@@ -74,14 +75,8 @@ const styles = StyleSheet.create({
   fieldLabel: {
     marginBottom: 6,
   },
-  input: {
-    borderBottomWidth: 2,
-    borderBottomColor: colors.border,
-    paddingVertical: 12,
-    fontFamily: fonts.bodySemiBold,
+  inputText: {
     fontSize: 18,
-    color: colors.ink,
-    marginBottom: 14,
   },
   helper: {
     fontFamily: fonts.body,
