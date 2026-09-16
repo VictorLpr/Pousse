@@ -121,14 +121,14 @@ export function ChallengesScreen() {
             >
               <View style={styles.trophyCircle}>
                 {isEarned ? (
-                  <SketchShape shape="circle" fill={colors.peach} stroke={colors.ink} strokeWidth={1.6} />
-                ) : (
                   <SketchShape
                     shape="circle"
-                    stroke={colors.dashedBorder}
-                    strokeWidth={2}
-                    dashed
+                    fill={colors.peach}
+                    stroke={colors.ink}
+                    strokeWidth={1.6}
                   />
+                ) : (
+                  <SketchShape shape="circle" stroke={colors.dashedBorder} strokeWidth={2} dashed />
                 )}
                 <View>
                   {isEarned ? (

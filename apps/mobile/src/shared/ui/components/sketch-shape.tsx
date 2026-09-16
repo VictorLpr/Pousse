@@ -58,7 +58,19 @@ export function SketchShape({
         roughness,
         dashed,
       }),
-    [shape, size.width, size.height, seed, stroke, strokeWidth, fill, fillStyle, radius, roughness, dashed],
+    [
+      shape,
+      size.width,
+      size.height,
+      seed,
+      stroke,
+      strokeWidth,
+      fill,
+      fillStyle,
+      radius,
+      roughness,
+      dashed,
+    ],
   );
 
   return (

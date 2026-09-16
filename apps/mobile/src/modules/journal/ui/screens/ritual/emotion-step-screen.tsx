@@ -29,7 +29,12 @@ export function EmotionStepScreen() {
             >
               <View style={styles.iconHalo}>
                 {selected ? (
-                  <SketchShape shape="circle" fill={colors.peach} stroke={colors.ink} strokeWidth={1.6} />
+                  <SketchShape
+                    shape="circle"
+                    fill={colors.peach}
+                    stroke={colors.ink}
+                    strokeWidth={1.6}
+                  />
                 ) : null}
                 <View>
                   <EmotionIcon emotionId={emotion.id} size={32} />
