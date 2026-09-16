@@ -82,14 +82,16 @@ jobs:
           default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
           default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
 
-      # La mise à jour redéploie le conteneur.
+      # La mise à jour redéploie le conteneur. Sonde TCP plutôt que /health :
+      # /health interroge la base, qui peut être lente à sortir de veille.
       - name: Mettre à jour le conteneur
         env:
           CONTAINER_ID: ${{ secrets.SCW_CONTAINER_ID }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           scw container container update "$CONTAINER_ID" region=fr-par \
-            port=3000 liveness-probe.http.path=/health \
+            port=3000 liveness-probe.tcp=true liveness-probe.interval=10s \
+            liveness-probe.timeout=5s liveness-probe.failure-threshold=3 \
             image="${{ steps.image.outputs.ref }}" \
             "secret-environment-variables.DATABASE_URL=$DATABASE_URL" > /dev/null
 
