@@ -87,7 +87,13 @@ export function GalleryScreen() {
           style={({ pressed }) => [styles.item, pressed && styles.pressed]}
         >
           <View style={[styles.photo, styles.addTile]}>
-            <SketchShape shape="rectangle" radius={20} stroke={colors.dashedBorder} strokeWidth={2} dashed />
+            <SketchShape
+              shape="rectangle"
+              radius={20}
+              stroke={colors.dashedBorder}
+              strokeWidth={2}
+              dashed
+            />
             <View>
               <Plus size={26} color={colors.moss} strokeWidth={1.8} />
             </View>
