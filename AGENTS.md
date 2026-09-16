@@ -3,7 +3,8 @@
 Pousse est une application de rituel du soir parent/enfant : un client mobile
 Expo et une API Fastify, développés ensemble par une seule personne. Le dépôt
 est un monorepo npm workspaces (ADR-0009) — voir `docs/adr/` pour l'ensemble
-des décisions d'architecture actées, y compris le choix d'Expo (ADR-0008).
+des décisions d'architecture actées, y compris le choix d'Expo (ADR-0008) et
+la livraison en PWA d'abord, natif ensuite (ADR-0010).
 
 ```
 apps/
