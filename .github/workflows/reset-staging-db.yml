@@ -1,0 +1,57 @@
+name: Réinitialiser la base de staging
+
+# Drizzle ne sait pas annuler une migration : une PR abandonnée après
+# déploiement laisse son schéma en staging. Ce workflow vide la base de
+# staging puis rejoue les migrations de main. Il n'a accès qu'à l'environment
+# `staging`, jamais à `production`.
+on:
+  workflow_dispatch:
+    inputs:
+      confirmation:
+        description: Tape « staging » pour confirmer l'effacement
+        required: true
+
+concurrency:
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  reset:
+    if: inputs.confirmation == 'staging'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      - name: Vider la base
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          DROP SCHEMA IF EXISTS drizzle CASCADE;
+          DROP SCHEMA public CASCADE;
+          CREATE SCHEMA public;
+          SQL
+
+      - name: Rejouer les migrations de main
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if find apps/api/drizzle -name '*.sql' | grep -q .; then
+            npm run db:migrate -w apps/api
+          else
+            echo "Aucune migration à appliquer."
+          fi

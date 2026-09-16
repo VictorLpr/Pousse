@@ -1,0 +1,32 @@
+// Worker Cloudflare qui sert la PWA (export statique d'Expo) et relaie
+// /api/* vers l'API Scaleway, pour que le web et l'API partagent la même
+// origine. Voir docs/adr/0011-hebergement-et-deploiement.md.
+//
+// API_ORIGIN n'est pas héritée par les environnements : la CI la passe avec
+// `--var API_ORIGIN:<url>` depuis la variable de l'environment GitHub.
+{
+  "name": "pousse-web-local",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
+  },
+  // Développement local : `npx wrangler dev` relaie vers `docker compose up`.
+  "vars": {
+    "API_ORIGIN": "http://localhost:3000",
+  },
+  "env": {
+    "staging": {
+      "name": "pousse-web-staging",
+      "workers_dev": true,
+      "preview_urls": false,
+    },
+    "production": {
+      "name": "pousse-web",
+      "workers_dev": true,
+      "preview_urls": false,
+    },
+  },
+}

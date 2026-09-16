@@ -4,9 +4,13 @@ on:
   pull_request:
   push:
     branches: [main]
+  # Réutilisé par les workflows de déploiement avant de livrer.
+  workflow_call:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  # github.workflow vaut le nom de l'appelant en workflow_call : un déploiement
+  # n'annule donc pas la CI de la même PR, et inversement.
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:

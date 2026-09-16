@@ -1,0 +1,140 @@
+name: Déploiement production
+
+# `git tag vX.Y.Z && git push origin vX.Y.Z` sur un commit de main déploie la
+# production. Retour arrière : lancer ce workflow à la main avec un tag
+# antérieur (la base, elle, ne revient pas en arrière).
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag à redéployer (ex. v0.1.0)
+        required: true
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: rg.fr-par.scw.cloud/pousse/api
+  VERSION: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  checks:
+    # Un redéploiement manuel reprend un tag déjà vérifié à sa sortie.
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: Déployer
+    needs: checks
+    if: ${{ !cancelled() && (needs.checks.result == 'success' || needs.checks.result == 'skipped') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: ${{ steps.web.outputs.deployment-url }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.VERSION }}
+          fetch-depth: 0
+
+      - name: Le tag doit être sur main
+        run: |
+          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::« $VERSION » n'est pas un tag de version vX.Y.Z."
+            exit 1
+          fi
+          git fetch origin main
+          if ! git merge-base --is-ancestor HEAD origin/main; then
+            echo "::error::Le commit du tag $VERSION n'est pas sur main : déploiement refusé."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # --- API ------------------------------------------------------------
+      - uses: docker/login-action@v3
+        with:
+          registry: rg.fr-par.scw.cloud
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+
+      # Une version déjà construite (retour arrière) n'est pas reconstruite.
+      - name: Construire et pousser l'image
+        run: |
+          if docker manifest inspect "$IMAGE:$VERSION" > /dev/null 2>&1; then
+            echo "Image $IMAGE:$VERSION déjà présente, réutilisée."
+          else
+            docker build --target runtime -f apps/api/Dockerfile -t "$IMAGE:$VERSION" .
+            docker push "$IMAGE:$VERSION"
+          fi
+
+      - name: Migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if find apps/api/drizzle -name '*.sql' | grep -q .; then
+            npm run db:migrate -w apps/api
+          else
+            echo "Aucune migration à appliquer."
+          fi
+
+      - uses: scaleway/action-scw@v0
+        with:
+          save-config: true
+          access-key: ${{ secrets.SCW_ACCESS_KEY }}
+          secret-key: ${{ secrets.SCW_SECRET_KEY }}
+          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+
+      - name: Mettre à jour le conteneur
+        env:
+          CONTAINER_ID: ${{ secrets.SCW_CONTAINER_ID }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          scw container container update "$CONTAINER_ID" region=fr-par \
+            port=3000 health-check.http.path=/health \
+            registry-image="$IMAGE:$VERSION" \
+            "secret-environment-variables.0.key=DATABASE_URL" \
+            "secret-environment-variables.0.value=$DATABASE_URL" > /dev/null
+
+      # --- Web ------------------------------------------------------------
+      - name: Exporter la PWA
+        working-directory: apps/mobile
+        run: npx expo export -p web
+
+      - name: Déployer le Worker
+        id: web
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          workingDirectory: apps/mobile
+          command: deploy --env production --var API_ORIGIN:${{ secrets.API_ORIGIN }}
+
+      # --- Vérification -----------------------------------------------------
+      - name: Test de fumée
+        env:
+          WEB_URL: ${{ steps.web.outputs.deployment-url }}
+        run: |
+          curl -fsS --retry 12 --retry-delay 5 --retry-all-errors -o /dev/null "$WEB_URL"
+          curl -fsS --retry 12 --retry-delay 5 --retry-all-errors "$WEB_URL/api/health"
+
+      - name: Créer la release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$VERSION" --verify-tag --generate-notes

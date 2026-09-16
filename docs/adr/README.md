@@ -32,3 +32,4 @@ que le code.
 | [0008](0008-choix-expo-client-mobile.md)       | Choix d'Expo (React Native) pour le client mobile | Remplacé par [0010](0010-pwa-d-abord-natif-ensuite.md) |
 | [0009](0009-organisation-monorepo.md)          | Organisation en monorepo (apps/mobile, apps/api)  | Accepté                                                |
 | [0010](0010-pwa-d-abord-natif-ensuite.md)      | Livraison en PWA d'abord, natif ensuite           | Accepté                                                |
+| [0011](0011-hebergement-et-deploiement.md)     | Hébergement et déploiement                        | Accepté                                                |
