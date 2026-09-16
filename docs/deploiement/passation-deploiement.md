@@ -169,14 +169,14 @@ paiement.
 Terminé quand chaque valeur du tableau ci-dessous est enregistrée dans
 GitHub et que l'utilisateur l'a confirmé.
 
-| Nom                                                     | Portée             | Type     |
-| ------------------------------------------------------- | ------------------ | -------- |
-| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`         | dépôt              | secret   |
-| `SCW_ACCESS_KEY`, `SCW_SECRET_KEY`                      | dépôt              | secret   |
-| `SCW_DEFAULT_PROJECT_ID`, `SCW_DEFAULT_ORGANIZATION_ID` | dépôt              | secret   |
-| `DATABASE_URL`                                          | chaque environment | secret   |
-| `SCW_CONTAINER_ID`                                      | chaque environment | secret   |
-| `API_ORIGIN` (URL publique du conteneur)                | chaque environment | secret   |
+| Nom                                                     | Portée             | Type   |
+| ------------------------------------------------------- | ------------------ | ------ |
+| `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`         | dépôt              | secret |
+| `SCW_ACCESS_KEY`, `SCW_SECRET_KEY`                      | dépôt              | secret |
+| `SCW_DEFAULT_PROJECT_ID`, `SCW_DEFAULT_ORGANIZATION_ID` | dépôt              | secret |
+| `DATABASE_URL`                                          | chaque environment | secret |
+| `SCW_CONTAINER_ID`                                      | chaque environment | secret |
+| `API_ORIGIN` (URL publique du conteneur)                | chaque environment | secret |
 
 ## Étape 3 — Workflow de staging
 
