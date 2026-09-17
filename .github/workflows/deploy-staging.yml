@@ -1,0 +1,128 @@
+name: Déploiement staging
+
+# Tourne sur chaque PR, mais le job `deploy` attend une approbation manuelle
+# (relecteur obligatoire sur l'environment `staging`) : on choisit quelles PR
+# déployer. Le staging est unique, la dernière PR déployée l'occupe.
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+concurrency:
+  # En file d'attente, jamais interrompu en pleine migration.
+  group: deploy-staging
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+env:
+  REGISTRY: rg.fr-par.scw.cloud
+  IMAGE: rg.fr-par.scw.cloud/pousse/api
+
+jobs:
+  checks:
+    # Une PR venue d'un fork n'a pas accès aux secrets.
+    if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
+    uses: ./.github/workflows/ci.yml
+
+  deploy:
+    name: Déployer (approbation requise)
+    needs: checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: staging
+      url: ${{ steps.web.outputs.deployment-url }}
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - run: npm ci
+
+      # --- API ------------------------------------------------------------
+      - name: Tag d'image
+        id: image
+        run: echo "ref=${IMAGE}:staging-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: nologin
+          password: ${{ secrets.SCW_SECRET_KEY }}
+
+      - name: Construire et pousser l'image
+        run: |
+          docker build --target runtime -f apps/api/Dockerfile -t "${{ steps.image.outputs.ref }}" .
+          docker push "${{ steps.image.outputs.ref }}"
+
+      - name: Migrations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          if find apps/api/drizzle -name '*.sql' | grep -q .; then
+            npm run db:migrate -w apps/api
+          else
+            echo "Aucune migration à appliquer."
+          fi
+
+      - uses: scaleway/action-scw@v0
+        with:
+          save-config: true
+          access-key: ${{ secrets.SCW_ACCESS_KEY }}
+          secret-key: ${{ secrets.SCW_SECRET_KEY }}
+          default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
+          default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
+
+      # La mise à jour redéploie le conteneur. La sonde de vivacité se règle
+      # dans la console (TCP) : /health interroge la base, lente à se réveiller.
+      - name: Mettre à jour le conteneur
+        env:
+          CONTAINER_ID: ${{ secrets.SCW_CONTAINER_ID }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          scw container container update "$CONTAINER_ID" region=fr-par \
+            port=3000 \
+            image="${{ steps.image.outputs.ref }}" \
+            "secret-environment-variables.DATABASE_URL=$DATABASE_URL" > /dev/null
+
+      # --- Web ------------------------------------------------------------
+      - name: Exporter la PWA
+        working-directory: apps/mobile
+        run: npx expo export -p web
+
+      - name: Déployer le Worker
+        id: web
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: '4.132.0'
+          workingDirectory: apps/mobile
+          command: deploy --env staging --var API_ORIGIN:${{ secrets.API_ORIGIN }}
+
+      # --- Vérification -----------------------------------------------------
+      # Démarrage à froid (min-scale 0) : on réessaie pendant 60 s au moins.
+      - name: Test de fumée
+        env:
+          WEB_URL: ${{ steps.web.outputs.deployment-url }}
+        run: |
+          curl -fsS --retry 12 --retry-delay 5 --retry-all-errors -o /dev/null "$WEB_URL"
+          curl -fsS --retry 12 --retry-delay 5 --retry-all-errors "$WEB_URL/api/health"
+
+      - name: Commenter la PR
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WEB_URL: ${{ steps.web.outputs.deployment-url }}
+        run: |
+          gh pr comment "${{ github.event.pull_request.number }}" --edit-last --create-if-none --body \
+            "🌱 **Staging déployé** : $WEB_URL — commit \`${GITHUB_SHA::7}\` (image \`${{ steps.image.outputs.ref }}\`)"
