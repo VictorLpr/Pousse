@@ -1,4 +1,4 @@
-name: Réinitialiser la base de staging
+name: Reset staging database
 
 # Drizzle ne sait pas annuler une migration : une PR abandonnée après
 # déploiement laisse son schéma en staging. Ce workflow vide la base de
@@ -36,7 +36,7 @@ jobs:
 
       - run: npm ci
 
-      - name: Vider la base
+      - name: Drop schema
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
@@ -46,7 +46,7 @@ jobs:
           CREATE SCHEMA public;
           SQL
 
-      - name: Rejouer les migrations de main
+      - name: Replay migrations from main
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
