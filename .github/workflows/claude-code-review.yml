@@ -1,44 +1,55 @@
-name: Claude Code Review
+name: Review de code Claude
 
+# Déclenchement manuel uniquement : commenter « /review » sur une pull request,
+# ou lancer le workflow depuis l'onglet Actions en donnant le numéro de PR.
+# Chaque review consomme le quota de l'abonnement Claude, on choisit donc
+# quelles PR relire plutôt que de tourner à chaque push.
 on:
-  pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+  issue_comment:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      pr:
+        description: Numéro de la PR à relire (ex. 7)
+        required: true
+
+concurrency:
+  # Une review à la fois par PR, mise en file : une review interrompue en plein
+  # vol ne poste rien et le quota est consommé quand même.
+  group: claude-review-${{ github.event.issue.number || inputs.pr }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
 
 jobs:
-  claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
+  review:
+    # Un commentaire d'issue n'est une PR que si `issue.pull_request` existe.
+    if: github.event_name == 'workflow_dispatch' || (github.event.issue.pull_request && startsWith(github.event.comment.body, '/review'))
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       pull-requests: read
       issues: read
       id-token: write
-
+    env:
+      PR: ${{ github.event.issue.number || inputs.pr }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      # Sur `issue_comment`, le checkout par défaut pointe sur main : on demande
+      # explicitement la fusion de la PR pour relire le bon code.
+      - uses: actions/checkout@v4
         with:
+          ref: refs/pull/${{ github.event.issue.number || inputs.pr }}/merge
           fetch-depth: 1
 
-      - name: Run Claude Code Review
-        id: claude-review
+      - name: Review de code
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ github.event.pull_request.number }}'
+          prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ env.PR }}'
+          # Sans cette ligne l'action ne démarre pas le serveur MCP qui poste
+          # les commentaires en ligne, même si la skill l'autorise déjà.
           claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
