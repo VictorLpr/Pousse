@@ -37,7 +37,9 @@ export function createAuth({ db, secret, baseUrl, logger }: AuthConfig) {
     baseURL: baseUrl,
     basePath: AUTH_BASE_PATH,
     database: drizzleAdapter(db, { provider: 'pg', schema }),
-    emailAndPassword: { enabled: true },
+    // BetterAuth's default bounds, spelled out: the mobile app checks the
+    // same ones (`MIN_PASSWORD_LENGTH` / `MAX_PASSWORD_LENGTH`).
+    emailAndPassword: { enabled: true, minPasswordLength: 8, maxPasswordLength: 128 },
     user: {
       // The `user` table stands in for PARENT (ADR-0003). First and last
       // names are optional at sign-up: the mobile sign-up screen only asks

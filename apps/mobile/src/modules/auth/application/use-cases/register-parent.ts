@@ -1,5 +1,6 @@
 import { AuthError } from '@/modules/auth/domain/errors/auth-error';
 import {
+  MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
   type ParentAccount,
 } from '@/modules/auth/domain/entities/parent-account';
@@ -23,6 +24,12 @@ export class RegisterParent {
       throw new AuthError(
         'PASSWORD_TOO_SHORT',
         `Password must be at least ${MIN_PASSWORD_LENGTH} characters long.`,
+      );
+    }
+    if (password.length > MAX_PASSWORD_LENGTH) {
+      throw new AuthError(
+        'PASSWORD_TOO_LONG',
+        `Password must be at most ${MAX_PASSWORD_LENGTH} characters long.`,
       );
     }
     if (await this.accounts.findByEmail(normalizedEmail)) {
