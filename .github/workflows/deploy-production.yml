@@ -104,11 +104,15 @@ jobs:
         env:
           CONTAINER_ID: ${{ secrets.SCW_CONTAINER_ID }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
         run: |
           scw container container update "$CONTAINER_ID" region=fr-par \
             port=3000 \
             image="$IMAGE:$VERSION" \
-            "secret-environment-variables.DATABASE_URL=$DATABASE_URL" > /dev/null
+            "secret-environment-variables.DATABASE_URL=$DATABASE_URL" \
+            "secret-environment-variables.BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" \
+            "secret-environment-variables.BETTER_AUTH_URL=$BETTER_AUTH_URL" > /dev/null
 
       # --- Web ------------------------------------------------------------
       - name: Export PWA

@@ -4,7 +4,10 @@ import { createDbClient } from '#/shared/db/client.js';
 
 const env = loadEnv();
 const db = createDbClient(env.databaseUrl);
-const app = buildApp({ db });
+const app = buildApp({
+  db,
+  auth: { secret: env.betterAuthSecret, baseUrl: env.betterAuthUrl },
+});
 
 app.addHook('onClose', async () => {
   await db.$client.end();
