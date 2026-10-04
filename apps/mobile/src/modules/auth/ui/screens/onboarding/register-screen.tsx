@@ -7,7 +7,7 @@ import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
-import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
+import { authErrorMessage, PASSWORD_LENGTH_HINT } from '@/modules/auth/ui/format/auth-error';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -60,10 +60,10 @@ export function RegisterScreen() {
       <OverlineLabel style={styles.fieldLabel}>Mot de passe</OverlineLabel>
       <AppTextInput
         accessibilityLabel="Mot de passe"
-        accessibilityHint="Au moins 6 caractères"
+        accessibilityHint={PASSWORD_LENGTH_HINT}
         value={password}
         onChangeText={setPassword}
-        placeholder="Au moins 6 caractères"
+        placeholder={PASSWORD_LENGTH_HINT}
         secureTextEntry
         spacing={24}
       />

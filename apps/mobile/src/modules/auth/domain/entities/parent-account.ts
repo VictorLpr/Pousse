@@ -1,4 +1,6 @@
-export const MIN_PASSWORD_LENGTH = 6;
+/** Same bounds as the API (`emailAndPassword` in `apps/api/src/modules/auth/auth.ts`). */
+export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PASSWORD_LENGTH = 128;
 
 export interface ParentAccount {
   readonly id: string;
