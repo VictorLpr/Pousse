@@ -94,6 +94,28 @@ jobs:
             image="${{ steps.image.outputs.ref }}" \
             "secret-environment-variables.DATABASE_URL=$DATABASE_URL" > /dev/null
 
+      # Ne garde que les deux dernières images de staging : celle qui vient
+      # d'être déployée et la précédente. Les tags vX.Y.Z (production, retour
+      # arrière) ne sont jamais touchés. Un échec n'annule pas le déploiement.
+      - name: Prune old staging images
+        continue-on-error: true
+        env:
+          CURRENT_TAG: ${{ steps.image.outputs.ref }}
+        run: |
+          image_id=$(scw registry image list name=api region=fr-par -o json | jq -r '.[0].id // empty')
+          if [ -z "$image_id" ]; then
+            echo "::warning::Image api introuvable dans le registry, nettoyage ignoré."
+            exit 0
+          fi
+          scw registry tag list image-id="$image_id" order-by=created_at_desc region=fr-par -o json \
+            | jq -r --arg current "${CURRENT_TAG##*:}" '
+                [.[] | select(.name | startswith("staging-")) | select(.name != $current)]
+                | .[1:][] | "\(.id) \(.name)"' \
+            | while read -r id name; do
+                echo "Suppression de $name"
+                scw registry tag delete "$id" region=fr-par > /dev/null
+              done
+
       # --- Web ------------------------------------------------------------
       - name: Export PWA
         working-directory: apps/mobile
