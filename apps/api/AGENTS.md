@@ -1,8 +1,8 @@
 # Pousse API — Rules for agents
 
 `apps/api` is the REST API of the Pousse monorepo: Fastify 5 + TypeScript,
-consumed only by `apps/mobile`. It is still a **scaffold** — no business
-route exists yet. This document puts into practice the decisions
+consumed only by `apps/mobile`. Authentication (BetterAuth) is wired; no
+business route exists yet. This document puts into practice the decisions
 already accepted in `../../docs/adr/` (0001 to 0007, and 0012 for the
 language); when in doubt, the ADR wins and this file gets fixed to stay
 consistent with it, never the other way around.
@@ -28,11 +28,12 @@ them to the code names (`prenom` → `first_name`, `nom_famille` →
   outputs**. Every route declares a Zod response schema: a field missing from
   the schema must never reach the client, not even through a developer
   mistake — that's the guarantee schema serialization gives and no manual
-  test can replace.
+  test can replace. The only exception is the BetterAuth wildcard route,
+  whose responses are produced and validated by BetterAuth.
 - `@fastify/swagger` generates the OpenAPI spec from the same schemas. Never
   maintain API docs separately from the code.
 - Pino is already embedded (`Fastify({ logger: true })`): don't add a second
-  logger.
+  logger. BetterAuth's logs are routed to it (`modules/auth/auth.ts`).
 
 ## 2. Data (ADR-0002, ADR-0005)
 
@@ -57,9 +58,14 @@ them to the code names (`prenom` → `first_name`, `nom_famille` →
   "simplify" a call.
 - The BetterAuth `user` table stands in for the logical model's `PARENT`.
   `child.parent_id` references `user.id`, not a separate `PARENT` table.
-- Mounting on Fastify: disable body parsing on the auth route, copy
-  **every** `Set-Cookie` header (not just the first one), mount the route as
-  a wildcard.
+- The Drizzle adapter is `@better-auth/drizzle-adapter/relations-v2` (the
+  variant compatible with `defineRelations`).
+- Mounting on Fastify (`modules/auth/auth-route.ts`): body parsing disabled
+  on the auth route, **every** `Set-Cookie` header copied (not just the
+  first one), route mounted as a wildcard, inside a child plugin so the
+  module's future business routes keep JSON parsing.
+- `BETTER_AUTH_URL` is the public origin without a path: the Worker strips
+  `/api` before forwarding, so BetterAuth sees `/auth/...`.
 - The mobile app must read the session cookie from `expo-secure-store` and
   add it explicitly to business requests — the Expo plugin only attaches it
   automatically to the auth client's calls.
