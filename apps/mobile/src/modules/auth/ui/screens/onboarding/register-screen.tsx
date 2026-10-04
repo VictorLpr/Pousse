@@ -7,6 +7,7 @@ import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
+import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -34,7 +35,7 @@ export function RegisterScreen() {
       await register(email, password);
       router.replace('/onboarding/household');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Inscription impossible.');
+      setErrorMessage(authErrorMessage(error, 'Inscription impossible.'));
     } finally {
       setIsSubmitting(false);
     }

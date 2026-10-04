@@ -2,7 +2,7 @@ import type { Child } from '@/modules/auth/domain/entities/child';
 import type { Household } from '@/modules/auth/domain/entities/household';
 import type { ParentAccount } from '@/modules/auth/domain/entities/parent-account';
 
-/** Compte de démonstration affiché sur l'écran de connexion. */
+/** Demo account shown on the sign-in screen. */
 export const DEMO_EMAIL = 'parent@demo.fr';
 export const DEMO_PASSWORD = 'pousse123';
 

@@ -1,11 +1,10 @@
 /**
- * Types d'erreurs communs à tous les modules. Aucune logique métier ici
- * (ADR-0006) : uniquement des classes d'erreur génériques réutilisables par
- * n'importe quel module.
+ * Error types shared by every module. No business logic here (ADR-0006):
+ * only generic error classes any module can reuse.
  */
 export class NotFoundError extends Error {
   constructor(resource: string, id: string) {
-    super(`${resource} introuvable : ${id}`);
+    super(`${resource} not found: ${id}`);
     this.name = 'NotFoundError';
   }
 }

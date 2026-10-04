@@ -13,16 +13,16 @@ import {
 interface SketchShapeProps extends SketchStyle {
   shape: SketchShapeKind;
   /**
-   * Décale la graine tirée au montage (ex. +1 au clic) pour faire « frémir »
-   * le trait sur une interaction, sans perdre la stabilité entre les rendus.
+   * Offsets the seed drawn at mount (e.g. +1 on click) to make the stroke
+   * "quiver" on interaction, without losing stability across renders.
    */
   seedOffset?: number;
 }
 
 /**
- * Forme « dessinée à la main » (RoughJS) posée en fond de son parent, qui doit
- * être positionné. Purement décorative : invisible pour l'accessibilité et le toucher.
- * Chaque instance tire sa propre graine au montage, stable ensuite.
+ * "Hand-drawn" shape (RoughJS) laid behind its parent, which must be
+ * positioned. Purely decorative: invisible to accessibility and touch.
+ * Each instance draws its own seed at mount, stable afterwards.
  */
 export function SketchShape({
   shape,

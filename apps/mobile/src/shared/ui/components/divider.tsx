@@ -7,7 +7,7 @@ import { colors } from '@/shared/ui/theme';
 type DividerVariant = 'hairline' | 'stitched' | 'sprout';
 
 interface DividerProps {
-  /** hairline : filet fin tracé à main levée · stitched : pointillé « couture » · sprout : ornement central. */
+  /** hairline: thin freehand rule · stitched: "seam" dotted line · sprout: central ornament. */
   variant?: DividerVariant;
   spacing?: number;
 }

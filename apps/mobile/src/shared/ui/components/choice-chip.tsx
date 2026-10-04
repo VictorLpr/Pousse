@@ -10,7 +10,7 @@ interface ChoiceChipProps {
   accessibilityLabel?: string;
 }
 
-/** Choix « souligné » : pas de boîte, un trait corail tracé à la main marque la sélection. */
+/** "Underlined" choice: no box, a hand-drawn coral stroke marks the selection. */
 export function ChoiceChip({ label, selected, onPress, accessibilityLabel }: ChoiceChipProps) {
   return (
     <Pressable

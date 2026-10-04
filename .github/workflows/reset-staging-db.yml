@@ -1,14 +1,14 @@
 name: Reset staging database
 
-# Drizzle ne sait pas annuler une migration : une PR abandonnée après
-# déploiement laisse son schéma en staging. Ce workflow vide la base de
-# staging puis rejoue les migrations de main. Il n'a accès qu'à l'environment
-# `staging`, jamais à `production`.
+# Drizzle can't roll back a migration: a PR abandoned after deployment
+# leaves its schema in staging. This workflow wipes the staging database,
+# then replays main's migrations. It only has access to the `staging`
+# environment, never to `production`.
 on:
   workflow_dispatch:
     inputs:
       confirmation:
-        description: Tape « staging » pour confirmer l'effacement
+        description: Type "staging" to confirm the wipe
         required: true
 
 concurrency:
@@ -53,5 +53,5 @@ jobs:
           if find apps/api/drizzle -name '*.sql' | grep -q .; then
             npm run db:migrate -w apps/api
           else
-            echo "Aucune migration à appliquer."
+            echo "No migrations to apply."
           fi

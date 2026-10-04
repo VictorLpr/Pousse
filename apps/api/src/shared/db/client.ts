@@ -1,8 +1,8 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 
 /**
- * Connexion Drizzle (ADR-0002) sur un pool `pg`. Le pool est exposé via
- * `db.$client` pour être fermé à l'arrêt du serveur.
+ * Drizzle connection (ADR-0002) on a `pg` pool. The pool is exposed through
+ * `db.$client` so it can be closed when the server stops.
  */
 export function createDbClient(databaseUrl: string) {
   return drizzle({ connection: databaseUrl });

@@ -5,11 +5,11 @@ import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { colors, fonts } from '@/shared/ui/theme';
 
 interface AppTextInputProps extends TextInputProps {
-  /** Espace laissé sous le champ, avant l'élément suivant. */
+  /** Space left below the field, before the next element. */
   spacing?: number;
 }
 
-/** Champ « souligné » : pas de boîte, un trait tracé à la main sous le texte. */
+/** "Underlined" field: no box, a hand-drawn stroke under the text. */
 export function AppTextInput({ spacing = 0, style, ...props }: AppTextInputProps) {
   return (
     <View style={[styles.wrapper, { marginBottom: spacing }]}>

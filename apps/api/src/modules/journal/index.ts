@@ -1,12 +1,11 @@
 import type { FastifyInstance } from 'fastify';
 
 /**
- * Module journal : rituel du soir, entrées de journal (règles de gestion
- * détaillées en ADR-0005 : un souvenir par jour et par enfant, fenêtre de
- * modification de vingt-quatre heures).
+ * Journal module: evening ritual, journal entries (business rules detailed
+ * in ADR-0005: one memory per day per child, twenty-four-hour edit window).
  *
- * À implémenter : routes de création/consultation des entrées.
+ * To implement: routes to create/read entries.
  */
 export async function journalModule(_app: FastifyInstance): Promise<void> {
-  // Routes à venir.
+  // Routes to come.
 }

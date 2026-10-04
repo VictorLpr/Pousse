@@ -44,7 +44,7 @@ export function ChildProfileScreen() {
         ageRange,
         reminderTime: DEFAULT_REMINDER_TIME,
       });
-      if (from === 'foyer') {
+      if (from === 'household') {
         router.back();
       } else {
         router.replace('/household');
@@ -59,7 +59,7 @@ export function ChildProfileScreen() {
       <ScreenHeader
         title="Un nouvel enfant"
         subtitle={`On crée son profil dans le foyer ${household.name}`}
-        showBackButton={from === 'foyer'}
+        showBackButton={from === 'household'}
       />
 
       <View style={styles.avatarZone}>

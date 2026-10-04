@@ -1,12 +1,12 @@
 import type { FastifyInstance } from 'fastify';
 
 /**
- * Module auth : comptes parents, sessions, enfants (voir ADR-0003).
- * Encapsulation Fastify : ce plugin ne voit pas les décorateurs des autres
- * modules sauf usage explicite de `fastify-plugin` (ADR-0001).
+ * Auth module: parent accounts, sessions, children (see ADR-0003).
+ * Fastify encapsulation: this plugin doesn't see other modules' decorators
+ * unless `fastify-plugin` is used explicitly (ADR-0001).
  *
- * À implémenter : montage de BetterAuth, routes CRUD enfant.
+ * To implement: BetterAuth mounting, child CRUD routes.
  */
 export async function authModule(_app: FastifyInstance): Promise<void> {
-  // Routes à venir.
+  // Routes to come.
 }

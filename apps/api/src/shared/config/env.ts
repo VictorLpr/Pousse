@@ -11,16 +11,16 @@ export interface Env {
 }
 
 /**
- * Lit et valide les variables d'environnement. Une variable manquante ou
- * invalide fait échouer le démarrage plutôt que la première requête.
+ * Reads and validates environment variables. A missing or invalid variable
+ * fails at startup rather than on the first request.
  */
 export function loadEnv(): Env {
   const result = envSchema.safeParse(process.env);
   if (!result.success) {
     const details = result.error.issues
-      .map((issue) => `${issue.path.join('.')} : ${issue.message}`)
+      .map((issue) => `${issue.path.join('.')}: ${issue.message}`)
       .join(', ');
-    throw new Error(`Variables d'environnement invalides — ${details}`);
+    throw new Error(`Invalid environment variables — ${details}`);
   }
   return { port: result.data.PORT, databaseUrl: result.data.DATABASE_URL };
 }

@@ -43,7 +43,7 @@ export function AppButton({
             <SketchShape
               shape="rectangle"
               radius={20}
-              // Décalage de graine à l'appui : le trait « frémit » comme un dessin refait.
+              // Seed offset on press: the stroke "quivers" like a redrawn sketch.
               seedOffset={pressed && !disabled ? 1 : 0}
               {...sketchStyles[variant]}
             />

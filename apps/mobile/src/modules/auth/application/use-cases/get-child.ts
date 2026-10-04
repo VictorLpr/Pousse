@@ -7,7 +7,7 @@ export class GetChild {
   async execute(childId: string): Promise<Child> {
     const child = await this.children.findById(childId);
     if (!child) {
-      throw new Error(`Enfant introuvable : ${childId}`);
+      throw new Error(`Child not found: ${childId}`);
     }
     return child;
   }

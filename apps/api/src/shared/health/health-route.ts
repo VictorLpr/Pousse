@@ -6,13 +6,13 @@ import { z } from 'zod';
 import type { Db } from '#/shared/db/client.js';
 
 const healthResponse = z.object({
-  statut: z.enum(['ok', 'degrade']),
-  base: z.enum(['ok', 'injoignable']),
+  status: z.enum(['ok', 'degraded']),
+  database: z.enum(['ok', 'unreachable']),
 });
 
 /**
- * Sonde de santé pour le healthcheck du conteneur : vérifie que le processus
- * répond et que PostgreSQL est joignable.
+ * Health probe for the container healthcheck: checks that the process
+ * responds and that PostgreSQL is reachable.
  */
 export function registerHealthRoute(app: FastifyInstance, db: Db): void {
   app
@@ -23,10 +23,10 @@ export function registerHealthRoute(app: FastifyInstance, db: Db): void {
       async (_request, reply) => {
         try {
           await db.execute(sql`select 1`);
-          return { statut: 'ok', base: 'ok' } as const;
+          return { status: 'ok', database: 'ok' } as const;
         } catch (error) {
-          app.log.error(error, 'Base de données injoignable');
-          return reply.code(503).send({ statut: 'degrade', base: 'injoignable' });
+          app.log.error(error, 'Database unreachable');
+          return reply.code(503).send({ status: 'degraded', database: 'unreachable' });
         }
       },
     );
