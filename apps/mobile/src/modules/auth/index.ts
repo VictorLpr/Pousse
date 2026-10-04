@@ -1,7 +1,7 @@
 /**
- * API publique du module auth : ce que les autres modules ont le droit
- * d'importer. Ne jamais importer un chemin `@/modules/auth/domain/**` ou
- * `@/modules/auth/infrastructure/**` depuis un autre module (voir AGENTS.md).
+ * Public API of the auth module: what other modules are allowed to import.
+ * Never import a `@/modules/auth/domain/**` or
+ * `@/modules/auth/infrastructure/**` path from another module (see AGENTS.md).
  */
 export { CreateChildProfile } from '@/modules/auth/application/use-cases/create-child-profile';
 export { CreateHousehold } from '@/modules/auth/application/use-cases/create-household';

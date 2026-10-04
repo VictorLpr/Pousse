@@ -9,7 +9,7 @@ interface SketchSproutProps {
   strokeWidth?: number;
 }
 
-/** Icône « sprout » redessinée à main levée (remplace l'icône lucide plate). */
+/** "sprout" icon redrawn freehand (replaces the flat lucide icon). */
 export function SketchSprout({ size = 18, color, strokeWidth = 1.8 }: SketchSproutProps) {
   const [seed] = useState(() => Math.random() * 1_000_000);
   const paths = useMemo(() => createSketchSproutPaths(seed, strokeWidth), [seed, strokeWidth]);

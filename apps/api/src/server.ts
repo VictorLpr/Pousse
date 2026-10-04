@@ -10,10 +10,10 @@ app.addHook('onClose', async () => {
   await db.$client.end();
 });
 
-// Arrêt propre sur `docker stop` (SIGTERM) et Ctrl+C (SIGINT).
+// Graceful shutdown on `docker stop` (SIGTERM) and Ctrl+C (SIGINT).
 for (const signal of ['SIGTERM', 'SIGINT'] as const) {
   process.once(signal, () => {
-    app.log.info(`${signal} reçu, arrêt du serveur`);
+    app.log.info(`${signal} received, shutting down`);
     void app.close().then(() => process.exit(0));
   });
 }

@@ -1,5 +1,5 @@
-# Contexte de build Docker : racine du monorepo (npm workspaces, ADR-0009).
-# Tout ce qui n'est pas nécessaire à la construction d'une image est exclu.
+# Docker build context: monorepo root (npm workspaces, ADR-0009).
+# Everything not needed to build an image is excluded.
 
 **/node_modules
 **/dist
@@ -13,7 +13,7 @@
 .claude
 docs
 
-# Secrets : jamais dans une image, passés à l'exécution
+# Secrets: never baked into an image, passed at runtime
 **/.env
 **/.env.*
 !**/.env.example

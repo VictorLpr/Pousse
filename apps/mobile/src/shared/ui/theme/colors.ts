@@ -1,4 +1,4 @@
-/** Palette « Cocon » issue de la maquette Pousse. */
+/** "Cocon" palette from the Pousse mockup. */
 export const colors = {
   background: '#FEF4EB',
   surface: '#FFFFFF',

@@ -4,7 +4,7 @@ import { colors } from '@/shared/ui/theme';
 
 interface ProgressDotsProps {
   stepCount: number;
-  /** Étape courante, à partir de 1. */
+  /** Current step, starting at 1. */
   currentStep: number;
 }
 

@@ -15,7 +15,7 @@ export const seedJournalEntries: readonly JournalEntry[] = [
   {
     id: 'entry-1',
     childId: LEA_ID,
-    emotionId: 'fier',
+    emotionId: 'proud',
     prideText: "J'ai aidé mon copain à faire ses maths et il a réussi tout seul après.",
     photoUri: SEED_PHOTO_URI,
     createdAt: daysAgo(0),
@@ -23,7 +23,7 @@ export const seedJournalEntries: readonly JournalEntry[] = [
   {
     id: 'entry-2',
     childId: LEA_ID,
-    emotionId: 'joyeux',
+    emotionId: 'happy',
     prideText: 'On a fait un gâteau au chocolat avec maman pour le goûter.',
     photoUri: SEED_PHOTO_URI,
     createdAt: daysAgo(1),
@@ -31,7 +31,7 @@ export const seedJournalEntries: readonly JournalEntry[] = [
   {
     id: 'entry-3',
     childId: LEA_ID,
-    emotionId: 'calme',
+    emotionId: 'calm',
     prideText: 'On a lu trois histoires avant de dormir, blotti dans le canapé.',
     photoUri: SEED_PHOTO_URI,
     createdAt: daysAgo(2),
@@ -39,7 +39,7 @@ export const seedJournalEntries: readonly JournalEntry[] = [
   {
     id: 'entry-4',
     childId: LEA_ID,
-    emotionId: 'fier',
+    emotionId: 'proud',
     prideText: "J'ai réussi à faire du vélo sans les petites roues.",
     photoUri: SEED_PHOTO_URI,
     createdAt: daysAgo(4),
@@ -47,7 +47,7 @@ export const seedJournalEntries: readonly JournalEntry[] = [
   {
     id: 'entry-5',
     childId: LEA_ID,
-    emotionId: 'joyeux',
+    emotionId: 'happy',
     prideText: 'On a construit une cabane géante dans le salon.',
     photoUri: SEED_PHOTO_URI,
     createdAt: daysAgo(5),

@@ -3,7 +3,7 @@ export type AgeRange = '4-6' | '7-9' | '10-12';
 export const AGE_RANGES: readonly AgeRange[] = ['4-6', '7-9', '10-12'];
 
 export interface EveningReminder {
-  /** Heure au format "HH:mm". */
+  /** Time in "HH:mm" format. */
   readonly time: string;
   readonly enabled: boolean;
 }
@@ -14,7 +14,7 @@ export interface Child {
   readonly firstName: string;
   readonly ageRange: AgeRange;
   readonly reminder: EveningReminder;
-  /** Nombre de soirs consécutifs où le rituel a été complété. */
+  /** Number of consecutive evenings the ritual was completed. */
   readonly streakInEvenings: number;
 }
 

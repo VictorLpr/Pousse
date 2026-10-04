@@ -7,7 +7,7 @@ interface StreakBadgeProps {
   label: string;
 }
 
-/** Série de soirs, affichée nue : flamme + texte, sans pastille. */
+/** Evening streak, drawn bare: flame + text, no pill. */
 export function StreakBadge({ label }: StreakBadgeProps) {
   return (
     <View accessible accessibilityLabel={`Série en cours : ${label}`} style={styles.row}>

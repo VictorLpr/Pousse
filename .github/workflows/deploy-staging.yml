@@ -1,8 +1,8 @@
 name: Deploy staging
 
-# Tourne sur chaque PR, mais le job `deploy` attend une approbation manuelle
-# (relecteur obligatoire sur l'environment `staging`) : on choisit quelles PR
-# déployer. Le staging est unique, la dernière PR déployée l'occupe.
+# Runs on every PR, but the `deploy` job waits for manual approval
+# (required reviewer on the `staging` environment): we pick which PRs to
+# deploy. There is a single staging, held by the last deployed PR.
 on:
   pull_request:
     branches: [main]
@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  # En file d'attente, jamais interrompu en pleine migration.
+  # Queued, never cancelled mid-migration.
   group: deploy-staging
   cancel-in-progress: false
 
@@ -23,7 +23,7 @@ env:
 
 jobs:
   checks:
-    # Une PR venue d'un fork n'a pas accès aux secrets.
+    # A PR from a fork has no access to secrets.
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.full_name == github.repository
     uses: ./.github/workflows/ci.yml
 
@@ -71,7 +71,7 @@ jobs:
           if find apps/api/drizzle -name '*.sql' | grep -q .; then
             npm run db:migrate -w apps/api
           else
-            echo "Aucune migration à appliquer."
+            echo "No migrations to apply."
           fi
 
       - uses: scaleway/action-scw@v0
@@ -82,8 +82,8 @@ jobs:
           default-project-id: ${{ secrets.SCW_DEFAULT_PROJECT_ID }}
           default-organization-id: ${{ secrets.SCW_DEFAULT_ORGANIZATION_ID }}
 
-      # La mise à jour redéploie le conteneur. La sonde de vivacité se règle
-      # dans la console (TCP) : /health interroge la base, lente à se réveiller.
+      # The update redeploys the container. The liveness probe is set in the
+      # console (TCP): /health queries the database, which is slow to wake up.
       - name: Update container
         env:
           CONTAINER_ID: ${{ secrets.SCW_CONTAINER_ID }}
@@ -94,9 +94,9 @@ jobs:
             image="${{ steps.image.outputs.ref }}" \
             "secret-environment-variables.DATABASE_URL=$DATABASE_URL" > /dev/null
 
-      # Ne garde que les deux dernières images de staging : celle qui vient
-      # d'être déployée et la précédente. Les tags vX.Y.Z (production, retour
-      # arrière) ne sont jamais touchés. Un échec n'annule pas le déploiement.
+      # Keeps only the last two staging images: the one just deployed and the
+      # previous one. vX.Y.Z tags (production, rollback) are never touched.
+      # A failure doesn't cancel the deploy.
       - name: Prune old staging images
         continue-on-error: true
         env:
@@ -104,7 +104,7 @@ jobs:
         run: |
           image_id=$(scw registry image list name=api region=fr-par -o json | jq -r '.[0].id // empty')
           if [ -z "$image_id" ]; then
-            echo "::warning::Image api introuvable dans le registry, nettoyage ignoré."
+            echo "::warning::Image api not found in the registry, skipping cleanup."
             exit 0
           fi
           scw registry tag list image-id="$image_id" order-by=created_at_desc region=fr-par -o json \
@@ -112,7 +112,7 @@ jobs:
                 [.[] | select(.name | startswith("staging-")) | select(.name != $current)]
                 | .[1:][] | "\(.id) \(.name)"' \
             | while read -r id name; do
-                echo "Suppression de $name"
+                echo "Deleting $name"
                 scw registry tag delete "$id" region=fr-par > /dev/null
               done
 
@@ -131,8 +131,8 @@ jobs:
           workingDirectory: apps/mobile
           command: deploy --env staging --var API_ORIGIN:${{ secrets.API_ORIGIN }}
 
-      # --- Vérification -----------------------------------------------------
-      # Démarrage à froid (min-scale 0) : on réessaie pendant 60 s au moins.
+      # --- Verification -----------------------------------------------------
+      # Cold start (min-scale 0): retry for at least 60 s.
       - name: Smoke test
         env:
           WEB_URL: ${{ steps.web.outputs.deployment-url }}
@@ -147,4 +147,4 @@ jobs:
           WEB_URL: ${{ steps.web.outputs.deployment-url }}
         run: |
           gh pr comment "${{ github.event.pull_request.number }}" --edit-last --create-if-none --body \
-            "🌱 **Staging déployé** : $WEB_URL — commit \`${GITHUB_SHA::7}\` (image \`${{ steps.image.outputs.ref }}\`)"
+            "🌱 **Staging deployed**: $WEB_URL — commit \`${GITHUB_SHA::7}\` (image \`${{ steps.image.outputs.ref }}\`)"

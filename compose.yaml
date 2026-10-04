@@ -35,7 +35,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # Applique les migrations générées (apps/api/drizzle) puis s'arrête.
+  # Applies the generated migrations (apps/api/drizzle), then exits.
   migrate:
     <<: *api-dev
     command: ['npm', 'run', 'db:migrate']

@@ -8,13 +8,13 @@ interface SettingsRowProps {
   icon: ReactNode;
   title: string;
   subtitle?: string;
-  /** Élément affiché à droite (interrupteur…) ; chevron par défaut. */
+  /** Element shown on the right (switch…); chevron by default. */
   trailing?: ReactNode;
   onPress?(): void;
   accessibilityHint?: string;
 }
 
-/** Rangée ouverte, sans encadré : les écrans les séparent par des filets. */
+/** Open row, no frame: screens separate rows with rules. */
 export function SettingsRow({
   icon,
   title,

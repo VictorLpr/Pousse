@@ -29,7 +29,7 @@ export class CompleteEveningRitual {
   async execute(input: CompleteEveningRitualInput): Promise<CompleteEveningRitualResult> {
     const child = await this.children.findById(input.childId);
     if (!child) {
-      throw new Error(`Enfant introuvable : ${input.childId}`);
+      throw new Error(`Child not found: ${input.childId}`);
     }
 
     const entry: JournalEntry = {
