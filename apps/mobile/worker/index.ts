@@ -13,6 +13,14 @@ interface WorkerEnv {
 
 const API_PREFIX = '/api';
 
+/**
+ * Header carrying the client IP to the API, read by BetterAuth for rate
+ * limiting (`CLIENT_IP_HEADER` in `apps/api/src/modules/auth/auth.ts`).
+ * `X-Forwarded-For` can't be used: Cloudflare and the Scaleway proxy each
+ * append an address, and BetterAuth ignores a list.
+ */
+const CLIENT_IP_HEADER = 'X-Client-IP';
+
 function isApiPath(pathname: string): boolean {
   return pathname === API_PREFIX || pathname.startsWith(`${API_PREFIX}/`);
 }
@@ -26,6 +34,10 @@ function relayToApi(request: Request, apiOrigin: string): Promise<Response> {
   headers.delete('host');
   headers.set('X-Forwarded-Host', url.host);
   headers.set('X-Forwarded-Proto', url.protocol.slice(0, -1));
+  // Always overwritten: a value sent by the client must never get through.
+  const clientIp = request.headers.get('CF-Connecting-IP');
+  if (clientIp) headers.set(CLIENT_IP_HEADER, clientIp);
+  else headers.delete(CLIENT_IP_HEADER);
 
   // The response is returned as is: Set-Cookie headers are left untouched.
   return fetch(target, {

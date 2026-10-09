@@ -66,6 +66,10 @@ them to the code names (`prenom` → `first_name`, `nom_famille` →
   module's future business routes keep JSON parsing.
 - `BETTER_AUTH_URL` is the public origin without a path: the Worker strips
   `/api` before forwarding, so BetterAuth sees `/auth/...`.
+- The client IP comes from the `X-Client-IP` header set by the Worker
+  (`advanced.ipAddress.ipAddressHeaders`), never from `X-Forwarded-For`,
+  which holds several addresses behind Cloudflare and Scaleway: without it,
+  BetterAuth's rate limiter shares a single bucket between every client.
 - The mobile app must read the session cookie from `expo-secure-store` and
   add it explicitly to business requests — the Expo plugin only attaches it
   automatically to the auth client's calls.
