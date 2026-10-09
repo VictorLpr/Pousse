@@ -1,6 +1,6 @@
 import { defineConfig } from 'drizzle-kit';
 
-/** Configuration drizzle-kit (ADR-0002) : migrations générées dans `drizzle/`. */
+/** drizzle-kit configuration (ADR-0002): migrations are generated in `drizzle/`. */
 export default defineConfig({
   dialect: 'postgresql',
   schema: './src/shared/db/schema.ts',

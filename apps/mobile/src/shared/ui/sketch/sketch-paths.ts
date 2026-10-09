@@ -10,7 +10,7 @@ export interface SketchStyle {
   fillStyle?: 'solid' | 'hachure';
   radius?: number;
   roughness?: number;
-  /** Trait pointillé façon affordance « verrouillé / ajouter », au lieu d'un trait plein. */
+  /** Dashed stroke for the "locked / add" affordance, instead of a solid one. */
   dashed?: boolean;
 }
 
@@ -22,7 +22,7 @@ export interface SketchPath {
   dashArray?: string;
 }
 
-/** Marge autour de la forme : le trait « à main levée » déborde de quelques pixels. */
+/** Margin around the shape: the freehand stroke overflows by a few pixels. */
 export const SKETCH_OVERFLOW = 4;
 
 const generator = rough.generator();
@@ -46,9 +46,9 @@ function roundedRectanglePath(x: number, y: number, width: number, height: numbe
 }
 
 /**
- * RoughJS trace chaque segment comme un sous-tracé indépendant (`M … C …`).
- * Les sommets étant préservés, on les enchaîne en un seul tracé continu,
- * remplissable sans trous.
+ * RoughJS draws each segment as an independent subpath (`M … C …`).
+ * Since vertices are preserved, they are chained into a single continuous
+ * path that fills without gaps.
  */
 function outlineFromOps(ops: readonly Op[]): string {
   const commands = ops.map(({ op, data }, index) => {
@@ -62,7 +62,7 @@ function dashArrayFor(strokeWidth: number): string {
   return `${(strokeWidth * 1.8).toFixed(1)} ${(strokeWidth * 3.6).toFixed(1)}`;
 }
 
-/** Contour + remplissage éventuel d'une forme déjà tracée par RoughJS (rectangle ou cercle). */
+/** Outline + optional fill of a shape already drawn by RoughJS (rectangle or circle). */
 function filledOutline(
   outline: Drawable,
   hachure: Drawable | undefined,
@@ -92,9 +92,9 @@ function filledOutline(
 }
 
 /**
- * Calcule les tracés SVG d'une forme dessinée à la main pour une boîte de
- * `width` × `height`. Coordonnées décalées de `SKETCH_OVERFLOW` pour laisser
- * la place au débordement du trait. Même graine → même dessin.
+ * Computes the SVG paths of a hand-drawn shape for a `width` × `height`
+ * box. Coordinates are offset by `SKETCH_OVERFLOW` to leave room for the
+ * stroke overflow. Same seed → same drawing.
  */
 export function createSketchPaths(
   kind: SketchShapeKind,

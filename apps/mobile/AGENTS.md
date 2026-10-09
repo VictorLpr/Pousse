@@ -11,8 +11,8 @@ HTTP API will replace them later. These rules are mandatory for any change.
 ## 1. Modules by business domain, hexagonal inside each (non-negotiable)
 
 The frontend mirrors the backend's module split (`apps/api`, ADR-0006):
-`auth`, `journal`, `defis`, plus two UI-only modules that compose the others
-(`souvenirs`, `settings`). Each module with real business logic carries its
+`auth`, `journal`, `challenges`, plus two UI-only modules that compose the
+others (`memories`, `settings`). Each module with real business logic carries its
 own hexagonal layers:
 
 ```
@@ -24,10 +24,10 @@ src/app  →  src/modules/<name>/ui  →  src/modules/<name>/application  →  s
 src/modules/
   auth/       parent accounts, households, children, session
   journal/    evening ritual, journal entries
-  defis/      weekly challenges, trophies (badges live here — they're
+  challenges/ weekly challenges, trophies (badges live here — they're
               consumed only by this module, mirroring ADR-0006's rule for
               transverse elements)
-  souvenirs/  gallery — ui/ only, composes journal's public use-case
+  memories/   gallery — ui/ only, composes journal's public use-case
   settings/   preferences — ui/ only, composes auth's public use-case
 src/shared/   generic code with zero business logic (theme, generic
               components, Clock/IdGenerator ports and their adapters,
@@ -57,10 +57,11 @@ src/shared/   generic code with zero business logic (theme, generic
   infrastructure adapter directly, and never touches another module's
   repository.** A service may call another module's use-case (via its
   barrel) exactly like Fastify services do on the backend. Concrete example:
-  `auth`'s `CreateChildProfile` used to write directly to `defis`'
+  `auth`'s `CreateChildProfile` used to write directly to `challenges`'
   `WeeklyChallengeRepository`/`TrophyRepository` — this was fixed by
-  extracting `defis/application/use-cases/initialize-child-progress.ts` and
-  having `CreateChildProfile` depend on it through `@/modules/defis` instead.
+  extracting `challenges/application/use-cases/initialize-child-progress.ts`
+  and having `CreateChildProfile` depend on it through `@/modules/challenges`
+  instead.
   Follow the same pattern for any new cross-module need.
 - **Documented exception**: `shared/ui/components/app-shell.tsx` is the
   global navigation shell and needs app-wide state to render nav
@@ -95,8 +96,19 @@ use case.
 - Imports use the `@/` alias (maps to `src/`), grouped externals-first, alphabetical.
 - TypeScript strict, no `any`, `import type` for type-only imports. Run `npx tsc --noEmit`
   before finishing — it must pass with zero errors.
-- Domain and UI language is **French** (labels, error messages, doc comments). Keep
-  user-facing copy in the tone of the mockup: warm, simple, child-friendly
+- **Language: code in English, UI copy in French** (root `AGENTS.md`). Identifiers, file and
+  folder names, module names, route paths and query params (`?from=household`),
+  stored/code values (`EmotionId`, trophy ids), comments, doc comments and every
+  thrown `Error` message are in **English**. Only what the user reads is in
+  **French**: labels, buttons, headings, `accessibilityLabel`/`accessibilityHint`,
+  formatter output, and demo content in seeds. French copy lives in `ui/`
+  (screens, components, `ui/format/`) — never in a `throw` in `domain`/`application`.
+- Errors the user can see: the use case throws a typed error with an English
+  `code` and an English message (e.g. `AuthError` in
+  `modules/auth/domain/errors/auth-error.ts`, codes aligned with the API's
+  BetterAuth codes); the screen turns it into French copy through a formatter
+  (`modules/auth/ui/format/auth-error.ts`). Never display `error.message`.
+- Keep user-facing copy in the tone of the mockup: warm, simple, child-friendly
   (« Notre moment du soir », « On l'a fait ensemble »).
 - Comments only for constraints the code can't express; prefer expressive names.
 - Derive display strings through the formatters in `src/shared/ui/format/` (generic, e.g.
@@ -106,24 +118,24 @@ use case.
   installed); custom SVGs only when the mockup shape has no lucide equivalent (see
   `emotion-icon.tsx`).
 
-## 3. Design system (« Cocon » mockup)
+## 3. Design system ("Cocon" mockup)
 
 All values come from `src/shared/ui/theme/` — **never hardcode a color or font family in a screen**.
 
-Palette (`colors`): `background #FEF4EB` (crème), `coral #FFB089` (CTA uniquement, jamais
-couleur de texte), `peach #FFDAC4` (accents/sélection), `ink #2E4449` (texte principal),
-`inkSoft #4E6B73` (texte secondaire), `border/sage #DEE0D0`, `sageDeep #9DA986`,
+Palette (`colors`): `background #FEF4EB` (cream), `coral #FFB089` (CTAs only, never a
+text color), `peach #FFDAC4` (accents/selection), `ink #2E4449` (main text),
+`inkSoft #4E6B73` (secondary text), `border/sage #DEE0D0`, `sageDeep #9DA986`,
 `overline #7C8F84`, `dashedBorder #B7BCA2`, `moss #5E7168`, `surface #FFFFFF`.
 
-Typography (`fonts`): Caveat 700 for headings/prénoms (`heading`), Quicksand 500/600/700
+Typography (`fonts`): Caveat 700 for headings/first names (`heading`), Quicksand 500/600/700
 for body (`body`, `bodySemiBold`, `bodyBold`). Fonts load in `src/app/_layout.tsx`.
 
-**Layout philosophy — « carnet du soir » (flat & editorial). No boxes-in-boxes:**
+**Layout philosophy — "evening notebook" (flat & editorial). No boxes-in-boxes:**
 
 - Screens are open pages on the cream background. Avoid bordered cards and nested
   containers; content sits directly on the page, structured by typography and whitespace.
-- Sections and list rows are separated by the `Divider` component (`hairline` filet,
-  `stitched` pointillé « couture », `sprout` ornament with the little plant), never by
+- Sections and list rows are separated by the `Divider` component (`hairline` rule,
+  `stitched` "seam" dotted line, `sprout` ornament with the little plant), never by
   wrapping each item in its own bordered box.
 - At most **one** filled accent surface per screen (a coral CTA pill or a peach block) —
   if a screen already has one, everything else stays flat.
@@ -159,13 +171,13 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
 
 ## 5. Screen patterns & pitfalls
 
-- Session (parent account + foyer) lives in `useSession()`; the active child in
+- Session (parent account + household) lives in `useSession()`; the active child in
   `useActiveChild()`. Both are in-memory: a full reload logs the user out — expected.
   Screens behind login guard with `if (!household) return <Redirect href="/" />` (or
   `!activeChild` for child-scoped screens). Children always belong to a household
   (`householdId`); list them via `listChildren.execute(household.id)`.
 - Passwords are stored in plain text in the in-memory adapter on purpose (front-only
-  demo); hashing (Argon2) arrives with the API. Don't add crypto client-side.
+  demo); hashing (scrypt, ADR-0003) is done by the API. Don't add crypto client-side.
 - Screens needing the active child use `useActiveChild()` and must handle **both** states:
   `isLoading` → render an empty `ScreenContainer` (never redirect while loading — this
   broke deep links once), then `!activeChild` → `<Redirect href="/" />`.

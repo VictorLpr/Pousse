@@ -1,9 +1,9 @@
 /**
- * Worker Cloudflare de la PWA : sert les fichiers de l'export statique et
- * relaie `/api/*` vers l'API, préfixe retiré. Le web et l'API partagent ainsi
- * la même origine : pas de CORS, cookie de session propriétaire.
+ * Cloudflare Worker for the PWA: serves the static export files and
+ * forwards `/api/*` to the API with the prefix stripped. The web app and the
+ * API thus share the same origin: no CORS, first-party session cookie.
  *
- * Les types sont écrits à la main pour ne pas dépendre de
+ * Types are written by hand to avoid depending on
  * `@cloudflare/workers-types`.
  */
 interface WorkerEnv {
@@ -12,6 +12,14 @@ interface WorkerEnv {
 }
 
 const API_PREFIX = '/api';
+
+/**
+ * Header carrying the client IP to the API, read by BetterAuth for rate
+ * limiting (`CLIENT_IP_HEADER` in `apps/api/src/modules/auth/auth.ts`).
+ * `X-Forwarded-For` can't be used: Cloudflare and the Scaleway proxy each
+ * append an address, and BetterAuth ignores a list.
+ */
+const CLIENT_IP_HEADER = 'X-Client-IP';
 
 function isApiPath(pathname: string): boolean {
   return pathname === API_PREFIX || pathname.startsWith(`${API_PREFIX}/`);
@@ -26,8 +34,12 @@ function relayToApi(request: Request, apiOrigin: string): Promise<Response> {
   headers.delete('host');
   headers.set('X-Forwarded-Host', url.host);
   headers.set('X-Forwarded-Proto', url.protocol.slice(0, -1));
+  // Always overwritten: a value sent by the client must never get through.
+  const clientIp = request.headers.get('CF-Connecting-IP');
+  if (clientIp) headers.set(CLIENT_IP_HEADER, clientIp);
+  else headers.delete(CLIENT_IP_HEADER);
 
-  // La réponse est renvoyée telle quelle : les Set-Cookie ne sont pas touchés.
+  // The response is returned as is: Set-Cookie headers are left untouched.
   return fetch(target, {
     method: request.method,
     headers,

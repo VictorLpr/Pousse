@@ -13,7 +13,7 @@ interface RitualStepLayoutProps extends PropsWithChildren {
   subtitle: string;
 }
 
-/** Gabarit des étapes du rituel : page crème ouverte, points d'avancement, grand titre. */
+/** Ritual step layout: open cream page, progress dots, large title. */
 export function RitualStepLayout({ step, title, subtitle, children }: RitualStepLayoutProps) {
   return (
     <ScreenContainer scrollable={false}>

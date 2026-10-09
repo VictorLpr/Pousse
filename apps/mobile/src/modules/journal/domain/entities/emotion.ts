@@ -1,4 +1,4 @@
-export type EmotionId = 'joyeux' | 'fier' | 'calme' | 'surpris' | 'triste' | 'fache';
+export type EmotionId = 'happy' | 'proud' | 'calm' | 'surprised' | 'sad' | 'angry';
 
 export interface Emotion {
   readonly id: EmotionId;
@@ -6,18 +6,18 @@ export interface Emotion {
 }
 
 export const EMOTIONS: readonly Emotion[] = [
-  { id: 'joyeux', label: 'joyeux' },
-  { id: 'fier', label: 'fier' },
-  { id: 'calme', label: 'calme' },
-  { id: 'surpris', label: 'surpris' },
-  { id: 'triste', label: 'triste' },
-  { id: 'fache', label: 'fâché' },
+  { id: 'happy', label: 'joyeux' },
+  { id: 'proud', label: 'fier' },
+  { id: 'calm', label: 'calme' },
+  { id: 'surprised', label: 'surpris' },
+  { id: 'sad', label: 'triste' },
+  { id: 'angry', label: 'fâché' },
 ];
 
 export function getEmotion(id: EmotionId): Emotion {
   const emotion = EMOTIONS.find((candidate) => candidate.id === id);
   if (!emotion) {
-    throw new Error(`Émotion inconnue : ${id}`);
+    throw new Error(`Unknown emotion: ${id}`);
   }
   return emotion;
 }

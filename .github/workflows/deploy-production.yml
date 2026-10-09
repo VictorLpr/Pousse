@@ -1,15 +1,15 @@
 name: Deploy production
 
-# `git tag vX.Y.Z && git push origin vX.Y.Z` sur un commit de main déploie la
-# production. Retour arrière : lancer ce workflow à la main avec un tag
-# antérieur (la base, elle, ne revient pas en arrière).
+# `git tag vX.Y.Z && git push origin vX.Y.Z` on a commit of main deploys
+# production. Rollback: run this workflow manually with an earlier tag
+# (the database itself is not rolled back).
 on:
   push:
     tags: ['v*.*.*']
   workflow_dispatch:
     inputs:
       tag:
-        description: Tag à redéployer (ex. v0.1.0)
+        description: Tag to redeploy (e.g. v0.1.0)
         required: true
 
 concurrency:
@@ -25,7 +25,7 @@ env:
 
 jobs:
   checks:
-    # Un redéploiement manuel reprend un tag déjà vérifié à sa sortie.
+    # A manual redeploy reuses a tag that was already checked when released.
     if: github.event_name == 'push'
     uses: ./.github/workflows/ci.yml
 
@@ -49,12 +49,12 @@ jobs:
       - name: Assert tag is on main
         run: |
           if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::« $VERSION » n'est pas un tag de version vX.Y.Z."
+            echo "::error::\"$VERSION\" is not a vX.Y.Z version tag."
             exit 1
           fi
           git fetch origin main
           if ! git merge-base --is-ancestor HEAD origin/main; then
-            echo "::error::Le commit du tag $VERSION n'est pas sur main : déploiement refusé."
+            echo "::error::The commit of tag $VERSION is not on main: deploy refused."
             exit 1
           fi
 
@@ -72,11 +72,11 @@ jobs:
           username: nologin
           password: ${{ secrets.SCW_SECRET_KEY }}
 
-      # Une version déjà construite (retour arrière) n'est pas reconstruite.
+      # An already-built version (rollback) is not rebuilt.
       - name: Build and push image
         run: |
           if docker manifest inspect "$IMAGE:$VERSION" > /dev/null 2>&1; then
-            echo "Image $IMAGE:$VERSION déjà présente, réutilisée."
+            echo "Image $IMAGE:$VERSION already exists, reusing it."
           else
             docker build --target runtime -f apps/api/Dockerfile -t "$IMAGE:$VERSION" .
             docker push "$IMAGE:$VERSION"
@@ -89,7 +89,7 @@ jobs:
           if find apps/api/drizzle -name '*.sql' | grep -q .; then
             npm run db:migrate -w apps/api
           else
-            echo "Aucune migration à appliquer."
+            echo "No migrations to apply."
           fi
 
       - uses: scaleway/action-scw@v0
@@ -104,11 +104,15 @@ jobs:
         env:
           CONTAINER_ID: ${{ secrets.SCW_CONTAINER_ID }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BETTER_AUTH_SECRET: ${{ secrets.BETTER_AUTH_SECRET }}
+          BETTER_AUTH_URL: ${{ secrets.BETTER_AUTH_URL }}
         run: |
           scw container container update "$CONTAINER_ID" region=fr-par \
             port=3000 \
             image="$IMAGE:$VERSION" \
-            "secret-environment-variables.DATABASE_URL=$DATABASE_URL" > /dev/null
+            "secret-environment-variables.DATABASE_URL=$DATABASE_URL" \
+            "secret-environment-variables.BETTER_AUTH_SECRET=$BETTER_AUTH_SECRET" \
+            "secret-environment-variables.BETTER_AUTH_URL=$BETTER_AUTH_URL" > /dev/null
 
       # --- Web ------------------------------------------------------------
       - name: Export PWA

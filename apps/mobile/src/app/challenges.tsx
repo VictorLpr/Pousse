@@ -1,3 +1,3 @@
-import { ChallengesScreen } from '@/modules/defis/ui/screens/challenges-screen';
+import { ChallengesScreen } from '@/modules/challenges/ui/screens/challenges-screen';
 
 export default ChallengesScreen;

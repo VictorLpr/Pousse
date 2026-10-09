@@ -3,7 +3,7 @@
 
 ARG NODE_VERSION=24
 
-# --- Dépendances complètes (build) -----------------------------------------
+# --- Full dependencies (build) ---------------------------------------------
 FROM node:${NODE_VERSION}-alpine AS deps
 WORKDIR /repo
 COPY package.json package-lock.json ./
@@ -12,23 +12,23 @@ COPY apps/mobile/package.json apps/mobile/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --workspace @pousse/api --include-workspace-root=false
 
-# --- Développement (compose.yaml) -------------------------------------------
-# Le code de apps/api est monté en volume : l'image ne porte que les
-# dépendances. `tsx watch` recharge à chaque modification.
+# --- Development (compose.yaml) --------------------------------------------
+# apps/api code is mounted as a volume: the image only carries the
+# dependencies. `tsx watch` reloads on every change.
 FROM deps AS dev
 COPY tsconfig.base.json ./
 WORKDIR /repo/apps/api
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
 
-# --- Compilation TypeScript -------------------------------------------------
+# --- TypeScript compilation ------------------------------------------------
 FROM deps AS build
 COPY tsconfig.base.json ./
 COPY apps/api/tsconfig.json apps/api/tsconfig.build.json apps/api/
 COPY apps/api/src apps/api/src
 RUN npm run build --workspace @pousse/api
 
-# --- Dépendances de production uniquement -----------------------------------
+# --- Production dependencies only ------------------------------------------
 FROM node:${NODE_VERSION}-alpine AS prod-deps
 WORKDIR /repo
 COPY package.json package-lock.json ./
@@ -37,14 +37,14 @@ COPY apps/mobile/package.json apps/mobile/
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --workspace @pousse/api --include-workspace-root=false --omit=dev
 
-# --- Image finale -----------------------------------------------------------
+# --- Final image -----------------------------------------------------------
 FROM node:${NODE_VERSION}-alpine AS runtime
 ENV NODE_ENV=production \
     PORT=3000
 WORKDIR /repo
-# Manifestes + node_modules, à la racine ET dans apps/api (npm peut y placer
-# une version non remontée en cas de conflit). apps/api/package.json est
-# requis à l'exécution : il porte le mapping `imports` (#/*).
+# Manifests + node_modules, at the root AND in apps/api (npm may place a
+# non-hoisted version there on conflict). apps/api/package.json is
+# required at runtime: it carries the `imports` mapping (#/*).
 COPY --from=prod-deps --chown=node:node /repo ./
 COPY --from=build --chown=node:node /repo/apps/api/dist apps/api/dist
 WORKDIR /repo/apps/api

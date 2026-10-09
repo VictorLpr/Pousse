@@ -81,7 +81,7 @@ export function HouseholdHomeScreen() {
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Ajouter un enfant"
-        onPress={() => router.push('/onboarding/child-profile?from=foyer')}
+        onPress={() => router.push('/onboarding/child-profile?from=household')}
         style={({ pressed }) => [styles.addRow, pressed && styles.pressed]}
       >
         <Plus size={22} color={colors.moss} strokeWidth={1.9} />

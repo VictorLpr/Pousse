@@ -8,7 +8,7 @@ interface OverlineLabelProps {
   style?: StyleProp<TextStyle>;
 }
 
-/** Petit intitulé en capitales au-dessus d'une section ou d'un champ. */
+/** Small uppercase label above a section or a field. */
 export function OverlineLabel({ children, color = colors.overline, style }: OverlineLabelProps) {
   return <Text style={[styles.label, { color }, style]}>{children}</Text>;
 }

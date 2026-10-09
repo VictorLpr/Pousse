@@ -14,7 +14,7 @@ export function ageRangeWithYears(ageRange: AgeRange): string {
   return `${AGE_RANGE_LABELS[ageRange]} ans`;
 }
 
-/** Ex. « 3 soirs de suite », « 1 soir de suite » ou « nouveau ». */
+/** E.g. "3 soirs de suite", "1 soir de suite" or "nouveau". */
 export function streakLabel(child: Child): string {
   const evenings = child.streakInEvenings;
   if (evenings === 0) {
@@ -27,7 +27,7 @@ export function childInitial(firstName: string): string {
   return firstName.trim().charAt(0).toUpperCase() || '?';
 }
 
-/** Ex. « Tous les soirs · 20:00 ». */
+/** E.g. "Tous les soirs · 20:00". */
 export function reminderLabel(child: Child): string {
   return `Tous les soirs · ${child.reminder.time}`;
 }

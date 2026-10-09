@@ -13,12 +13,14 @@
     "build": "tsc -p tsconfig.build.json",
     "start": "node dist/server.js",
     "typecheck": "tsc --noEmit",
+    "test": "node --experimental-vm-modules --disable-warning=ExperimentalWarning ../../node_modules/jest/bin/jest.js",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "^1.7.4",
     "@fastify/swagger": "^9.4.0",
-    "better-auth": "^1.2.0",
+    "better-auth": "^1.7.4",
     "drizzle-orm": "1.0.0-rc.4",
     "fastify": "^5.2.0",
     "fastify-type-provider-zod": "^4.0.0",
@@ -27,9 +29,12 @@
     "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@jest/globals": "^30.5.2",
+    "@testcontainers/postgresql": "^12.2.0",
     "@types/node": "^22.10.0",
     "@types/pg": "^8.23.1",
     "drizzle-kit": "1.0.0-rc.4",
+    "jest": "^30.5.2",
     "tsx": "^4.19.0",
     "typescript": "^7.0.2"
   }

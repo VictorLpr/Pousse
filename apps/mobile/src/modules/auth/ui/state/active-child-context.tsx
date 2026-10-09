@@ -12,7 +12,7 @@ import { useServices } from '@/di/services-provider';
 
 interface ActiveChildContextValue {
   readonly activeChild: Child | null;
-  /** Conservé pour les gardes d'écrans ; l'enfant actif est choisi sur la page du foyer. */
+  /** Kept for screen guards; the active child is picked on the household page. */
   readonly isLoading: boolean;
   selectChild(childId: string): Promise<void>;
   adoptChild(child: Child): void;
@@ -51,7 +51,7 @@ export function ActiveChildProvider({ children }: PropsWithChildren) {
 export function useActiveChild(): ActiveChildContextValue {
   const context = useContext(ActiveChildContext);
   if (!context) {
-    throw new Error('useActiveChild doit être utilisé dans un ActiveChildProvider.');
+    throw new Error('useActiveChild must be used within an ActiveChildProvider.');
   }
   return context;
 }

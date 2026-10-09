@@ -4,8 +4,8 @@ import type { PropsWithChildren } from 'react';
 import { colors } from '@/shared/ui/theme';
 
 /**
- * Document HTML racine de l'export web statique (ADR-0010). Exécuté
- * uniquement dans Node au moment de l'export : aucune API navigateur ici.
+ * Root HTML document of the static web export (ADR-0010). Runs only in
+ * Node at export time: no browser API here.
  */
 export default function Root({ children }: PropsWithChildren) {
   return (

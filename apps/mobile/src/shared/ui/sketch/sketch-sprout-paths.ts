@@ -5,7 +5,7 @@ export interface SketchSproutPath {
   strokeWidth: number;
 }
 
-/** Tracés de l'icône lucide « sprout » (viewBox 24×24), repris tels quels. */
+/** Paths of the lucide "sprout" icon (viewBox 24×24), taken as is. */
 const SPROUT_SUBPATHS = [
   'M14 9.536V7a4 4 0 0 1 4-4h1.5a.5.5 0 0 1 .5.5V5a4 4 0 0 1-4 4 4 4 0 0 0-4 4c0 2 1 3 1 5a5 5 0 0 1-1 3',
   'M4 9a5 5 0 0 1 8 4 5 5 0 0 1-8-4',
@@ -15,8 +15,8 @@ const SPROUT_SUBPATHS = [
 const generator = rough.generator();
 
 /**
- * Redessine à main levée les tracés de l'icône « sprout » (au lieu de piocher
- * dans `lucide-react-native`). Même graine → même dessin.
+ * Redraws the "sprout" icon paths freehand (instead of taking it from
+ * `lucide-react-native`). Same seed → same drawing.
  */
 export function createSketchSproutPaths(seed: number, strokeWidth = 1.8): SketchSproutPath[] {
   return SPROUT_SUBPATHS.map((subpath) => {

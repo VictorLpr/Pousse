@@ -9,7 +9,7 @@ import {
 
 import type { EmotionId } from '@/modules/journal/domain/entities/emotion';
 
-/** Brouillon du rituel du soir, construit étape par étape. */
+/** Evening ritual draft, built step by step. */
 interface RitualDraft {
   readonly emotionId: EmotionId | null;
   readonly prideText: string;
@@ -57,7 +57,7 @@ export function RitualDraftProvider({ children }: PropsWithChildren) {
 export function useRitualDraft(): RitualDraftContextValue {
   const context = useContext(RitualDraftContext);
   if (!context) {
-    throw new Error('useRitualDraft doit être utilisé dans un RitualDraftProvider.');
+    throw new Error('useRitualDraft must be used within a RitualDraftProvider.');
   }
   return context;
 }
