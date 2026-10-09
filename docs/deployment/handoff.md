@@ -16,6 +16,8 @@ committing to anything.
   (PR #4, merged).
 - `.github/workflows/ci.yml` runs lint, format, typecheck and build on every
   PR; the test step is commented out.
+  _Update 2026-10-09:_ it now also runs the API integration tests
+  (`npm test`, PostgreSQL through Testcontainers on the runner's Docker).
 - The API (`apps/api`) runs in Docker (`apps/api/Dockerfile`, `runtime`
   target, `GET /health` probe). Modules are mounted **at the root**
   (`/auth`, `/journal`, …), without an `/api` prefix. BetterAuth is not wired
