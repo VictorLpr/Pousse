@@ -3,11 +3,11 @@
 `apps/api` is the REST API of the Pousse monorepo: Fastify 5 + TypeScript,
 consumed only by `apps/mobile`. Authentication (BetterAuth) is wired; no
 business route exists yet. This document puts into practice the decisions
-already accepted in `../../docs/adr/` (0001 to 0007, and 0012 for the
-language); when in doubt, the ADR wins and this file gets fixed to stay
-consistent with it, never the other way around.
+already accepted in `../../docs/adr/` (0001 to 0007); when in doubt, the
+ADR wins and this file gets fixed to stay consistent with it, never the
+other way around.
 
-## 0. Language (ADR-0012)
+## 0. Language
 
 **Everything in `apps/api` is in English**: identifiers, file and folder
 names, module names and route prefixes, table and column names, enum and
@@ -17,10 +17,10 @@ an English `message` and a stable `code` (e.g. BetterAuth's
 `INVALID_EMAIL_OR_PASSWORD`), and the mobile client maps the code to its
 French UI copy. Don't add a translation layer to the API.
 
-ADRs 0001–0011 are written in French and use French names; ADR-0012 maps
-them to the code names (`prenom` → `first_name`, `nom_famille` →
-`last_name`, `defis` → `challenges`, `souvenirs` → `memories`, `lettres` →
-`letters`). Use the English names when writing code.
+The ADRs are written in French and use French names (`prenom` →
+`first_name`, `nom_famille` → `last_name`, `defis` → `challenges`,
+`souvenirs` → `memories`, `lettres` → `letters`, see the root `AGENTS.md`).
+Use the English names when writing code.
 
 ## 1. Framework and validation (ADR-0001)
 

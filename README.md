@@ -50,9 +50,8 @@ cd apps/mobile && npx expo export -p web && npx wrangler dev
 ## Documentation
 
 - [`docs/adr/`](docs/adr/README.md): history of architecture decisions,
-  including the choice of Expo (ADR-0008), the monorepo layout (ADR-0009),
-  shipping as a PWA first, native later (ADR-0010) and English as the code
-  language (ADR-0012).
+  including the choice of Expo (ADR-0008), the monorepo layout (ADR-0009)
+  and shipping as a PWA first, native later (ADR-0010).
 - [`apps/mobile/AGENTS.md`](apps/mobile/AGENTS.md) and
   [`apps/api/AGENTS.md`](apps/api/AGENTS.md): architecture and convention
   rules specific to each application.

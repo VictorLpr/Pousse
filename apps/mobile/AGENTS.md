@@ -96,7 +96,7 @@ use case.
 - Imports use the `@/` alias (maps to `src/`), grouped externals-first, alphabetical.
 - TypeScript strict, no `any`, `import type` for type-only imports. Run `npx tsc --noEmit`
   before finishing — it must pass with zero errors.
-- **Language (ADR-0012): code in English, UI copy in French.** Identifiers, file and
+- **Language: code in English, UI copy in French** (root `AGENTS.md`). Identifiers, file and
   folder names, module names, route paths and query params (`?from=household`),
   stored/code values (`EmotionId`, trophy ids), comments, doc comments and every
   thrown `Error` message are in **English**. Only what the user reads is in
