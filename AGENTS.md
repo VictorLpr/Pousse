@@ -31,6 +31,7 @@ npm run mobile:web        # starts the Expo client (web)
 docker compose up --build # PostgreSQL + migrations + API (watch) on :3000
 npm run db:generate -w apps/api   # generates a migration from the Drizzle schema
 npm run typecheck         # tsc --noEmit on every workspace that exposes it
+npm test                  # test suites of every workspace (API: needs Docker running)
 npm run lint              # oxlint on the whole repo
 ```
 

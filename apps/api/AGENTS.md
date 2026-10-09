@@ -115,6 +115,19 @@ prefix: '/x' })`, see `src/app.ts`). Crossing a module boundary must fail
 - Levels: unit (pure service logic, no database), integration (routes +
   repositories + constraints, PostgreSQL container), end-to-end (main
   journeys from the mobile app, dedicated environment).
+- In practice: `npm test -w apps/api` (Docker must be running). Tests live
+  in `test/` (`test/integration/*.test.ts`), outside `src/` so they never
+  reach `dist/`. `test/support/global-setup.ts` starts the container once
+  and applies the drizzle-kit migrations; `useTestApp()` builds a fresh app
+  per test on a rolled-back transaction (`useTestDatabase()`) and exposes
+  that transaction to check what the routes wrote.
+- Jest runs the tests as native ES modules (BetterAuth only ships ESM) and
+  Node strips the types (`test/support/strip-types-transformer.mjs`): only
+  erasable TypeScript syntax is allowed (`erasableSyntaxOnly`) — no `enum`,
+  no `namespace`, no constructor parameter properties.
+- Under `NODE_ENV=test`, BetterAuth turns some protections off by default
+  (the `Origin` check, rate limiting). A protection the tests must cover is
+  spelled out in `modules/auth/auth.ts`, as `disableOriginCheck: false` is.
 
 ## 6. Conventions
 

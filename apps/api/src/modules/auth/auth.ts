@@ -62,6 +62,9 @@ export function createAuth({ db, secret, baseUrl, logger }: AuthConfig) {
       // (`defaultRandom()` in the schema).
       database: { generateId: 'uuid' },
       ipAddress: { ipAddressHeaders: [CLIENT_IP_HEADER] },
+      // Already the default, except under `NODE_ENV=test` where BetterAuth
+      // skips the `Origin` (CSRF) check: spelled out so the tests exercise it.
+      disableOriginCheck: false,
     },
     telemetry: { enabled: false },
     // Logging goes through Pino, already embedded by Fastify (ADR-0001).

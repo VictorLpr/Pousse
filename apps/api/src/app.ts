@@ -1,4 +1,4 @@
-import Fastify, { type FastifyInstance } from 'fastify';
+import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 
 import { AUTH_BASE_PATH, authModule, createAuth } from '#/modules/auth/index.js';
@@ -16,6 +16,8 @@ export interface AppDependencies {
     /** Public origin of the application, without a path. */
     readonly baseUrl: string;
   };
+  /** Pino configuration; enabled by default, turned off by the tests. */
+  readonly logger?: FastifyServerOptions['logger'];
 }
 
 /**
@@ -24,8 +26,12 @@ export interface AppDependencies {
  * driven by `fastify.inject()` without opening a port (ADR-0007): the
  * database connection is received as a parameter, never created here.
  */
-export function buildApp({ db, auth: authConfig }: AppDependencies): FastifyInstance {
-  const app = Fastify({ logger: true });
+export function buildApp({
+  db,
+  auth: authConfig,
+  logger = true,
+}: AppDependencies): FastifyInstance {
+  const app = Fastify({ logger });
 
   // Input validation and output serialization through Zod schemas.
   app.setValidatorCompiler(validatorCompiler);
