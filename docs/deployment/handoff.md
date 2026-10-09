@@ -114,6 +114,13 @@ Work on a branch created from `origin/main`.
      `X-Forwarded-Host` and `X-Forwarded-Proto`. It returns the response
      without touching `Set-Cookie`. Any other request goes to
      `env.ASSETS.fetch(request)`.
+     _Update 2026-10-09:_ it also sets `X-Client-IP` from
+     `CF-Connecting-IP`, always overwriting the client's value. BetterAuth
+     reads it for rate limiting: `X-Forwarded-For` holds several addresses
+     behind Cloudflare and Scaleway, so BetterAuth found no IP and shared a
+     single bucket between every client. The container URL being public,
+     the header can still be forged by calling the API directly — to close
+     once the API is only reachable through the Worker.
    - Stripping the prefix keeps Fastify routes at the root, as today.
      BetterAuth's `basePath` matches the path the API sees (`/auth`).
      _Update 2026-10-04:_ its `baseURL` (`BETTER_AUTH_URL`) is the public
