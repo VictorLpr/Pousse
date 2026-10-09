@@ -14,7 +14,7 @@ import { useServices } from '@/di/services-provider';
 interface SessionContextValue {
   readonly account: ParentAccount | null;
   readonly household: Household | null;
-  /** Retourne le foyer du compte, ou null s'il reste à créer. */
+  /** Returns the account's household, or null if it is still to be created. */
   signIn(email: string, password: string): Promise<Household | null>;
   register(email: string, password: string): Promise<void>;
   createHousehold(name: string): Promise<void>;
@@ -49,7 +49,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const createHousehold = useCallback(
     async (name: string) => {
       if (!account) {
-        throw new Error('Aucun compte connecté.');
+        throw new Error('No signed-in account.');
       }
       setHousehold(await services.createHousehold.execute(account.id, name));
     },
@@ -72,7 +72,7 @@ export function SessionProvider({ children }: PropsWithChildren) {
 export function useSession(): SessionContextValue {
   const context = useContext(SessionContext);
   if (!context) {
-    throw new Error('useSession doit être utilisé dans un SessionProvider.');
+    throw new Error('useSession must be used within a SessionProvider.');
   }
   return context;
 }

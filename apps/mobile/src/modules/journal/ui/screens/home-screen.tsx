@@ -78,7 +78,7 @@ export function HomeScreen() {
   );
 }
 
-/** Titre + accès aux préférences ; le menu disparaît quand la sidebar est là. */
+/** Title + settings access; the menu disappears when the sidebar is shown. */
 function HomeTopBar() {
   const router = useRouter();
   const inShell = useInShell();

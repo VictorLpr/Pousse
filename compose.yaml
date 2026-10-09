@@ -9,6 +9,10 @@ x-api-dev: &api-dev
   environment:
     DATABASE_URL: postgres://${POSTGRES_USER:-pousse}:${POSTGRES_PASSWORD:-pousse}@db:5432/${POSTGRES_DB:-pousse}
     PORT: 3000
+    # Development values only: staging and production get theirs from
+    # GitHub secrets.
+    BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:-dev-secret-never-use-outside-local}
+    BETTER_AUTH_URL: ${BETTER_AUTH_URL:-http://localhost:3000}
 
     CHOKIDAR_USEPOLLING: 'true'
   volumes:
@@ -35,7 +39,7 @@ services:
       timeout: 5s
       retries: 10
 
-  # Applique les migrations générées (apps/api/drizzle) puis s'arrête.
+  # Applies the generated migrations (apps/api/drizzle), then exits.
   migrate:
     <<: *api-dev
     command: ['npm', 'run', 'db:migrate']

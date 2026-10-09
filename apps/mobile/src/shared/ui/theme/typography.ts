@@ -1,4 +1,4 @@
-/** Familles chargées dans le layout racine via expo-font. */
+/** Families loaded in the root layout through expo-font. */
 export const fonts = {
   heading: 'Caveat_700Bold',
   body: 'Quicksand_500Medium',

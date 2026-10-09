@@ -7,6 +7,7 @@ import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
+import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -28,7 +29,7 @@ export function LoginScreen() {
       const household = await signIn(email, password);
       router.replace(household ? '/household' : '/onboarding/household');
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'Connexion impossible.');
+      setErrorMessage(authErrorMessage(error, 'Connexion impossible.'));
     } finally {
       setIsSubmitting(false);
     }

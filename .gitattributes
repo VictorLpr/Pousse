@@ -1,2 +1,2 @@
-# Fins de ligne LF partout (oxfmt les exige), quel que soit l OS.
+# LF line endings everywhere (required by oxfmt), whatever the OS.
 * text=auto eol=lf

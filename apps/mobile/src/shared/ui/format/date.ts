@@ -15,17 +15,17 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-/** Ex. « Mardi 8 juillet ». */
+/** E.g. "Mardi 8 juillet". */
 export function formatFullDate(date: Date): string {
   return capitalize(FULL_DATE_FORMAT.format(date));
 }
 
-/** Ex. « 8 juil. ». */
+/** E.g. "8 juil.". */
 export function formatShortDate(date: Date): string {
   return SHORT_DATE_FORMAT.format(date);
 }
 
-/** Ex. « Juillet ». */
+/** E.g. "Juillet". */
 export function formatMonth(date: Date): string {
   return capitalize(MONTH_FORMAT.format(date));
 }

@@ -1,0 +1,159 @@
+<style>
+  #erd4 svg.erDiagram .divider path {
+    stroke-opacity: 0.5;
+  }
+  #erd4 svg.erDiagram .row-rect-odd path,
+  #erd4 svg.erDiagram .row-rect-odd rect,
+  #erd4 svg.erDiagram .row-rect-even path,
+  #erd4 svg.erDiagram .row-rect-even rect {
+    stroke: none !important;
+  }
+</style>
+<div id="erd4"></div>
+<script type="module">
+  import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+  const dark = matchMedia('(prefers-color-scheme: dark)').matches;
+  await document.fonts.ready;
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'base',
+    fontFamily: '"Anthropic Sans", sans-serif',
+    themeVariables: {
+      darkMode: dark,
+      fontSize: '13px',
+      fontFamily: '"Anthropic Sans", sans-serif',
+      lineColor: dark ? '#9c9a92' : '#73726c',
+      textColor: dark ? '#c2c0b6' : '#3d3d3a',
+    },
+  });
+  const { svg } = await mermaid.render(
+    'erd4-svg',
+    `erDiagram
+  PARENT ||--o{ CHILD : "manages (0,n)/(1,1)"
+  CHILD ||--|| CONSENT : "consents (1,1)/(1,1)"
+  CHILD ||--o{ JOURNAL_ENTRY : "recounts (0,n)/(1,1)"
+  EMOTION ||--o{ JOURNAL_ENTRY : "expresses (0,n)/(1,1)"
+  JOURNAL_ENTRY ||--o| PHOTO : "illustrates (0,1)/(1,1)"
+  CHILD ||--o{ CHILD_CHALLENGE : "offered (0,n)"
+  CHALLENGE ||--o{ CHILD_CHALLENGE : "offered (0,n)"
+  CHILD ||--o{ BADGE_AWARD : "earns (0,n)"
+  BADGE ||--o{ BADGE_AWARD : "earns (0,n)"
+  CHILD ||--o{ PRIDE_LETTER : "concerns (0,n)/(1,1)"
+  PARENT {
+    uuid id PK
+    text email "unique"
+    text password "hashed"
+    text first_name
+    text last_name
+    bool email_verified
+    timestamp created_at
+    timestamp last_sign_in_at
+  }
+  CHILD {
+    uuid id PK
+    text first_name
+    date birth_date
+    text avatar
+    timestamp created_at
+    int age "computed"
+    enum age_range "computed"
+  }
+  CONSENT {
+    uuid id PK
+    timestamp given_at
+    text policy_version
+    bool guardian_attested
+  }
+  EMOTION {
+    int id PK
+    text code "unique"
+    text label
+    text emoji
+    text color
+  }
+  JOURNAL_ENTRY {
+    uuid id PK
+    date date
+    text text
+    enum status
+    timestamp created_at
+    timestamp updated_at
+    timestamp editable_until "computed"
+  }
+  PHOTO {
+    uuid id PK
+    text storage_key
+    text mime_type
+  }
+  CHALLENGE {
+    int id PK
+    text title
+    text description
+    enum age_range
+    text category
+  }
+  CHILD_CHALLENGE {
+    uuid id PK
+    text week
+    date start_date
+    date end_date
+    enum status
+    timestamp chosen_at
+    timestamp completed_at
+  }
+  BADGE {
+    int id PK
+    text code "unique"
+    text label
+    text description
+    text icon
+    text condition
+  }
+  BADGE_AWARD {
+    timestamp awarded_at
+    uuid trigger_id
+  }
+  PRIDE_LETTER {
+    uuid id PK
+    date month "YYYY-MM"
+    text content
+    enum status
+    timestamp generated_at
+    text ai_model
+    uuid anonymous_id
+  }`,
+  );
+  document.getElementById('erd4').innerHTML = svg;
+
+  document.querySelectorAll('#erd4 svg.erDiagram .node').forEach((node) => {
+    const firstPath = node.querySelector('path[d]');
+    if (!firstPath) return;
+    const d = firstPath.getAttribute('d');
+    const nums = d.match(/-?[\d.]+/g)?.map(Number);
+    if (!nums || nums.length < 8) return;
+    const xs = [nums[0], nums[2], nums[4], nums[6]];
+    const ys = [nums[1], nums[3], nums[5], nums[7]];
+    const x = Math.min(...xs),
+      y = Math.min(...ys);
+    const w = Math.max(...xs) - x,
+      h = Math.max(...ys) - y;
+    const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    rect.setAttribute('x', x);
+    rect.setAttribute('y', y);
+    rect.setAttribute('width', w);
+    rect.setAttribute('height', h);
+    rect.setAttribute('rx', '8');
+    for (const a of ['fill', 'stroke', 'stroke-width', 'class', 'style']) {
+      if (firstPath.hasAttribute(a)) rect.setAttribute(a, firstPath.getAttribute(a));
+    }
+    firstPath.replaceWith(rect);
+  });
+
+  document
+    .querySelectorAll(
+      '#erd4 svg.erDiagram .row-rect-odd path, #erd4 svg.erDiagram .row-rect-even path',
+    )
+    .forEach((p) => {
+      p.setAttribute('stroke', 'none');
+    });
+</script>

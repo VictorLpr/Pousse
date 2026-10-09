@@ -1,54 +1,57 @@
-# Pousse — client mobile
+# Pousse — mobile client
 
-Application mobile (React Native + Expo) issue de la maquette « Cocon ».
+Mobile app (React Native + Expo) built from the "Cocon" mockup.
 
-## Lancer le projet
+## Running the project
 
-Depuis la racine du monorepo :
+From the monorepo root:
 
 ```bash
 npm install
-npm run mobile:web   # puis choisir Android / iOS / web, ou npm run mobile
+npm run mobile:web   # or npm run mobile, then pick Android / iOS / web
 ```
 
-## Architecture : modules métier, hexagonale à l'intérieur de chacun
+## Architecture: business modules, hexagonal inside each
 
-Le code applique une séparation stricte ports / adaptateurs, à l'intérieur de
-modules organisés par domaine métier — miroir du découpage de l'API
-(`apps/api`, ADR-0006). Détail complet dans [AGENTS.md](AGENTS.md).
+The code enforces a strict ports / adapters split, inside modules organized
+by business domain — mirroring the API's split (`apps/api`, ADR-0006). Full
+details in [AGENTS.md](AGENTS.md).
 
 ```
 src/
 ├── modules/
-│   ├── auth/        # comptes parents, foyers, enfants, session
-│   ├── journal/      # rituel du soir, entrées de journal
-│   ├── defis/         # défis hebdomadaires, trophées
-│   ├── souvenirs/      # galerie photo (ui/ seulement, consomme journal)
-│   └── settings/        # préférences (ui/ seulement, consomme auth)
-│       chaque module métier porte domain/ application/ infrastructure/ ui/
-├── shared/            # thème, composants génériques, Clock/IdGenerator
-├── di/                # racine de composition (container) + provider React
-└── app/               # routes expo-router (fichiers minces vers ui/screens)
+│   ├── auth/         # parent accounts, households, children, session
+│   ├── journal/      # evening ritual, journal entries
+│   ├── challenges/   # weekly challenges, trophies
+│   ├── memories/     # photo gallery (ui/ only, consumes journal)
+│   └── settings/     # preferences (ui/ only, consumes auth)
+│       each business module carries domain/ application/ infrastructure/ ui/
+├── shared/           # theme, generic components, Clock/IdGenerator
+├── di/               # composition root (container) + React provider
+└── app/              # expo-router routes (thin files pointing to ui/screens)
 ```
 
-**Brancher l'API plus tard** : implémenter les ports de chaque
-`modules/<nom>/domain/ports/` avec des adaptateurs HTTP dans
-`modules/<nom>/infrastructure/`, puis les substituer dans `src/di/container.ts`.
-Rien d'autre ne change.
+**Wiring the API later**: implement the ports of each
+`modules/<name>/domain/ports/` with HTTP adapters in
+`modules/<name>/infrastructure/`, then swap them in `src/di/container.ts`.
+Nothing else changes.
 
-## Écrans
+## Screens
 
-- Onboarding : bienvenue, inscription (email + mot de passe), création du foyer, profil enfant
-- Connexion : email + mot de passe (compte démo : `parent@demo.fr` / `pousse123`)
-- Foyer : page d'accueil listant les enfants du foyer, sélection de l'enfant du soir
-- Accueil enfant : série de soirs, lancement du rituel
-- Rituel du soir (4 étapes) : émotion → fierté → photo → récap, puis écran « Bravo »
-- Journal des souvenirs, Défis & trophées, Galerie
-- Préférences (rappel, déconnexion) et changement d'enfant via la page foyer
+- Onboarding: welcome, sign-up (email + password), household creation, child profile
+- Sign-in: email + password (demo account: `parent@demo.fr` / `pousse123`)
+- Household: home page listing the household's children, picking tonight's child
+- Child home: evening streak, starting the ritual
+- Evening ritual (4 steps): emotion → pride → photo → recap, then a "Bravo" screen
+- Memory journal, challenges & trophies, gallery
+- Settings (reminder, sign-out) and switching child from the household page
 
-## Accessibilité
+The UI copy itself is in French (the app targets French-speaking families);
+everything else — code, comments, errors — is in English.
 
-Tous les éléments interactifs portent `accessibilityRole`, `accessibilityLabel` et,
-quand utile, `accessibilityState` / `accessibilityHint` (sélections, désactivations).
-Les groupes de choix utilisent `radiogroup` / `radio`, les titres `header`, la
-progression du rituel `progressbar`.
+## Accessibility
+
+Every interactive element has `accessibilityRole`, `accessibilityLabel` and,
+when useful, `accessibilityState` / `accessibilityHint` (selections, disabled
+states). Choice groups use `radiogroup` / `radio`, titles `header`, the ritual
+progress `progressbar`.

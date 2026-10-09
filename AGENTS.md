@@ -1,45 +1,58 @@
 # Pousse — monorepo
 
-Pousse est une application de rituel du soir parent/enfant : un client mobile
-Expo et une API Fastify, développés ensemble par une seule personne. Le dépôt
-est un monorepo npm workspaces (ADR-0009) — voir `docs/adr/` pour l'ensemble
-des décisions d'architecture actées, y compris le choix d'Expo (ADR-0008) et
-la livraison en PWA d'abord, natif ensuite (ADR-0010).
+Pousse is a parent/child evening-ritual app: an Expo mobile client and a
+Fastify API, built together by a single person. The repo is an npm workspaces
+monorepo (ADR-0009) — see `docs/adr/` for every accepted architecture
+decision, including the choice of Expo (ADR-0008) and shipping as a PWA
+first, native later (ADR-0010).
 
 ```
 apps/
-  mobile/   client Expo (React Native, expo-router) — voir apps/mobile/AGENTS.md
-  api/      API Fastify + Drizzle + BetterAuth (scaffold, pas encore de logique
-            métier) — voir apps/api/AGENTS.md
+  mobile/   Expo client (React Native, expo-router) — see apps/mobile/AGENTS.md
+  api/      Fastify + Drizzle + BetterAuth API — see apps/api/AGENTS.md
 docs/
-  adr/            décisions d'architecture (format Nygard), partagées par les deux apps
-  modelisation/   modèle conceptuel/logique de données (Merise)
+  adr/          architecture decisions (Nygard format), shared by both apps
+  data-model/   conceptual/logical data model (Merise)
+  deployment/   deployment handoff notes
 ```
 
-**Chaque application a ses propres règles, non répétées ici** :
-`apps/mobile/AGENTS.md` (architecture hexagonale par module métier, design
-system « Cocon », accessibilité) et `apps/api/AGENTS.md` (Fastify, Drizzle,
-découpage modulaire, stratégie de tests) sont la référence pour tout travail
-dans leur dossier respectif. Ne travaille pas dans `apps/mobile` ou `apps/api`
-sans avoir lu le fichier correspondant.
+**Each application has its own rules, not repeated here**:
+`apps/mobile/AGENTS.md` (hexagonal architecture per business module, "Cocon"
+design system, accessibility) and `apps/api/AGENTS.md` (Fastify, Drizzle,
+modular split, testing strategy) are the reference for any work in their
+folder. Don't work in `apps/mobile` or `apps/api` without reading the
+matching file.
 
-## Commandes à la racine
+## Root commands
 
 ```bash
-npm install               # installe les deux workspaces
-npm run mobile:web        # démarre le client Expo (web)
-docker compose up --build # PostgreSQL + migrations + API (watch) sur :3000
-npm run db:generate -w apps/api   # génère une migration depuis le schéma Drizzle
-npm run typecheck         # tsc --noEmit sur chaque workspace qui l'expose
-npm run lint               # oxlint sur tout le dépôt
+npm install               # installs both workspaces
+npm run mobile:web        # starts the Expo client (web)
+docker compose up --build # PostgreSQL + migrations + API (watch) on :3000
+npm run db:generate -w apps/api   # generates a migration from the Drizzle schema
+npm run typecheck         # tsc --noEmit on every workspace that exposes it
+npm test                  # test suites of every workspace (API: needs Docker running)
+npm run lint              # oxlint on the whole repo
 ```
 
-## Règles communes aux deux applications
+## Rules shared by both applications
 
-- TypeScript strict partout ; `tsconfig.base.json` à la racine porte les
-  options communes, chaque application l'étend.
-- Kebab-case pour les fichiers, un entité/cas d'usage/composant/route par
-  fichier.
-- Code et messages destinés à l'utilisateur en français.
-- Pas de nouvelle dépendance sans raison forte.
-- Un ADR ne se modifie pas, il se remplace (voir `docs/adr/README.md`).
+- **Language: English everywhere.** Identifiers (variables, functions,
+  classes, methods, types, files, folders, modules, routes, query
+  parameters), database names (tables, columns, enum and code values), error
+  and log messages, comments, configuration, CI and documentation are all
+  written in English. **Two exceptions stay in French**: the mobile app's
+  UI copy (labels, buttons, accessibility labels, display copy derived from
+  error codes, demo content), and the ADRs in `docs/adr/`. Before finishing
+  a change, check that no French word slipped outside those exceptions — a
+  French column name, error message or comment is a bug to fix, not a style
+  nit.
+- The ADRs use French names that the code writes in English: `prenom` →
+  `first_name`, `nom_famille` → `last_name` (ADR-0003); modules `defis` →
+  `challenges`, `souvenirs` → `memories`, `lettres` → `letters` (ADR-0006).
+  The ADRs aren't edited for that: use the English names in the code.
+- Strict TypeScript everywhere; `tsconfig.base.json` at the root holds the
+  shared options, each application extends it.
+- Kebab-case file names, one entity/use case/component/route per file.
+- No new dependency without a strong reason.
+- An ADR is never edited, it is superseded (see `docs/adr/README.md`).

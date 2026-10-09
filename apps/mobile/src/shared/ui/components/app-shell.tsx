@@ -23,7 +23,7 @@ import { colors, fonts } from '@/shared/ui/theme';
 
 export type ShellRoute = 'home' | 'journal' | 'challenges' | 'gallery' | 'settings';
 
-/** Vrai quand l'écran est rendu dans le shell tablette (sidebar visible). */
+/** True when the screen is rendered inside the tablet shell (sidebar visible). */
 const ShellContext = createContext(false);
 
 export function useInShell(): boolean {
@@ -55,8 +55,8 @@ const NAV_ITEMS: readonly NavItem[] = [
 ];
 
 /**
- * Gabarit des écrans principaux : plein écran sur mobile,
- * sidebar persistante + colonne de contenu à partir du point de rupture tablette.
+ * Layout of the main screens: full screen on mobile, persistent sidebar +
+ * content column from the tablet breakpoint up.
  */
 export function AppShell({ route, children }: AppShellProps) {
   const isWide = useWideLayout();

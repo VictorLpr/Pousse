@@ -9,8 +9,8 @@ import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context'
 import { colors, fonts } from '@/shared/ui/theme';
 
 /**
- * L'appareil photo et la galerie ne sont pas encore branchés :
- * on garde une photo « souvenir » symbolique en attendant l'API.
+ * The camera and photo library are not wired yet: a symbolic "memory"
+ * photo is kept until the API lands.
  */
 const PLACEHOLDER_PHOTO_URI = 'memory://photo-placeholder';
 
