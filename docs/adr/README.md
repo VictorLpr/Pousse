@@ -33,4 +33,3 @@ que le code.
 | [0009](0009-organisation-monorepo.md)          | Organisation en monorepo (apps/mobile, apps/api)  | Accepté                                                |
 | [0010](0010-pwa-d-abord-natif-ensuite.md)      | Livraison en PWA d'abord, natif ensuite           | Accepté                                                |
 | [0011](0011-hebergement-et-deploiement.md)     | Hébergement et déploiement                        | Accepté                                                |
-| [0012](0012-english-as-code-language.md)       | English as the code language                      | Accepted                                               |

@@ -5,7 +5,7 @@ made, what is left to settle with the user, and the steps to set up two
 deployed environments: **staging**, deployed by the CI of each pull request,
 and **production**, deployed by a version tag.
 
-Written on 2026-09-16 (translated to English on 2026-10-04, ADR-0012). Prices
+Written on 2026-09-16 (translated to English on 2026-10-04). Prices
 and limits quoted were checked on that date: check them again before
 committing to anything.
 

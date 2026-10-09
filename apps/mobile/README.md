@@ -47,7 +47,7 @@ Nothing else changes.
 - Settings (reminder, sign-out) and switching child from the household page
 
 The UI copy itself is in French (the app targets French-speaking families);
-everything else — code, comments, errors — is in English (ADR-0012).
+everything else — code, comments, errors — is in English.
 
 ## Accessibility
 

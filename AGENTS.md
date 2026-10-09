@@ -37,16 +37,20 @@ npm run lint              # oxlint on the whole repo
 
 ## Rules shared by both applications
 
-- **Language: English everywhere (ADR-0012).** Identifiers (variables,
-  functions, classes, methods, types, files, folders, modules, routes, query
+- **Language: English everywhere.** Identifiers (variables, functions,
+  classes, methods, types, files, folders, modules, routes, query
   parameters), database names (tables, columns, enum and code values), error
   and log messages, comments, configuration, CI and documentation are all
-  written in English. **The only exception is the mobile app's UI copy**
-  (labels, buttons, accessibility labels, display copy derived from error
-  codes, demo content), which stays in French. Before finishing a change,
-  check that no French word slipped outside that exception — a French
-  column name, error message or comment is a bug to fix, not a style nit.
-  ADRs 0001–0011 are not translated (an ADR is never edited).
+  written in English. **Two exceptions stay in French**: the mobile app's
+  UI copy (labels, buttons, accessibility labels, display copy derived from
+  error codes, demo content), and the ADRs in `docs/adr/`. Before finishing
+  a change, check that no French word slipped outside those exceptions — a
+  French column name, error message or comment is a bug to fix, not a style
+  nit.
+- The ADRs use French names that the code writes in English: `prenom` →
+  `first_name`, `nom_famille` → `last_name` (ADR-0003); modules `defis` →
+  `challenges`, `souvenirs` → `memories`, `lettres` → `letters` (ADR-0006).
+  The ADRs aren't edited for that: use the English names in the code.
 - Strict TypeScript everywhere; `tsconfig.base.json` at the root holds the
   shared options, each application extends it.
 - Kebab-case file names, one entity/use case/component/route per file.
