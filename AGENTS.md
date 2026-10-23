@@ -41,9 +41,12 @@ npm run lint              # oxlint on the whole repo
   classes, methods, types, files, folders, modules, routes, query
   parameters), database names (tables, columns, enum and code values), error
   and log messages, comments, configuration, CI and documentation are all
-  written in English. **Two exceptions stay in French**: the mobile app's
+  written in English. **Three exceptions stay in French**: the mobile app's
   UI copy (labels, buttons, accessibility labels, display copy derived from
-  error codes, demo content), and the ADRs in `docs/adr/`. Before finishing
+  error codes, demo content), the ADRs in `docs/adr/`, and the content of
+  database rows — catalog labels (`emotion.label`, `challenge.title`,
+  `badge.label`…) and user-written text. Tables, columns and enum values
+  stay in English even then. Before finishing
   a change, check that no French word slipped outside those exceptions — a
   French column name, error message or comment is a bug to fix, not a style
   nit.

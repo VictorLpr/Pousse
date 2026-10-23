@@ -12,10 +12,13 @@ other way around.
 **Everything in `apps/api` is in English**: identifiers, file and folder
 names, module names and route prefixes, table and column names, enum and
 stored code values, error messages (thrown or returned), log messages,
-comments and doc comments. The API never returns French text: errors carry
-an English `message` and a stable `code` (e.g. BetterAuth's
+comments and doc comments. The API never produces French text of its own:
+errors carry an English `message` and a stable `code` (e.g. BetterAuth's
 `INVALID_EMAIL_OR_PASSWORD`), and the mobile client maps the code to its
-French UI copy. Don't add a translation layer to the API.
+French UI copy. Don't add a translation layer to the API. Row content is
+the one exception: catalog labels (`emotion.label`, `challenge.title`,
+`badge.label`…) and user-written text may be French, and the API returns
+them as data.
 
 The ADRs are written in French and use French names (`prenom` →
 `first_name`, `nom_famille` → `last_name`, `defis` → `challenges`,

@@ -42,80 +42,77 @@
   PARENT {
     uuid id PK
     text email "unique"
-    text password "hashed"
+    text password "hashed, in BetterAuth account"
     text first_name
     text last_name
     bool email_verified
     timestamp created_at
-    timestamp last_sign_in_at
   }
   CHILD {
     uuid id PK
     text first_name
     date birth_date
-    text avatar
+    text avatar "built-in avatar code"
+    time reminder_time "default 20:00"
+    bool reminder_enabled
     timestamp created_at
+    timestamp updated_at
     int age "computed"
-    enum age_range "computed"
+    enum age_range "computed: 4-7 or 8-12"
+    int streak "computed"
   }
   CONSENT {
     uuid id PK
     timestamp given_at
     text policy_version
-    bool guardian_attested
+    bool guardian_attested "must be true"
   }
   EMOTION {
     int id PK
     text code "unique"
     text label
-    text emoji
-    text color
   }
   JOURNAL_ENTRY {
     uuid id PK
-    date date
+    date date "unique per child"
     text text
-    enum status
     timestamp created_at
     timestamp updated_at
     timestamp editable_until "computed"
   }
   PHOTO {
     uuid id PK
-    text storage_key
+    text file_name "never a path"
     text mime_type
   }
   CHALLENGE {
     int id PK
     text title
     text description
-    enum age_range
-    text category
+    enum age_range "4-7, 8-12, 4-12"
+    enum category
+    bool active
   }
   CHILD_CHALLENGE {
     uuid id PK
-    text week
-    date start_date
-    date end_date
+    date week_start "ISO Monday"
     enum status
     timestamp chosen_at
     timestamp completed_at
+    date week_end "computed"
   }
   BADGE {
     int id PK
     text code "unique"
     text label
     text description
-    text icon
-    text condition
   }
   BADGE_AWARD {
     timestamp awarded_at
-    uuid trigger_id
   }
   PRIDE_LETTER {
     uuid id PK
-    date month "YYYY-MM"
+    date month "first day, unique per child"
     text content
     enum status
     timestamp generated_at
