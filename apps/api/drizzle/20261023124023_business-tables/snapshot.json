@@ -2,49 +2,28 @@
   "version": "8",
   "dialect": "postgres",
   "id": "61b8c659-4793-44be-802c-c583c11d6154",
-  "prevIds": [
-    "edee2587-2050-401b-8da5-a857f16fbbd5"
-  ],
+  "prevIds": ["edee2587-2050-401b-8da5-a857f16fbbd5"],
   "ddl": [
     {
-      "values": [
-        "4-7",
-        "8-12",
-        "4-12"
-      ],
+      "values": ["4-7", "8-12", "4-12"],
       "name": "age_range",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "helping",
-        "creativity",
-        "learning",
-        "politeness"
-      ],
+      "values": ["helping", "creativity", "learning", "politeness"],
       "name": "challenge_category",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "proposed",
-        "chosen",
-        "completed",
-        "abandoned",
-        "expired"
-      ],
+      "values": ["proposed", "chosen", "completed", "abandoned", "expired"],
       "name": "child_challenge_status",
       "entityType": "enums",
       "schema": "public"
     },
     {
-      "values": [
-        "pending",
-        "generated",
-        "failed"
-      ],
+      "values": ["pending", "generated", "failed"],
       "name": "pride_letter_status",
       "entityType": "enums",
       "schema": "public"
@@ -1512,14 +1491,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "account_user_id_user_id_fkey",
@@ -1529,14 +1504,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "child_id"
-      ],
+      "columns": ["child_id"],
       "schemaTo": "public",
       "tableTo": "child",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "badge_award_child_id_child_id_fkey",
@@ -1546,14 +1517,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "badge_id"
-      ],
+      "columns": ["badge_id"],
       "schemaTo": "public",
       "tableTo": "badge",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "badge_award_badge_id_badge_id_fkey",
@@ -1563,14 +1530,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "parent_id"
-      ],
+      "columns": ["parent_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "child_parent_id_user_id_fkey",
@@ -1580,14 +1543,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "child_id"
-      ],
+      "columns": ["child_id"],
       "schemaTo": "public",
       "tableTo": "child",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "child_challenge_child_id_child_id_fkey",
@@ -1597,14 +1556,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "challenge_id"
-      ],
+      "columns": ["challenge_id"],
       "schemaTo": "public",
       "tableTo": "challenge",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "child_challenge_challenge_id_challenge_id_fkey",
@@ -1614,14 +1569,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "child_id"
-      ],
+      "columns": ["child_id"],
       "schemaTo": "public",
       "tableTo": "child",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "consent_child_id_child_id_fkey",
@@ -1631,14 +1582,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "child_id"
-      ],
+      "columns": ["child_id"],
       "schemaTo": "public",
       "tableTo": "child",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "journal_entry_child_id_child_id_fkey",
@@ -1648,14 +1595,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "emotion_id"
-      ],
+      "columns": ["emotion_id"],
       "schemaTo": "public",
       "tableTo": "emotion",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "NO ACTION",
       "name": "journal_entry_emotion_id_emotion_id_fkey",
@@ -1665,14 +1608,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "journal_entry_id"
-      ],
+      "columns": ["journal_entry_id"],
       "schemaTo": "public",
       "tableTo": "journal_entry",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "photo_journal_entry_id_journal_entry_id_fkey",
@@ -1682,14 +1621,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "child_id"
-      ],
+      "columns": ["child_id"],
       "schemaTo": "public",
       "tableTo": "child",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "pride_letter_child_id_child_id_fkey",
@@ -1699,14 +1634,10 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "user_id"
-      ],
+      "columns": ["user_id"],
       "schemaTo": "public",
       "tableTo": "user",
-      "columnsTo": [
-        "id"
-      ],
+      "columnsTo": ["id"],
       "onUpdate": "NO ACTION",
       "onDelete": "CASCADE",
       "name": "session_user_id_user_id_fkey",
@@ -1715,10 +1646,7 @@
       "table": "session"
     },
     {
-      "columns": [
-        "child_id",
-        "badge_id"
-      ],
+      "columns": ["child_id", "badge_id"],
       "nameExplicit": false,
       "name": "badge_award_pkey",
       "entityType": "pks",
@@ -1726,9 +1654,7 @@
       "table": "badge_award"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "account_pkey",
       "schema": "public",
@@ -1736,9 +1662,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "badge_pkey",
       "schema": "public",
@@ -1746,9 +1670,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "challenge_pkey",
       "schema": "public",
@@ -1756,9 +1678,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "child_pkey",
       "schema": "public",
@@ -1766,9 +1686,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "child_challenge_pkey",
       "schema": "public",
@@ -1776,9 +1694,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "consent_pkey",
       "schema": "public",
@@ -1786,9 +1702,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "emotion_pkey",
       "schema": "public",
@@ -1796,9 +1710,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "journal_entry_pkey",
       "schema": "public",
@@ -1806,9 +1718,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "photo_pkey",
       "schema": "public",
@@ -1816,9 +1726,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "pride_letter_pkey",
       "schema": "public",
@@ -1826,9 +1734,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "session_pkey",
       "schema": "public",
@@ -1836,9 +1742,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "user_pkey",
       "schema": "public",
@@ -1846,9 +1750,7 @@
       "entityType": "pks"
     },
     {
-      "columns": [
-        "id"
-      ],
+      "columns": ["id"],
       "nameExplicit": false,
       "name": "verification_pkey",
       "schema": "public",
@@ -1857,11 +1759,7 @@
     },
     {
       "nameExplicit": true,
-      "columns": [
-        "child_id",
-        "challenge_id",
-        "week_start"
-      ],
+      "columns": ["child_id", "challenge_id", "week_start"],
       "nullsNotDistinct": false,
       "name": "child_challenge_child_id_challenge_id_week_start_unique",
       "entityType": "uniques",
@@ -1870,10 +1768,7 @@
     },
     {
       "nameExplicit": true,
-      "columns": [
-        "child_id",
-        "date"
-      ],
+      "columns": ["child_id", "date"],
       "nullsNotDistinct": false,
       "name": "journal_entry_child_id_date_unique",
       "entityType": "uniques",
@@ -1882,10 +1777,7 @@
     },
     {
       "nameExplicit": true,
-      "columns": [
-        "child_id",
-        "month"
-      ],
+      "columns": ["child_id", "month"],
       "nullsNotDistinct": false,
       "name": "pride_letter_child_id_month_unique",
       "entityType": "uniques",
@@ -1894,9 +1786,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "code"
-      ],
+      "columns": ["code"],
       "nullsNotDistinct": false,
       "name": "badge_code_key",
       "schema": "public",
@@ -1905,9 +1795,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "child_id"
-      ],
+      "columns": ["child_id"],
       "nullsNotDistinct": false,
       "name": "consent_child_id_key",
       "schema": "public",
@@ -1916,9 +1804,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "code"
-      ],
+      "columns": ["code"],
       "nullsNotDistinct": false,
       "name": "emotion_code_key",
       "schema": "public",
@@ -1927,9 +1813,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "journal_entry_id"
-      ],
+      "columns": ["journal_entry_id"],
       "nullsNotDistinct": false,
       "name": "photo_journal_entry_id_key",
       "schema": "public",
@@ -1938,9 +1822,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "anonymous_id"
-      ],
+      "columns": ["anonymous_id"],
       "nullsNotDistinct": false,
       "name": "pride_letter_anonymous_id_key",
       "schema": "public",
@@ -1949,9 +1831,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "token"
-      ],
+      "columns": ["token"],
       "nullsNotDistinct": false,
       "name": "session_token_key",
       "schema": "public",
@@ -1960,9 +1840,7 @@
     },
     {
       "nameExplicit": false,
-      "columns": [
-        "email"
-      ],
+      "columns": ["email"],
       "nullsNotDistinct": false,
       "name": "user_email_key",
       "schema": "public",
