@@ -1,7 +1,9 @@
 import { describe, expect, it } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 
-import { child, session } from '#/shared/db/schema.js';
+import { createChildService } from '#/modules/auth/child-service.js';
+import { createConsentRepository } from '#/modules/auth/consent-repository.js';
+import { child, consent, session } from '#/shared/db/schema.js';
 import {
   birthDateForAge,
   insertChild,
@@ -12,11 +14,23 @@ import { SESSION_COOKIE, useTestApp } from '../support/test-app.js';
 
 const UNKNOWN_ID = '00000000-0000-4000-8000-000000000000';
 
+const CONSENT = { policyVersion: '1.0', guardianAttested: true };
+
 describe('children routes', () => {
   const { app, db } = useTestApp();
 
+  /** Sends a valid consent unless the payload overrides it. */
   function createChild(parent: SignedInParent, payload: Record<string, unknown>) {
-    return app().inject({ method: 'POST', url: '/children', cookies: parent.cookies, payload });
+    return app().inject({
+      method: 'POST',
+      url: '/children',
+      cookies: parent.cookies,
+      payload: { consent: CONSENT, ...payload },
+    });
+  }
+
+  function getConsent(parent: SignedInParent, id: string) {
+    return app().inject({ method: 'GET', url: `/children/${id}/consent`, cookies: parent.cookies });
   }
 
   function getChild(parent: SignedInParent, id: string) {
@@ -38,6 +52,7 @@ describe('children routes', () => {
       { method: 'GET', url: '/children' },
       { method: 'GET', url: `/children/${UNKNOWN_ID}` },
       { method: 'PATCH', url: `/children/${UNKNOWN_ID}` },
+      { method: 'GET', url: `/children/${UNKNOWN_ID}/consent` },
     ] as const)('answers 401 UNAUTHORIZED to $method $url without a session', async (route) => {
       const response = await app().inject({ ...route, payload: { firstName: 'Lou' } });
 
@@ -203,6 +218,77 @@ describe('children routes', () => {
       expect(response.statusCode).toBe(201);
       const [row] = await db().select().from(child);
       expect(row?.parentId).toBe(parent.id);
+    });
+
+    it('records the parental consent with the child', async () => {
+      const parent = await signUpParent(app());
+      const before = Date.now();
+
+      const response = await createChild(parent, {
+        firstName: 'Lou',
+        birthDate: birthDateForAge(6),
+        consent: { policyVersion: ' 2.1 ', guardianAttested: true },
+      });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.json()).not.toHaveProperty('consent');
+      const { id } = response.json<{ id: string }>();
+      const rows = await db().select().from(consent);
+      expect(rows).toEqual([
+        {
+          id: expect.any(String),
+          childId: id,
+          givenAt: expect.any(Date),
+          policyVersion: '2.1',
+          guardianAttested: true,
+        },
+      ]);
+      expect(rows[0]?.givenAt.getTime()).toBeGreaterThanOrEqual(before - 1000);
+    });
+
+    it.each([
+      { case: 'no consent', consent: undefined },
+      {
+        case: 'a guardian attestation set to false',
+        consent: { ...CONSENT, guardianAttested: false },
+      },
+      { case: 'no guardian attestation', consent: { policyVersion: '1.0' } },
+      { case: 'no policy version', consent: { guardianAttested: true } },
+      { case: 'a blank policy version', consent: { ...CONSENT, policyVersion: '  ' } },
+      {
+        case: 'a policy version over 10 characters',
+        consent: { ...CONSENT, policyVersion: 'v'.repeat(11) },
+      },
+    ])('refuses $case with VALIDATION_FAILED and creates nothing', async ({ consent: given }) => {
+      const parent = await signUpParent(app());
+
+      const response = await createChild(parent, {
+        firstName: 'Lou',
+        birthDate: birthDateForAge(6),
+        consent: given,
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toMatchObject({ code: 'VALIDATION_FAILED' });
+      expect(await db().select().from(child)).toHaveLength(0);
+      expect(await db().select().from(consent)).toHaveLength(0);
+    });
+
+    // Child and consent share one transaction: a consent the database refuses
+    // leaves no child behind. The service is called directly to get past Zod.
+    it('creates no child when the consent insert fails', async () => {
+      const parent = await signUpParent(app());
+
+      await expect(
+        createChildService(db()).create(parent.id, {
+          firstName: 'Lou',
+          birthDate: birthDateForAge(6),
+          consent: { policyVersion: 'v'.repeat(11), guardianAttested: true },
+        }),
+      ).rejects.toThrow();
+
+      expect(await db().select().from(child)).toHaveLength(0);
+      expect(await db().select().from(consent)).toHaveLength(0);
     });
   });
 
@@ -371,7 +457,116 @@ describe('children routes', () => {
     });
   });
 
+  describe('GET /children/:id/consent', () => {
+    it('returns the proof of consent: when, and which policy version', async () => {
+      const parent = await signUpParent(app());
+      const created = await createChild(parent, {
+        firstName: 'Lou',
+        birthDate: birthDateForAge(6),
+      });
+      const { id } = created.json<{ id: string }>();
+      const [row] = await db().select().from(consent).where(eq(consent.childId, id));
+
+      const response = await getConsent(parent, id);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({
+        givenAt: row?.givenAt.toISOString(),
+        policyVersion: '1.0',
+      });
+    });
+
+    it("answers 404 CHILD_NOT_FOUND for another parent's child", async () => {
+      const parent = await signUpParent(app());
+      const other = await signUpParent(app());
+      const created = await createChild(other, {
+        firstName: 'Inès',
+        birthDate: birthDateForAge(6),
+      });
+
+      const response = await getConsent(parent, created.json<{ id: string }>().id);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toMatchObject({ code: 'CHILD_NOT_FOUND' });
+    });
+
+    it('answers 404 CHILD_NOT_FOUND for an unknown child', async () => {
+      const parent = await signUpParent(app());
+
+      const response = await getConsent(parent, UNKNOWN_ID);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toMatchObject({ code: 'CHILD_NOT_FOUND' });
+    });
+
+    // Profiles created before consent was required have none.
+    it('answers 404 CONSENT_NOT_FOUND for a child without consent', async () => {
+      const parent = await signUpParent(app());
+      const row = await insertChild(db(), parent.id);
+
+      const response = await getConsent(parent, row.id);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toMatchObject({ code: 'CONSENT_NOT_FOUND' });
+    });
+
+    it('answers 400 VALIDATION_FAILED to an id that is not a UUID', async () => {
+      const parent = await signUpParent(app());
+
+      const response = await getConsent(parent, 'not-a-uuid');
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toMatchObject({ code: 'VALIDATION_FAILED' });
+    });
+  });
+
+  describe('consent repository', () => {
+    // ADR-0005: a consent is never updated, and no code path may offer it.
+    it('exposes no update method', () => {
+      expect(Object.keys(createConsentRepository(db())).sort()).toEqual(['findByChild', 'insert']);
+    });
+  });
+
   describe('database constraints', () => {
+    it('refuses a consent without guardian attestation (consent_guardian_attested)', async () => {
+      const parent = await signUpParent(app());
+      const row = await insertChild(db(), parent.id);
+
+      await expect(
+        db()
+          .insert(consent)
+          .values({ childId: row.id, policyVersion: '1.0', guardianAttested: false }),
+      ).rejects.toMatchObject({ cause: { constraint: 'consent_guardian_attested' } });
+    });
+
+    it('refuses a second consent for the same child (consent_child_id_key)', async () => {
+      const parent = await signUpParent(app());
+      const row = await insertChild(db(), parent.id);
+      await db()
+        .insert(consent)
+        .values({ childId: row.id, ...CONSENT });
+
+      await expect(
+        db()
+          .insert(consent)
+          .values({ childId: row.id, policyVersion: '2.0', guardianAttested: true }),
+      ).rejects.toMatchObject({ cause: { constraint: 'consent_child_id_key' } });
+    });
+
+    it('deletes the consent with its child', async () => {
+      const parent = await signUpParent(app());
+      const created = await createChild(parent, {
+        firstName: 'Lou',
+        birthDate: birthDateForAge(6),
+      });
+      const { id } = created.json<{ id: string }>();
+      expect(await db().select().from(consent)).toHaveLength(1);
+
+      await db().delete(child).where(eq(child.id, id));
+
+      expect(await db().select().from(consent)).toHaveLength(0);
+    });
+
     // The routes trim and refuse a blank name first; the check is the last
     // line of defence (ADR-0005).
     it('refuses a blank first name (child_first_name_not_blank)', async () => {

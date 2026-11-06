@@ -1,10 +1,13 @@
-import type { ChildRepository, ChildRow } from '#/modules/auth/child-repository.js';
+import { createChildRepository, type ChildRow } from '#/modules/auth/child-repository.js';
 import type {
   ChildAgeRange,
   ChildResponse,
+  ConsentResponse,
   CreateChildInput,
   UpdateChildInput,
 } from '#/modules/auth/child-schemas.js';
+import { createConsentRepository } from '#/modules/auth/consent-repository.js';
+import type { Db } from '#/shared/db/client.js';
 import { NotFoundError, ValidationError } from '#/shared/errors/index.js';
 
 export const MIN_CHILD_AGE = 4;
@@ -38,11 +41,17 @@ function childNotFound(id: string): NotFoundError {
  * express (ADR-0005): a child is 4 to 12 years old when the profile is
  * created, and when its birth date is corrected. Age and age range are
  * computed at read time, never stored.
+ *
+ * A profile is created with its parental consent, in one transaction: a
+ * child created here never exists without the proof.
  */
 export function createChildService(
-  children: ChildRepository,
+  db: Db,
   { today = utcToday }: { readonly today?: () => string } = {},
 ) {
+  const children = createChildRepository(db);
+  const consents = createConsentRepository(db);
+
   function assertAgeInRange(birthDate: string): void {
     const age = ageOn(birthDate, today());
     if (age < MIN_CHILD_AGE || age > MAX_CHILD_AGE) {
@@ -69,7 +78,13 @@ export function createChildService(
   return {
     async create(parentId: string, input: CreateChildInput): Promise<ChildResponse> {
       assertAgeInRange(input.birthDate);
-      return toResponse(await children.insert({ parentId, ...input }));
+      const { consent, ...profile } = input;
+      const row = await db.transaction(async (tx) => {
+        const created = await createChildRepository(tx).insert({ parentId, ...profile });
+        await createConsentRepository(tx).insert({ childId: created.id, ...consent });
+        return created;
+      });
+      return toResponse(row);
     },
 
     async list(parentId: string): Promise<ChildResponse[]> {
@@ -87,6 +102,14 @@ export function createChildService(
       const row = await children.updateForParent(parentId, id, input);
       if (!row) throw childNotFound(id);
       return toResponse(row);
+    },
+
+    async getConsent(parentId: string, id: string): Promise<ConsentResponse> {
+      if (!(await children.findForParent(parentId, id))) throw childNotFound(id);
+      const row = await consents.findByChild(id);
+      // Only a profile created before consent was required has none.
+      if (!row) throw new NotFoundError('CONSENT_NOT_FOUND', `No consent for child: ${id}`);
+      return { givenAt: row.givenAt.toISOString(), policyVersion: row.policyVersion };
     },
   };
 }

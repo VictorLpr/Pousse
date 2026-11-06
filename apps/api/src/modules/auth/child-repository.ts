@@ -1,6 +1,6 @@
 import { and, asc, eq } from 'drizzle-orm';
 
-import type { Db } from '#/shared/db/client.js';
+import type { DbExecutor } from '#/shared/db/client.js';
 import { child } from '#/shared/db/schema.js';
 
 export type ChildRow = typeof child.$inferSelect;
@@ -14,7 +14,7 @@ export type ChildChanges = Partial<
  * child of another parent is never found, so the service answers 404 rather
  * than 403 and doesn't reveal that the child exists.
  */
-export function createChildRepository(db: Db) {
+export function createChildRepository(db: DbExecutor) {
   return {
     async insert(values: NewChildRow): Promise<ChildRow> {
       const [row] = await db.insert(child).values(values).returning();

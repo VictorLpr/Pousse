@@ -17,12 +17,23 @@ const avatar = z
 /** Evening reminder time, `HH:mm`. */
 const reminderTime = z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/);
 
+/**
+ * Parental consent given when the profile is created (GDPR, under 15): the
+ * version of the privacy policy the parent accepted, and their attestation
+ * of being the child's legal guardian, which can only be `true`.
+ */
+const consentInput = z.object({
+  policyVersion: z.string().trim().min(1).max(10),
+  guardianAttested: z.literal(true),
+});
+
 export const createChildBody = z.object({
   firstName,
   birthDate,
   avatar: avatar.optional(),
   reminderTime: reminderTime.optional(),
   reminderEnabled: z.boolean().optional(),
+  consent: consentInput,
 });
 
 export type CreateChildInput = z.infer<typeof createChildBody>;
@@ -56,3 +67,11 @@ export const childResponse = z.object({
 });
 
 export type ChildResponse = z.infer<typeof childResponse>;
+
+/** Proof of the parental consent: when it was given, to which policy version. */
+export const consentResponse = z.object({
+  givenAt: z.iso.datetime(),
+  policyVersion: z.string(),
+});
+
+export type ConsentResponse = z.infer<typeof consentResponse>;

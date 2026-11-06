@@ -11,3 +11,6 @@ export function createDbClient(databaseUrl: string) {
 }
 
 export type Db = ReturnType<typeof createDbClient>;
+
+/** The pool or a transaction opened on it: what a repository runs its queries on. */
+export type DbExecutor = Db | Parameters<Parameters<Db['transaction']>[0]>[0];
