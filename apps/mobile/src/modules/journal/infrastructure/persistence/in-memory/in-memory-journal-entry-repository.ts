@@ -22,8 +22,8 @@ export class InMemoryJournalEntryRepository implements JournalEntryRepository {
 
   async create(newEntry: Omit<JournalEntry, 'id' | 'createdAt'>): Promise<JournalEntry> {
     const entry: JournalEntry = {
-      id: this.idGenerator.next(),
       ...newEntry,
+      id: this.idGenerator.next(),
       createdAt: this.clock.now(),
     };
     this.entriesById.set(entry.id, entry);

@@ -20,7 +20,7 @@ export class InMemoryWeeklyChallengeRepository implements WeeklyChallengeReposit
   }
 
   async create(newChallenge: Omit<WeeklyChallenge, 'id'>): Promise<WeeklyChallenge> {
-    const challenge: WeeklyChallenge = { id: this.idGenerator.next(), ...newChallenge };
+    const challenge: WeeklyChallenge = { ...newChallenge, id: this.idGenerator.next() };
     this.challengesById.set(challenge.id, challenge);
     return challenge;
   }

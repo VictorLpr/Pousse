@@ -17,7 +17,7 @@ export class InMemoryHouseholdRepository implements HouseholdRepository {
   }
 
   async create(newHousehold: Omit<Household, 'id'>): Promise<Household> {
-    const household: Household = { id: this.idGenerator.next(), ...newHousehold };
+    const household: Household = { ...newHousehold, id: this.idGenerator.next() };
     this.householdsById.set(household.id, household);
     return household;
   }

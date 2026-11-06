@@ -21,7 +21,7 @@ export class InMemoryChildRepository implements ChildRepository {
   }
 
   async create(newChild: Omit<Child, 'id'>): Promise<Child> {
-    const child: Child = { id: this.idGenerator.next(), ...newChild };
+    const child: Child = { ...newChild, id: this.idGenerator.next() };
     this.childrenById.set(child.id, child);
     return child;
   }

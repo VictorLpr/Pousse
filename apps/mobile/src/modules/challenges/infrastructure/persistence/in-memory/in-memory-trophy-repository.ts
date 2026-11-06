@@ -22,7 +22,7 @@ export class InMemoryTrophyRepository implements TrophyRepository {
   }
 
   async create(newTrophy: Omit<Trophy, 'id'>): Promise<Trophy> {
-    const trophy: Trophy = { id: this.idGenerator.next(), ...newTrophy };
+    const trophy: Trophy = { ...newTrophy, id: this.idGenerator.next() };
     this.trophiesById.set(trophy.id, trophy);
     return trophy;
   }
