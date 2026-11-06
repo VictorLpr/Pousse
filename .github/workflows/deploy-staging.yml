@@ -74,6 +74,12 @@ jobs:
             echo "No migrations to apply."
           fi
 
+      # Idempotent upsert of the catalog tables (emotion…).
+      - name: Seed catalogs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:seed -w apps/api
+
       - uses: scaleway/action-scw@v0
         with:
           save-config: true

@@ -65,6 +65,28 @@ Use the English names when writing code.
 - In a partial index, the `.where()` predicate is written with the `sql`
   template, never with `eq()`.
 
+### Catalogs
+
+Catalog tables (`emotion`, then `challenge` and `badge`) hold reference
+rows the application ships with. Their rows are code, not migrations and not
+hand-written SQL:
+
+- The rows live in `src/shared/db/catalogs/<table>.ts`, one file per table,
+  keyed by a stable English `code` (labels may be French, see §0).
+- `seedCatalogs(db)` (`src/shared/db/seed-catalogs.ts`) upserts every
+  catalog on its `code` in one transaction. It is idempotent: running it
+  again only updates the labels. It **never deletes** — a catalog row may be
+  referenced by user data; retiring one is a schema concern (`active` flag on
+  `challenge`).
+- `npm run db:seed -w apps/api` runs it against `DATABASE_URL`. It runs
+  right after `db:migrate` everywhere migrations run: the `migrate` service
+  of `compose.yaml` and the deploy and reset workflows (from the GitHub
+  runner, like migrations: the `runtime` image has no `tsx`).
+- Adding a catalog: a new file in `catalogs/`, one upsert loop in
+  `seedCatalogs` (on a unique `code`, or another stable natural key). Tests
+  that need a catalog call `seedCatalogs(db())` on their rolled-back
+  transaction.
+
 ## 3. Authentication (ADR-0003)
 
 - BetterAuth in its default configuration: no JWT plugin, no refresh token.

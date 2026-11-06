@@ -39,10 +39,11 @@ services:
       timeout: 5s
       retries: 10
 
-  # Applies the generated migrations (apps/api/drizzle), then exits.
+  # Applies the generated migrations (apps/api/drizzle), seeds the catalogs,
+  # then exits.
   migrate:
     <<: *api-dev
-    command: ['npm', 'run', 'db:migrate']
+    command: ['sh', '-c', 'npm run db:migrate && npm run db:seed']
     depends_on:
       db:
         condition: service_healthy
