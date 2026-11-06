@@ -1,7 +1,7 @@
 import { type JournalEntry, localDayOf } from '@/modules/journal/domain/entities/journal-entry';
 import { JournalError } from '@/modules/journal/domain/errors/journal-error';
 import type { JournalEntryRepository } from '@/modules/journal/domain/ports/journal-entry-repository';
-import type { IdGenerator } from '@/shared/domain/ports/id-generator';
+import type { IdGenerator } from '@/shared/infrastructure/ids/id-generator';
 import type { Clock } from '@/shared/infrastructure/time/clock';
 
 export class InMemoryJournalEntryRepository implements JournalEntryRepository {

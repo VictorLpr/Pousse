@@ -11,7 +11,9 @@ import { ListChildren } from '@/modules/auth/application/use-cases/list-children
 import { RegisterParent } from '@/modules/auth/application/use-cases/register-parent';
 import { SetEveningReminder } from '@/modules/auth/application/use-cases/set-evening-reminder';
 import { SignInParent } from '@/modules/auth/application/use-cases/sign-in-parent';
+import { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-parent';
 import { SequentialIdGenerator } from '@/shared/infrastructure/ids/sequential-id-generator';
+import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-auth-gateway';
 import { InMemoryChildRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
 import { InMemoryHouseholdRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-household-repository';
 import { InMemoryJournalEntryRepository } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-journal-entry-repository';
@@ -33,6 +35,7 @@ import { SystemClock } from '@/shared/infrastructure/time/system-clock';
 export interface AppServices {
   readonly signInParent: SignInParent;
   readonly registerParent: RegisterParent;
+  readonly signOutParent: SignOutParent;
   readonly createHousehold: CreateHousehold;
   readonly createChildProfile: CreateChildProfile;
   readonly listChildren: ListChildren;
@@ -55,6 +58,7 @@ export function createAppServices(): AppServices {
   const clock = new SystemClock();
 
   const accountRepository = new InMemoryParentAccountRepository(seedParentAccounts);
+  const authGateway = new InMemoryAuthGateway(accountRepository, idGenerator);
   const householdRepository = new InMemoryHouseholdRepository(seedHouseholds, idGenerator);
   const childRepository = new InMemoryChildRepository(seedChildren, idGenerator);
   const journalRepository = new InMemoryJournalEntryRepository(
@@ -73,8 +77,9 @@ export function createAppServices(): AppServices {
   );
 
   return {
-    signInParent: new SignInParent(accountRepository, householdRepository),
-    registerParent: new RegisterParent(accountRepository, idGenerator),
+    signInParent: new SignInParent(authGateway, householdRepository),
+    registerParent: new RegisterParent(authGateway),
+    signOutParent: new SignOutParent(authGateway),
     createHousehold: new CreateHousehold(householdRepository, accountRepository),
     createChildProfile: new CreateChildProfile(childRepository, initializeChildProgress),
     listChildren: new ListChildren(childRepository),

@@ -8,7 +8,7 @@ const AUTH_ERROR_COPY: Record<AuthErrorCode, string> = {
   INVALID_EMAIL: 'Adresse email invalide.',
   PASSWORD_TOO_SHORT: `Le mot de passe doit contenir au moins ${MIN_PASSWORD_LENGTH} caractères.`,
   PASSWORD_TOO_LONG: `Le mot de passe doit contenir au plus ${MAX_PASSWORD_LENGTH} caractères.`,
-  USER_ALREADY_EXISTS: 'Un compte existe déjà avec cet email.',
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: 'Un compte existe déjà avec cet email.',
   INVALID_EMAIL_OR_PASSWORD: 'Email ou mot de passe incorrect.',
   HOUSEHOLD_NAME_REQUIRED: 'Le nom du foyer est requis.',
   FIRST_NAME_REQUIRED: 'Le prénom est requis.',

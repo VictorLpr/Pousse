@@ -1,6 +1,6 @@
 import type { Trophy } from '@/modules/challenges/domain/entities/trophy';
 import type { TrophyRepository } from '@/modules/challenges/domain/ports/trophy-repository';
-import type { IdGenerator } from '@/shared/domain/ports/id-generator';
+import type { IdGenerator } from '@/shared/infrastructure/ids/id-generator';
 
 export class InMemoryTrophyRepository implements TrophyRepository {
   private readonly trophiesById = new Map<string, Trophy>();
