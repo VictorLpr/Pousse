@@ -1,6 +1,6 @@
 import type { Household } from '@/modules/auth/domain/entities/household';
 import type { HouseholdRepository } from '@/modules/auth/domain/ports/household-repository';
-import type { IdGenerator } from '@/shared/domain/ports/id-generator';
+import type { IdGenerator } from '@/shared/infrastructure/ids/id-generator';
 
 export class InMemoryHouseholdRepository implements HouseholdRepository {
   private readonly householdsById = new Map<string, Household>();

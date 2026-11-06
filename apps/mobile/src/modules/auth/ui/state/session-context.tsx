@@ -18,7 +18,7 @@ interface SessionContextValue {
   signIn(email: string, password: string): Promise<Household | null>;
   register(email: string, password: string): Promise<void>;
   createHousehold(name: string): Promise<void>;
-  signOut(): void;
+  signOut(): Promise<void>;
 }
 
 const SessionContext = createContext<SessionContextValue | null>(null);
@@ -56,10 +56,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
     [services, account],
   );
 
-  const signOut = useCallback(() => {
+  const signOut = useCallback(async () => {
+    await services.signOutParent.execute();
     setAccount(null);
     setHousehold(null);
-  }, []);
+  }, [services]);
 
   const value = useMemo(
     () => ({ account, household, signIn, register, createHousehold, signOut }),

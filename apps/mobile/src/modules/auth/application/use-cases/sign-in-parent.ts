@@ -1,8 +1,7 @@
 import type { Household } from '@/modules/auth/domain/entities/household';
-import { AuthError } from '@/modules/auth/domain/errors/auth-error';
-import { toParentProfile, type ParentProfile } from '@/modules/auth/domain/entities/parent-account';
+import type { ParentProfile } from '@/modules/auth/domain/entities/parent-account';
+import type { AuthGateway } from '@/modules/auth/domain/ports/auth-gateway';
 import type { HouseholdRepository } from '@/modules/auth/domain/ports/household-repository';
-import type { ParentAccountRepository } from '@/modules/auth/domain/ports/parent-account-repository';
 
 export interface SignInParentResult {
   readonly account: ParentProfile;
@@ -11,19 +10,15 @@ export interface SignInParentResult {
 
 export class SignInParent {
   constructor(
-    private readonly accounts: ParentAccountRepository,
+    private readonly auth: AuthGateway,
     private readonly households: HouseholdRepository,
   ) {}
 
   async execute(email: string, password: string): Promise<SignInParentResult> {
-    const account = await this.accounts.findByEmail(email.trim().toLowerCase());
-    if (!account || account.password !== password) {
-      throw new AuthError('INVALID_EMAIL_OR_PASSWORD', 'Invalid email or password.');
-    }
-
+    const account = await this.auth.signIn({ email, password });
     const household = account.householdId
       ? await this.households.findById(account.householdId)
       : null;
-    return { account: toParentProfile(account), household };
+    return { account, household };
   }
 }

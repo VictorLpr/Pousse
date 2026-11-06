@@ -1,6 +1,6 @@
 import type { WeeklyChallenge } from '@/modules/challenges/domain/entities/weekly-challenge';
 import type { WeeklyChallengeRepository } from '@/modules/challenges/domain/ports/weekly-challenge-repository';
-import type { IdGenerator } from '@/shared/domain/ports/id-generator';
+import type { IdGenerator } from '@/shared/infrastructure/ids/id-generator';
 
 export class InMemoryWeeklyChallengeRepository implements WeeklyChallengeRepository {
   private readonly challengesById = new Map<string, WeeklyChallenge>();

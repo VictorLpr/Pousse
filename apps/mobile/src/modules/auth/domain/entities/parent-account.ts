@@ -1,4 +1,7 @@
-/** Same bounds as the API (`emailAndPassword` in `apps/api/src/modules/auth/auth.ts`). */
+/**
+ * Same bounds as the API (`emailAndPassword` in `apps/api/src/modules/auth/auth.ts`).
+ * The server enforces them; the UI only quotes them in its hints.
+ */
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 128;
 

@@ -10,6 +10,7 @@ export { ListChildren } from '@/modules/auth/application/use-cases/list-children
 export { RegisterParent } from '@/modules/auth/application/use-cases/register-parent';
 export { SetEveningReminder } from '@/modules/auth/application/use-cases/set-evening-reminder';
 export { SignInParent } from '@/modules/auth/application/use-cases/sign-in-parent';
+export { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-parent';
 export {
   AGE_RANGES,
   eveningsUntilNextTrophy,
