@@ -1,11 +1,11 @@
 import type { Household } from '@/modules/auth/domain/entities/household';
 import { AuthError } from '@/modules/auth/domain/errors/auth-error';
-import type { ParentAccount } from '@/modules/auth/domain/entities/parent-account';
+import { toParentProfile, type ParentProfile } from '@/modules/auth/domain/entities/parent-account';
 import type { HouseholdRepository } from '@/modules/auth/domain/ports/household-repository';
 import type { ParentAccountRepository } from '@/modules/auth/domain/ports/parent-account-repository';
 
 export interface SignInParentResult {
-  readonly account: ParentAccount;
+  readonly account: ParentProfile;
   readonly household: Household | null;
 }
 
@@ -24,6 +24,6 @@ export class SignInParent {
     const household = account.householdId
       ? await this.households.findById(account.householdId)
       : null;
-    return { account, household };
+    return { account: toParentProfile(account), household };
   }
 }

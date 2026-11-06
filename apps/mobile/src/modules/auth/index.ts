@@ -18,4 +18,4 @@ export {
 export type { Child, AgeRange } from '@/modules/auth/domain/entities/child';
 export type { ChildRepository } from '@/modules/auth/domain/ports/child-repository';
 export type { Household } from '@/modules/auth/domain/entities/household';
-export type { ParentAccount } from '@/modules/auth/domain/entities/parent-account';
+export type { ParentProfile } from '@/modules/auth/domain/entities/parent-account';
