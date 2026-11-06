@@ -42,6 +42,7 @@ export function ChallengesScreen() {
   const { activeChild, isLoading } = useActiveChild();
   const [challenge, setChallenge] = useState<WeeklyChallenge | null>(null);
   const [trophies, setTrophies] = useState<Trophy[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeChild) {
@@ -58,7 +59,12 @@ export function ChallengesScreen() {
   }
 
   const completeChallenge = async () => {
-    setChallenge(await services.completeWeeklyChallenge.execute(activeChild.id));
+    setErrorMessage(null);
+    try {
+      setChallenge(await services.completeWeeklyChallenge.execute(activeChild.id));
+    } catch {
+      setErrorMessage('Impossible de valider le défi, réessayez.');
+    }
   };
 
   const earnedCount = trophies.filter((trophy) => trophy.status === 'earned').length;
@@ -92,6 +98,11 @@ export function ChallengesScreen() {
               {challenge.completedTogether ? 'Défi relevé ensemble !' : "On l'a fait ensemble"}
             </Text>
           </Pressable>
+          {errorMessage ? (
+            <Text accessibilityRole="alert" style={styles.error}>
+              {errorMessage}
+            </Text>
+          ) : null}
         </View>
       )}
 
@@ -180,6 +191,11 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodyBold,
     fontSize: 14,
     color: colors.ink,
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
   },
   trophiesHeader: {
     flexDirection: 'row',
