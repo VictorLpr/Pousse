@@ -9,6 +9,7 @@ import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
+import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -22,6 +23,7 @@ export function RecapStepScreen() {
   const services = useServices();
   const { activeChild, adoptChild, isLoading } = useActiveChild();
   const { emotionId, prideText, photoUri } = useRitualDraft();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   if (isLoading) {
@@ -33,6 +35,7 @@ export function RecapStepScreen() {
 
   const saveRitual = async () => {
     setIsSaving(true);
+    setErrorMessage(null);
     try {
       const { child } = await services.completeEveningRitual.execute({
         childId: activeChild.id,
@@ -42,6 +45,8 @@ export function RecapStepScreen() {
       });
       adoptChild(child);
       router.replace('/ritual/done');
+    } catch (error) {
+      setErrorMessage(authErrorMessage(error, 'Impossible de garder ce moment, réessayez.'));
     } finally {
       setIsSaving(false);
     }
@@ -68,6 +73,11 @@ export function RecapStepScreen() {
       ) : null}
 
       <View style={styles.footer}>
+        {errorMessage ? (
+          <Text accessibilityRole="alert" style={styles.error}>
+            {errorMessage}
+          </Text>
+        ) : null}
         <AppButton label="On valide ensemble" disabled={isSaving} onPress={saveRitual} />
       </View>
     </RitualStepLayout>
@@ -110,6 +120,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
+    marginBottom: 8,
   },
   footer: {
     marginTop: 'auto',
