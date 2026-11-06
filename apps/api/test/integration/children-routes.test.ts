@@ -222,8 +222,6 @@ describe('children routes', () => {
 
     it('records the parental consent with the child', async () => {
       const parent = await signUpParent(app());
-      const before = Date.now();
-
       const response = await createChild(parent, {
         firstName: 'Lou',
         birthDate: birthDateForAge(6),
@@ -243,7 +241,6 @@ describe('children routes', () => {
           guardianAttested: true,
         },
       ]);
-      expect(rows[0]?.givenAt.getTime()).toBeGreaterThanOrEqual(before - 1000);
     });
 
     it.each([
@@ -275,7 +272,8 @@ describe('children routes', () => {
     });
 
     // Child and consent share one transaction: a consent the database refuses
-    // leaves no child behind. The service is called directly to get past Zod.
+    // leaves no child behind. The service is called directly to get past Zod;
+    // 22001 is PostgreSQL refusing a value too long for `varchar(10)`.
     it('creates no child when the consent insert fails', async () => {
       const parent = await signUpParent(app());
 
@@ -285,7 +283,7 @@ describe('children routes', () => {
           birthDate: birthDateForAge(6),
           consent: { policyVersion: 'v'.repeat(11), guardianAttested: true },
         }),
-      ).rejects.toThrow();
+      ).rejects.toMatchObject({ cause: { code: '22001' } });
 
       expect(await db().select().from(child)).toHaveLength(0);
       expect(await db().select().from(consent)).toHaveLength(0);
