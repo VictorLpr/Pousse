@@ -1,4 +1,7 @@
-import type { EveningStreak } from '@/modules/journal/ui/hooks/use-evening-streak';
+export type EveningStreak =
+  | { readonly status: 'loading' }
+  | { readonly status: 'ready'; readonly evenings: number }
+  | { readonly status: 'failed' };
 
 /**
  * E.g. "3 soirs de suite", "1 soir de suite", "nouveau" or "série indisponible";

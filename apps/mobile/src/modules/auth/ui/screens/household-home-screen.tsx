@@ -79,8 +79,13 @@ export function HouseholdHomeScreen() {
   );
 }
 
+interface ChildRowProps {
+  child: Child;
+  onPress: () => void;
+}
+
 /** One child of the household, with the streak the journal computes. */
-function ChildRow({ child, onPress }: { child: Child; onPress: () => void }) {
+function ChildRow({ child, onPress }: ChildRowProps) {
   const streak = streakLabel(useEveningStreak(child.id));
   const details = [ageRangeWithYears(child.ageRange), streak].filter(Boolean).join(' · ');
 
