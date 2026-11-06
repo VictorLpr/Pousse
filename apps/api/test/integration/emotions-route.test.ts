@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { seedCatalogs } from '#/shared/db/seed-catalogs.js';
 import { emotion } from '#/shared/db/schema.js';
@@ -36,5 +36,17 @@ describe('GET /journal/emotions', () => {
 
     const response = await app().inject({ method: 'GET', url: '/journal/emotions' });
     expect(response.json()).toEqual(SEEDED_EMOTIONS);
+  });
+
+  it('draws no identity value when re-seeding an up-to-date catalog', async () => {
+    // Sequences ignore the rollback: compare before and after, never absolutely.
+    const lastId = async () =>
+      (await db().execute<{ last_value: string }>(sql`select last_value from emotion_id_seq`))
+        .rows[0]?.last_value;
+    const before = await lastId();
+
+    await seedCatalogs(db());
+
+    expect(await lastId()).toBe(before);
   });
 });

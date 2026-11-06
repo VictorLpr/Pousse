@@ -73,11 +73,13 @@ hand-written SQL:
 
 - The rows live in `src/shared/db/catalogs/<table>.ts`, one file per table,
   keyed by a stable English `code` (labels may be French, see §0).
-- `seedCatalogs(db)` (`src/shared/db/seed-catalogs.ts`) upserts every
-  catalog on its `code` in one transaction. It is idempotent: running it
-  again only updates the labels. It **never deletes** — a catalog row may be
-  referenced by user data; retiring one is a schema concern (`active` flag on
-  `challenge`).
+- `seedCatalogs(db)` (`src/shared/db/seed-catalogs.ts`) matches every
+  catalog row on its `code` in one transaction: it inserts the missing ones
+  and updates the labels of the others. It is idempotent, and it never uses
+  `insert … on conflict`, which draws an identity value per attempted row
+  and would exhaust the `smallint` ids over enough deploys. It **never
+  deletes** — a catalog row may be referenced by user data; retiring one is
+  a schema concern (`active` flag on `challenge`).
 - `npm run db:seed -w apps/api` runs it against `DATABASE_URL`. It runs
   right after `db:migrate` everywhere migrations run: the `migrate` service
   of `compose.yaml` and the deploy and reset workflows (from the GitHub
