@@ -15,6 +15,9 @@ the authority on column names (dates expand to `date:Début:start`…).
 
 Finding a ticket: from a URL, fetch it; from a code (`[B1]`, `[L2-3]`,
 `[API-5]`…) or a title, query the backlog on `"Tâche" LIKE '%<code>%'`.
+The SQL quota runs out after heavy use (about an hour to refill); page fetches
+keep working, so fall back to `notion-search` on the code, or to fetching the
+epic and walking its `Ticket Epic` list.
 
 ## Ticket properties
 
