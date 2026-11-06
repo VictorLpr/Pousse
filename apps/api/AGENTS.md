@@ -2,11 +2,11 @@
 
 `apps/api` is the REST API of the Pousse monorepo: Fastify 5 + TypeScript,
 consumed only by `apps/mobile`. Authentication (BetterAuth) is wired; the
-first business routes are the child profiles (`/children`, auth module).
-This document puts into practice the decisions
-already accepted in `../../docs/adr/` (0001 to 0007); when in doubt, the
-ADR wins and this file gets fixed to stay consistent with it, never the
-other way around.
+first business routes are the child profiles (`/children`, auth module) and
+the emotion catalog (`/journal/emotions`). This document puts into practice
+the decisions already accepted in `../../docs/adr/` (0001 to 0007); when in
+doubt, the ADR wins and this file gets fixed to stay consistent with it,
+never the other way around.
 
 ## 0. Language
 
@@ -64,6 +64,30 @@ Use the English names when writing code.
   callback style from `drizzle-orm/_relations`.
 - In a partial index, the `.where()` predicate is written with the `sql`
   template, never with `eq()`.
+
+### Catalogs
+
+Catalog tables (`emotion`, then `challenge` and `badge`) hold reference
+rows the application ships with. Their rows are code, not migrations and not
+hand-written SQL:
+
+- The rows live in `src/shared/db/catalogs/<table>.ts`, one file per table,
+  keyed by a stable English `code` (labels may be French, see §0).
+- `seedCatalogs(db)` (`src/shared/db/seed-catalogs.ts`) matches every
+  catalog row on its `code` in one transaction: it inserts the missing ones
+  and updates the labels of the others. It is idempotent, and it never uses
+  `insert … on conflict`, which draws an identity value per attempted row
+  and would exhaust the `smallint` ids over enough deploys. It **never
+  deletes** — a catalog row may be referenced by user data; retiring one is
+  a schema concern (`active` flag on `challenge`).
+- `npm run db:seed -w apps/api` runs it against `DATABASE_URL`. It runs
+  right after `db:migrate` everywhere migrations run: the `migrate` service
+  of `compose.yaml` and the deploy and reset workflows (from the GitHub
+  runner, like migrations: the `runtime` image has no `tsx`).
+- Adding a catalog: a new file in `catalogs/`, one upsert loop in
+  `seedCatalogs` (on a unique `code`, or another stable natural key). Tests
+  that need a catalog call `seedCatalogs(db())` on their rolled-back
+  transaction.
 
 ## 3. Authentication (ADR-0003)
 
