@@ -89,3 +89,9 @@ jobs:
           else
             echo "No migrations to apply."
           fi
+
+      # Idempotent: inserts missing catalog rows, updates changed labels.
+      - name: Seed catalogs
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: npm run db:seed -w apps/api
