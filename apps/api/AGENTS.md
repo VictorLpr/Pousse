@@ -60,6 +60,10 @@ Use the English names when writing code.
   Drizzle schema, never in a trigger. See ADR-0005's split table for the
   exact list of declarative rules vs. those that stay in the service layer
   (child's age, twenty-four-hour window, weekly draw…).
+- `consent` is insert-only: `modules/auth/consent-repository.ts` declares no
+  update method, the only immutability guarantee ADR-0005 keeps (the
+  database doesn't refuse an `UPDATE`). A child is created with its consent
+  in one transaction (`child-service.ts`).
 - The relational API is `defineRelations` (RQB v2); don't use the old
   callback style from `drizzle-orm/_relations`.
 - In a partial index, the `.where()` predicate is written with the `sql`
