@@ -8,11 +8,11 @@ import {
 } from 'react';
 
 import type { Household } from '@/modules/auth/domain/entities/household';
-import type { ParentAccount } from '@/modules/auth/domain/entities/parent-account';
+import type { ParentProfile } from '@/modules/auth/domain/entities/parent-account';
 import { useServices } from '@/di/services-provider';
 
 interface SessionContextValue {
-  readonly account: ParentAccount | null;
+  readonly account: ParentProfile | null;
   readonly household: Household | null;
   /** Returns the account's household, or null if it is still to be created. */
   signIn(email: string, password: string): Promise<Household | null>;
@@ -25,7 +25,7 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 
 export function SessionProvider({ children }: PropsWithChildren) {
   const services = useServices();
-  const [account, setAccount] = useState<ParentAccount | null>(null);
+  const [account, setAccount] = useState<ParentProfile | null>(null);
   const [household, setHousehold] = useState<Household | null>(null);
 
   const signIn = useCallback(
