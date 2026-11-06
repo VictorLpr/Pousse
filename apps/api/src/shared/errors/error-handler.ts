@@ -26,9 +26,18 @@ export function registerErrorHandler(app: FastifyInstance): void {
     // Other client errors raised by Fastify itself (malformed JSON, payload
     // too large…) keep their status and code.
     if (error.statusCode !== undefined && error.statusCode >= 400 && error.statusCode < 500) {
-      return reply.code(error.statusCode).send({ code: error.code, message: error.message });
+      return reply
+        .code(error.statusCode)
+        .send({ code: error.code || 'BAD_REQUEST', message: error.message });
     }
     request.log.error(error);
     return reply.code(500).send({ code: 'INTERNAL_ERROR', message: 'Internal server error' });
   });
+
+  app.setNotFoundHandler((request, reply) =>
+    reply.code(404).send({
+      code: 'ROUTE_NOT_FOUND',
+      message: `Route not found: ${request.method} ${request.url}`,
+    }),
+  );
 }

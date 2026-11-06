@@ -41,11 +41,17 @@ export async function signUpParent(
   return { id: user.id, email, cookies: { [SESSION_COOKIE]: cookie } };
 }
 
-/** Today's UTC date shifted by whole years and days, as `YYYY-MM-DD`. */
+/**
+ * Today's UTC date shifted by whole years, then by days, as `YYYY-MM-DD`. A
+ * February 29 landing on a non-leap year becomes February 28, never March 1.
+ */
 export function isoDate({ years = 0, days = 0 } = {}): string {
-  const date = new Date();
-  date.setUTCFullYear(date.getUTCFullYear() + years, date.getUTCMonth(), date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
+  const today = new Date();
+  const year = today.getUTCFullYear() + years;
+  const month = today.getUTCMonth();
+  const lastDayOfMonth = new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+  const day = Math.min(today.getUTCDate(), lastDayOfMonth) + days;
+  return new Date(Date.UTC(year, month, day)).toISOString().slice(0, 10);
 }
 
 /**

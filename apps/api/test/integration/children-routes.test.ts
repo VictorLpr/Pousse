@@ -1,14 +1,14 @@
 import { describe, expect, it } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 
-import { child } from '#/shared/db/schema.js';
+import { child, session } from '#/shared/db/schema.js';
 import {
   birthDateForAge,
   insertChild,
   signUpParent,
   type SignedInParent,
 } from '../support/fixtures.js';
-import { useTestApp } from '../support/test-app.js';
+import { SESSION_COOKIE, useTestApp } from '../support/test-app.js';
 
 const UNKNOWN_ID = '00000000-0000-4000-8000-000000000000';
 
@@ -61,6 +61,34 @@ describe('children routes', () => {
       });
 
       expect(response.statusCode).toBe(401);
+    });
+
+    // BetterAuth extends a session once `updateAge` has passed and re-issues
+    // its cookie: the business routes must forward it like the auth routes.
+    it('forwards the cookie of a session BetterAuth extends', async () => {
+      const parent = await signUpParent(app());
+      await db()
+        .update(session)
+        .set({ expiresAt: new Date(Date.now() + 60 * 60 * 1000) })
+        .where(eq(session.userId, parent.id));
+
+      const response = await app().inject({
+        method: 'GET',
+        url: '/children',
+        cookies: parent.cookies,
+      });
+
+      expect(response.statusCode).toBe(200);
+      expect(response.cookies.find(({ name }) => name === SESSION_COOKIE)?.maxAge).toBeGreaterThan(
+        60 * 60,
+      );
+    });
+
+    it('answers an unknown route with 404 ROUTE_NOT_FOUND', async () => {
+      const response = await app().inject({ method: 'GET', url: '/childrens' });
+
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toMatchObject({ code: 'ROUTE_NOT_FOUND' });
     });
   });
 

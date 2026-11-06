@@ -39,8 +39,9 @@ Use the English names when writing code.
 - Errors: a service throws one of the `shared/errors` classes (`NotFoundError`,
   `ValidationError`, `UnauthorizedError`) with a stable code;
   `shared/errors/error-handler.ts` answers `{ code, message }` with its status,
-  and Zod validation failures as 400 `VALIDATION_FAILED`. Routes declare
-  `errorResponse` for each error status they can return.
+  Zod validation failures as 400 `VALIDATION_FAILED`, unknown routes as 404
+  `ROUTE_NOT_FOUND`. Routes declare `errorResponse` for each error status
+  they can return.
 - A business route reserved to the signed-in parent registers
   `requireParent(auth)` (`modules/auth/parent-session.ts`) as an `onRequest`
   hook and reads the parent with `parentIdOf(request)`. A resource of another

@@ -1,4 +1,4 @@
-import type { ChildChanges, ChildRepository, ChildRow } from '#/modules/auth/child-repository.js';
+import type { ChildRepository, ChildRow } from '#/modules/auth/child-repository.js';
 import type {
   ChildAgeRange,
   ChildResponse,
@@ -84,8 +84,7 @@ export function createChildService(
 
     async update(parentId: string, id: string, input: UpdateChildInput): Promise<ChildResponse> {
       if (input.birthDate !== undefined) assertAgeInRange(input.birthDate);
-      const changes: ChildChanges = input;
-      const row = await children.updateForParent(parentId, id, changes);
+      const row = await children.updateForParent(parentId, id, input);
       if (!row) throw childNotFound(id);
       return toResponse(row);
     },

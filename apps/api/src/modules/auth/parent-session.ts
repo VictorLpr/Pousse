@@ -18,8 +18,16 @@ declare module 'fastify' {
  * in an encapsulated plugin, after `decorateRequest('parentId', undefined)`.
  */
 export function requireParent(auth: Auth): onRequestAsyncHookHandler {
-  return async (request) => {
-    const session = await auth.api.getSession({ headers: fromNodeHeaders(request.headers) });
+  return async (request, reply) => {
+    const { headers, response: session } = await auth.api.getSession({
+      headers: fromNodeHeaders(request.headers),
+      returnHeaders: true,
+    });
+    // When BetterAuth extends the session (`updateAge`), it re-issues the
+    // cookie with the new expiry: forward it, or the browser drops the
+    // cookie while the session is still valid.
+    const cookies = headers.getSetCookie();
+    if (cookies.length > 0) reply.header('set-cookie', cookies);
     if (!session) throw new UnauthorizedError();
     request.parentId = session.user.id;
   };
