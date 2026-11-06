@@ -1,5 +1,6 @@
 import { Redirect } from 'expo-router';
 import {
+  Award,
   Check,
   Heart,
   Lock,
@@ -30,9 +31,9 @@ interface TrophyIconProps {
 }
 
 const TROPHY_ICONS: Record<string, ComponentType<TrophyIconProps>> = {
-  entraide: Users,
-  creatif: PenTool,
-  gentillesse: Heart,
+  teamwork: Users,
+  creative: PenTool,
+  kindness: Heart,
   courage: Star,
 };
 
@@ -109,7 +110,7 @@ export function ChallengesScreen() {
       <View style={styles.trophyGrid}>
         {trophies.map((trophy) => {
           const isEarned = trophy.status === 'earned';
-          const Icon = TROPHY_ICONS[trophy.id] ?? Lock;
+          const Icon = TROPHY_ICONS[trophy.id] ?? Award;
           return (
             <View
               key={trophy.id}
