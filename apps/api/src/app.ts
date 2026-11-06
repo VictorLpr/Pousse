@@ -48,7 +48,7 @@ export function buildApp({
   // No prefix: the module mounts BetterAuth under `/auth` and the child
   // profiles under `/children`.
   app.register(authModule, { db, auth, baseUrl: authConfig.baseUrl });
-  app.register(journalModule, { prefix: '/journal' });
+  app.register(journalModule, { prefix: '/journal', db });
   app.register(challengesModule, { prefix: '/challenges' });
   app.register(memoriesModule, { prefix: '/memories' });
   app.register(lettersModule, { prefix: '/letters' });
