@@ -3,6 +3,7 @@ import { CompleteWeeklyChallenge } from '@/modules/challenges/application/use-ca
 import { CreateChildProfile } from '@/modules/auth/application/use-cases/create-child-profile';
 import { CreateHousehold } from '@/modules/auth/application/use-cases/create-household';
 import { GetChild } from '@/modules/auth/application/use-cases/get-child';
+import { GetEveningStreak } from '@/modules/journal/application/use-cases/get-evening-streak';
 import { GetJournalEntries } from '@/modules/journal/application/use-cases/get-journal-entries';
 import { GetTrophies } from '@/modules/challenges/application/use-cases/get-trophies';
 import { GetWeeklyChallenge } from '@/modules/challenges/application/use-cases/get-weekly-challenge';
@@ -42,6 +43,7 @@ export interface AppServices {
   readonly getChild: GetChild;
   readonly completeEveningRitual: CompleteEveningRitual;
   readonly getJournalEntries: GetJournalEntries;
+  readonly getEveningStreak: GetEveningStreak;
   readonly getWeeklyChallenge: GetWeeklyChallenge;
   readonly completeWeeklyChallenge: CompleteWeeklyChallenge;
   readonly getTrophies: GetTrophies;
@@ -84,8 +86,9 @@ export function createAppServices(): AppServices {
     createChildProfile: new CreateChildProfile(childRepository, initializeChildProgress),
     listChildren: new ListChildren(childRepository),
     getChild: new GetChild(childRepository),
-    completeEveningRitual: new CompleteEveningRitual(childRepository, journalRepository),
+    completeEveningRitual: new CompleteEveningRitual(journalRepository),
     getJournalEntries: new GetJournalEntries(journalRepository),
+    getEveningStreak: new GetEveningStreak(journalRepository),
     getWeeklyChallenge: new GetWeeklyChallenge(challengeRepository),
     completeWeeklyChallenge: new CompleteWeeklyChallenge(challengeRepository),
     getTrophies: new GetTrophies(trophyRepository),

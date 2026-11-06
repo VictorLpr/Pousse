@@ -14,20 +14,8 @@ export interface Child {
   readonly firstName: string;
   readonly ageRange: AgeRange;
   readonly reminder: EveningReminder;
-  /** Number of consecutive evenings the ritual was completed. */
-  readonly streakInEvenings: number;
-}
-
-export const EVENINGS_PER_TROPHY = 7;
-
-export function withIncrementedStreak(child: Child): Child {
-  return { ...child, streakInEvenings: child.streakInEvenings + 1 };
 }
 
 export function withReminderEnabled(child: Child, enabled: boolean): Child {
   return { ...child, reminder: { ...child.reminder, enabled } };
-}
-
-export function eveningsUntilNextTrophy(child: Child): number {
-  return EVENINGS_PER_TROPHY - (child.streakInEvenings % EVENINGS_PER_TROPHY);
 }
