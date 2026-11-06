@@ -2,11 +2,11 @@
 
 `apps/api` is the REST API of the Pousse monorepo: Fastify 5 + TypeScript,
 consumed only by `apps/mobile`. Authentication (BetterAuth) is wired; the
-first business routes are the child profiles (`/children`, auth module).
-This document puts into practice the decisions
-already accepted in `../../docs/adr/` (0001 to 0007); when in doubt, the
-ADR wins and this file gets fixed to stay consistent with it, never the
-other way around.
+first business routes are the child profiles (`/children`, auth module) and
+the emotion catalog (`/journal/emotions`). This document puts into practice
+the decisions already accepted in `../../docs/adr/` (0001 to 0007); when in
+doubt, the ADR wins and this file gets fixed to stay consistent with it,
+never the other way around.
 
 ## 0. Language
 

@@ -39,10 +39,11 @@ describe('GET /journal/emotions', () => {
   });
 
   it('draws no identity value when re-seeding an up-to-date catalog', async () => {
-    // Sequences ignore the rollback: compare before and after, never absolutely.
+    // `currval` is the last value this session drew (the `beforeEach` seed):
+    // unlike `last_value`, other Jest workers seeding in parallel don't move it.
     const lastId = async () =>
-      (await db().execute<{ last_value: string }>(sql`select last_value from emotion_id_seq`))
-        .rows[0]?.last_value;
+      (await db().execute<{ value: string }>(sql`select currval('emotion_id_seq') as value`))
+        .rows[0]?.value;
     const before = await lastId();
 
     await seedCatalogs(db());

@@ -92,11 +92,12 @@ jobs:
             echo "No migrations to apply."
           fi
 
-      # Idempotent upsert of the catalog tables (emotion…).
+      # Idempotent: inserts missing catalog rows, updates changed labels.
+      # `--if-present`: a rollback to a tag older than the script still deploys.
       - name: Seed catalogs
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npm run db:seed -w apps/api
+        run: npm run db:seed -w apps/api --if-present
 
       - uses: scaleway/action-scw@v0
         with:
