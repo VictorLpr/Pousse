@@ -5,8 +5,9 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 # Pousse — Rules for agents
 
 Pousse is a parent/child evening-ritual app (React Native + Expo SDK 57, expo-router,
-TypeScript strict). Frontend only for now: all data lives in in-memory repositories and an
-HTTP API will replace them later. These rules are mandatory for any change.
+TypeScript strict). Frontend only for now: all data lives in in-memory repositories that act
+as a fake backend, and HTTP adapters to the API will replace them later. These rules are
+mandatory for any change.
 
 ## 1. Modules by business domain, hexagonal inside each (non-negotiable)
 
@@ -30,7 +31,7 @@ src/modules/
   memories/   gallery — ui/ only, composes journal's public use-case
   settings/   preferences — ui/ only, composes auth's public use-case
 src/shared/   generic code with zero business logic (theme, generic
-              components, Clock/IdGenerator ports and their adapters,
+              components, the Clock/IdGenerator the in-memory adapters use,
               generic formatters, hooks)
 ```
 
@@ -83,10 +84,16 @@ React; a module's `application`/`infrastructure` reaching into another
 module's `domain`/`application`/`infrastructure` by deep path instead of its
 barrel.
 
-Side effects behind ports: time via `Clock`, id generation via `IdGenerator`
-(both in `src/shared/domain/ports/`, implemented in
-`src/shared/infrastructure/`). Never call `new Date()` or build ids inside a
-use case.
+Ids and timestamps come from the backend, never from a use case. A use case
+creates an entity by calling `create(input without id)` on its repository
+port and gets the full entity back, exactly as the API returns it (`uuid`
+and `defaultNow` columns). The in-memory adapters are the fake backend: they
+generate ids with `IdGenerator` and timestamps with `Clock`
+(`src/shared/infrastructure/`), injected in `container.ts`. `save` stays on a
+port only to update an existing entity. Never call `new Date()` or build ids
+inside a use case. Temporary exception: `RegisterParent` still receives
+`IdGenerator` (whose port is still in `src/shared/domain/ports/`) until the
+auth module follows the BetterAuth contract (L2-2).
 
 ## 2. Clean code conventions
 
