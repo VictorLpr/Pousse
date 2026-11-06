@@ -46,42 +46,40 @@ export interface AppServices {
 }
 
 /**
- * Composition root: wires use cases to the in-memory adapters. Switching
- * to an API only changes the adapters.
+ * Composition root: wires use cases to the in-memory adapters. These act as
+ * a fake backend: like the API, they generate ids and timestamps. Switching
+ * to the API only changes the adapters.
  */
 export function createAppServices(): AppServices {
   const idGenerator = new SequentialIdGenerator('pousse');
   const clock = new SystemClock();
 
   const accountRepository = new InMemoryParentAccountRepository(seedParentAccounts);
-  const householdRepository = new InMemoryHouseholdRepository(seedHouseholds);
-  const childRepository = new InMemoryChildRepository(seedChildren);
-  const journalRepository = new InMemoryJournalEntryRepository(seedJournalEntries);
-  const challengeRepository = new InMemoryWeeklyChallengeRepository(seedWeeklyChallenges);
-  const trophyRepository = new InMemoryTrophyRepository(seedTrophies);
+  const householdRepository = new InMemoryHouseholdRepository(seedHouseholds, idGenerator);
+  const childRepository = new InMemoryChildRepository(seedChildren, idGenerator);
+  const journalRepository = new InMemoryJournalEntryRepository(
+    seedJournalEntries,
+    idGenerator,
+    clock,
+  );
+  const challengeRepository = new InMemoryWeeklyChallengeRepository(
+    seedWeeklyChallenges,
+    idGenerator,
+  );
+  const trophyRepository = new InMemoryTrophyRepository(seedTrophies, idGenerator);
   const initializeChildProgress = new InitializeChildProgress(
     challengeRepository,
     trophyRepository,
-    idGenerator,
   );
 
   return {
     signInParent: new SignInParent(accountRepository, householdRepository),
     registerParent: new RegisterParent(accountRepository, idGenerator),
-    createHousehold: new CreateHousehold(householdRepository, accountRepository, idGenerator),
-    createChildProfile: new CreateChildProfile(
-      childRepository,
-      idGenerator,
-      initializeChildProgress,
-    ),
+    createHousehold: new CreateHousehold(householdRepository, accountRepository),
+    createChildProfile: new CreateChildProfile(childRepository, initializeChildProgress),
     listChildren: new ListChildren(childRepository),
     getChild: new GetChild(childRepository),
-    completeEveningRitual: new CompleteEveningRitual(
-      childRepository,
-      journalRepository,
-      idGenerator,
-      clock,
-    ),
+    completeEveningRitual: new CompleteEveningRitual(childRepository, journalRepository),
     getJournalEntries: new GetJournalEntries(journalRepository),
     getWeeklyChallenge: new GetWeeklyChallenge(challengeRepository),
     completeWeeklyChallenge: new CompleteWeeklyChallenge(challengeRepository),
