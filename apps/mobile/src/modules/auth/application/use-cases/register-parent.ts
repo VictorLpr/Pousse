@@ -2,7 +2,9 @@ import { AuthError } from '@/modules/auth/domain/errors/auth-error';
 import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
+  toParentProfile,
   type ParentAccount,
+  type ParentProfile,
 } from '@/modules/auth/domain/entities/parent-account';
 import type { IdGenerator } from '@/shared/domain/ports/id-generator';
 import type { ParentAccountRepository } from '@/modules/auth/domain/ports/parent-account-repository';
@@ -15,7 +17,7 @@ export class RegisterParent {
     private readonly idGenerator: IdGenerator,
   ) {}
 
-  async execute(email: string, password: string): Promise<ParentAccount> {
+  async execute(email: string, password: string): Promise<ParentProfile> {
     const normalizedEmail = email.trim().toLowerCase();
     if (!EMAIL_PATTERN.test(normalizedEmail)) {
       throw new AuthError('INVALID_EMAIL', 'Invalid email address.');
@@ -43,6 +45,6 @@ export class RegisterParent {
       householdId: null,
     };
     await this.accounts.save(account);
-    return account;
+    return toParentProfile(account);
   }
 }
