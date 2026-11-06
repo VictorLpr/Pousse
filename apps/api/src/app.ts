@@ -1,12 +1,13 @@
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 
-import { AUTH_BASE_PATH, authModule, createAuth } from '#/modules/auth/index.js';
+import { authModule, createAuth } from '#/modules/auth/index.js';
 import { challengesModule } from '#/modules/challenges/index.js';
 import { journalModule } from '#/modules/journal/index.js';
 import { lettersModule } from '#/modules/letters/index.js';
 import { memoriesModule } from '#/modules/memories/index.js';
 import type { Db } from '#/shared/db/client.js';
+import { registerErrorHandler } from '#/shared/errors/error-handler.js';
 import { registerHealthRoute } from '#/shared/health/health-route.js';
 
 export interface AppDependencies {
@@ -37,11 +38,16 @@ export function buildApp({
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
 
+  // Business routes answer their errors as `{ code, message }`.
+  registerErrorHandler(app);
+
   registerHealthRoute(app, db);
 
   const auth = createAuth({ db, ...authConfig, logger: app.log });
 
-  app.register(authModule, { prefix: AUTH_BASE_PATH, auth, baseUrl: authConfig.baseUrl });
+  // No prefix: the module mounts BetterAuth under `/auth` and the child
+  // profiles under `/children`.
+  app.register(authModule, { db, auth, baseUrl: authConfig.baseUrl });
   app.register(journalModule, { prefix: '/journal' });
   app.register(challengesModule, { prefix: '/challenges' });
   app.register(memoriesModule, { prefix: '/memories' });
