@@ -13,6 +13,7 @@ import { Divider } from '@/shared/ui/components/divider';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
+import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
 import { ageRangeLabel, childInitial } from '@/modules/auth/ui/format/child';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -27,6 +28,7 @@ export function ChildProfileScreen() {
 
   const [firstName, setFirstName] = useState('');
   const [ageRange, setAgeRange] = useState<AgeRange>('7-9');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   if (!household) {
@@ -37,6 +39,7 @@ export function ChildProfileScreen() {
 
   const createProfile = async () => {
     setIsSaving(true);
+    setErrorMessage(null);
     try {
       await services.createChildProfile.execute({
         householdId: household.id,
@@ -49,6 +52,8 @@ export function ChildProfileScreen() {
       } else {
         router.replace('/household');
       }
+    } catch (error) {
+      setErrorMessage(authErrorMessage(error, 'Création impossible.'));
     } finally {
       setIsSaving(false);
     }
@@ -108,6 +113,12 @@ export function ChildProfileScreen() {
         <ChevronRight size={18} color={colors.inkSoft} strokeWidth={2} />
       </Pressable>
 
+      {errorMessage ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errorMessage}
+        </Text>
+      ) : null}
+
       <View style={styles.submit}>
         <AppButton label="Créer le profil" disabled={!canSubmit} onPress={createProfile} />
       </View>
@@ -151,6 +162,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemiBold,
     fontSize: 16,
     color: colors.ink,
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
+    marginTop: 12,
   },
   submit: {
     marginTop: 34,
