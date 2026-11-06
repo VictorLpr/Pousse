@@ -5,7 +5,6 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { localDayOf } from '@/modules/journal/domain/entities/journal-entry';
 import { useServices } from '@/di/services-provider';
-
 import { AppShell, useInShell } from '@/shared/ui/components/app-shell';
 import { RITUAL_STEP_COUNT } from '@/modules/journal/ui/components/ritual-step-layout';
 import { Avatar } from '@/shared/ui/components/avatar';
@@ -32,7 +31,9 @@ export function HomeScreen() {
       const today = localDayOf(new Date());
       services.getJournalEntries
         .execute(activeChild.id)
-        .then((entries) => setDoneTonight(entries.some((entry) => entry.date === today)));
+        .then((entries) => setDoneTonight(entries.some((entry) => entry.date === today)))
+        // Unknown status: keep the ritual open, the recap explains if tonight's entry exists.
+        .catch(() => setDoneTonight(false));
     }, [services, activeChild]),
   );
 
