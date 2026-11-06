@@ -129,5 +129,7 @@ what was not verified, tickets created. The ticket becomes `Terminé` only once
 its PR is merged, which is the user's call. When they tell you it is merged:
 apply the "after merge" steps of [notion.md](notion.md), report them, then
 stop what you started (preview server, containers) and archive this session
-(`archive_session` with `self`), which removes its worktree. The user wants
-merged worktrees cleaned.
+(`archive_session` with `self`). The user wants merged worktrees gone, and
+archiving only detaches them: on Windows the folder stays behind, held by its
+deep `node_modules`. Before archiving, tell the session that started you (or
+the user) that the folder is ready for [cleanup.md](cleanup.md).
