@@ -38,7 +38,7 @@ src/shared/   generic code with zero business logic (theme, generic
 - `modules/<name>/domain` — entities + ports. **Zero imports from outside
   `domain`.** No React, no Expo, no infrastructure. Entities are immutable
   (`readonly` fields); state changes go through pure helper functions
-  (`withIncrementedStreak`, `withReminderEnabled`…).
+  (`withReminderEnabled`…).
 - `modules/<name>/application/use-cases` — one class per use case,
   constructor-injected ports, a single `execute()` method. Business rules
   live here or in domain helpers — never in screens.

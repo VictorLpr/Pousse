@@ -8,8 +8,10 @@ import { useServices } from '@/di/services-provider';
 import { Avatar } from '@/shared/ui/components/avatar';
 import { Divider } from '@/shared/ui/components/divider';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
-import { ageRangeWithYears, childInitial, streakLabel } from '@/modules/auth/ui/format/child';
+import { ageRangeWithYears, childInitial } from '@/modules/auth/ui/format/child';
+import { streakLabel } from '@/modules/journal/ui/format/streak';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import { useEveningStreak } from '@/modules/journal/ui/hooks/use-evening-streak';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -52,21 +54,7 @@ export function HouseholdHomeScreen() {
       {children.map((child, index) => (
         <Fragment key={child.id}>
           {index > 0 && <Divider />}
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`Commencer la soirée avec ${child.firstName}, ${ageRangeWithYears(child.ageRange)}`}
-            onPress={() => chooseChild(child.id)}
-            style={({ pressed }) => [styles.childRow, pressed && styles.pressed]}
-          >
-            <Avatar initial={childInitial(child.firstName)} size={56} />
-            <View style={styles.childTexts}>
-              <Text style={styles.childName}>{child.firstName}</Text>
-              <Text style={styles.childDetails}>
-                {ageRangeWithYears(child.ageRange)} · {streakLabel(child)}
-              </Text>
-            </View>
-            <ChevronRight size={20} color={colors.overline} strokeWidth={2} />
-          </Pressable>
+          <ChildRow child={child} onPress={() => chooseChild(child.id)} />
         </Fragment>
       ))}
 
@@ -88,6 +76,28 @@ export function HouseholdHomeScreen() {
         <Text style={styles.addLabel}>Ajouter un enfant</Text>
       </Pressable>
     </ScreenContainer>
+  );
+}
+
+/** One child of the household, with the streak the journal computes. */
+function ChildRow({ child, onPress }: { child: Child; onPress: () => void }) {
+  const streak = streakLabel(useEveningStreak(child.id));
+  const details = [ageRangeWithYears(child.ageRange), streak].filter(Boolean).join(' · ');
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`Commencer la soirée avec ${child.firstName}, ${ageRangeWithYears(child.ageRange)}`}
+      onPress={onPress}
+      style={({ pressed }) => [styles.childRow, pressed && styles.pressed]}
+    >
+      <Avatar initial={childInitial(child.firstName)} size={56} />
+      <View style={styles.childTexts}>
+        <Text style={styles.childName}>{child.firstName}</Text>
+        <Text style={styles.childDetails}>{details}</Text>
+      </View>
+      <ChevronRight size={20} color={colors.overline} strokeWidth={2} />
+    </Pressable>
   );
 }
 
