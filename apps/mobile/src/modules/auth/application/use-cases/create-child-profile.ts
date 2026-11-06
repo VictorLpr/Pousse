@@ -32,7 +32,6 @@ export class CreateChildProfile {
       firstName,
       ageRange: input.ageRange,
       reminder: { time: input.reminderTime, enabled: true },
-      streakInEvenings: 0,
     });
     await this.initializeChildProgress.execute(child.id);
 

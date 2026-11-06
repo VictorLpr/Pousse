@@ -11,8 +11,10 @@ import { Avatar } from '@/shared/ui/components/avatar';
 import { Divider } from '@/shared/ui/components/divider';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { StreakBadge } from '@/modules/journal/ui/components/streak-badge';
-import { childInitial, streakLabel } from '@/modules/auth/ui/format/child';
+import { childInitial } from '@/modules/auth/ui/format/child';
+import { streakLabel } from '@/modules/journal/ui/format/streak';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import { useEveningStreak } from '@/modules/journal/ui/hooks/use-evening-streak';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -22,6 +24,7 @@ export function HomeScreen() {
   const { activeChild, isLoading } = useActiveChild();
   const { resetDraft } = useRitualDraft();
   const [doneTonight, setDoneTonight] = useState(false);
+  const streak = streakLabel(useEveningStreak(activeChild?.id));
 
   useFocusEffect(
     useCallback(() => {
@@ -56,7 +59,7 @@ export function HomeScreen() {
       <View style={styles.childZone}>
         <Avatar initial={childInitial(activeChild.firstName)} size={140} />
         <Text style={styles.childName}>{activeChild.firstName}</Text>
-        <StreakBadge label={streakLabel(activeChild)} />
+        {streak && <StreakBadge label={streak} />}
       </View>
 
       <Divider variant="sprout" spacing={28} />

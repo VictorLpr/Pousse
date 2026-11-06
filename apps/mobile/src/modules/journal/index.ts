@@ -4,6 +4,7 @@
  * `@/modules/journal/infrastructure/**` path from another module (see AGENTS.md).
  */
 export { CompleteEveningRitual } from '@/modules/journal/application/use-cases/complete-evening-ritual';
+export { GetEveningStreak } from '@/modules/journal/application/use-cases/get-evening-streak';
 export { GetJournalEntries } from '@/modules/journal/application/use-cases/get-journal-entries';
 export type { JournalEntry } from '@/modules/journal/domain/entities/journal-entry';
 export { EMOTIONS, getEmotion } from '@/modules/journal/domain/entities/emotion';

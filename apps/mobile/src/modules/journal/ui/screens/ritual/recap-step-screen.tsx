@@ -21,7 +21,7 @@ function capitalize(text: string): string {
 export function RecapStepScreen() {
   const router = useRouter();
   const services = useServices();
-  const { activeChild, adoptChild, isLoading } = useActiveChild();
+  const { activeChild, isLoading } = useActiveChild();
   const { emotionId, prideText, photoUri } = useRitualDraft();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -37,13 +37,12 @@ export function RecapStepScreen() {
     setIsSaving(true);
     setErrorMessage(null);
     try {
-      const { child } = await services.completeEveningRitual.execute({
+      await services.completeEveningRitual.execute({
         childId: activeChild.id,
         emotionId,
         prideText,
         photoUri,
       });
-      adoptChild(child);
       router.replace('/ritual/done');
     } catch (error) {
       setErrorMessage(journalErrorMessage(error, 'Impossible de garder ce moment, réessayez.'));

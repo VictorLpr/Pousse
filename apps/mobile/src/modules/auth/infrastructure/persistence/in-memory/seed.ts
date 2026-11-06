@@ -28,7 +28,6 @@ export const seedChildren: readonly Child[] = [
     firstName: 'Léa',
     ageRange: '7-9',
     reminder: { time: '20:00', enabled: true },
-    streakInEvenings: 3,
   },
   {
     id: TOM_ID,
@@ -36,6 +35,5 @@ export const seedChildren: readonly Child[] = [
     firstName: 'Tom',
     ageRange: '4-6',
     reminder: { time: '20:00', enabled: true },
-    streakInEvenings: 0,
   },
 ];

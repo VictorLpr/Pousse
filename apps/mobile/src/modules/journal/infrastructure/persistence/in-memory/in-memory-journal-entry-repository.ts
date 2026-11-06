@@ -43,4 +43,24 @@ export class InMemoryJournalEntryRepository implements JournalEntryRepository {
     this.entriesById.set(entry.id, entry);
     return entry;
   }
+
+  async countEveningStreak(childId: string): Promise<number> {
+    const daysWithEntry = new Set(
+      [...this.entriesById.values()]
+        .filter((entry) => entry.childId === childId)
+        .map((entry) => entry.date),
+    );
+
+    const cursor = new Date(this.clock.now().getTime());
+    if (!daysWithEntry.has(localDayOf(cursor))) {
+      cursor.setDate(cursor.getDate() - 1);
+    }
+
+    let streak = 0;
+    while (daysWithEntry.has(localDayOf(cursor))) {
+      streak += 1;
+      cursor.setDate(cursor.getDate() - 1);
+    }
+    return streak;
+  }
 }
