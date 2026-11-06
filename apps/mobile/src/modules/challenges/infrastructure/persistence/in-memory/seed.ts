@@ -19,13 +19,17 @@ export const seedWeeklyChallenges: readonly WeeklyChallenge[] = [
   },
 ];
 
+/** Titles the fake backend draws from when a child has no challenge yet. */
+export const challengeTitlePool: readonly string[] = [
+  "Fais un compliment à quelqu'un que tu aimes",
+  'Range trois jouets avant de dormir',
+  'Aide à mettre la table ce soir',
+  'Raconte une histoire drôle à ta famille',
+];
+
 export const seedTrophies: readonly Trophy[] = [
   { id: 'teamwork', childId: LEA_ID, name: 'Entraide', status: 'earned' },
   { id: 'creative', childId: LEA_ID, name: 'Créatif', status: 'earned' },
   { id: 'kindness', childId: LEA_ID, name: 'Gentillesse', status: 'earned' },
   { id: 'courage', childId: LEA_ID, name: 'Courage', status: 'earned' },
-  { id: 'locked-1', childId: LEA_ID, name: 'À venir', status: 'locked' },
-  { id: 'locked-2', childId: LEA_ID, name: 'À venir', status: 'locked' },
-  { id: 'tom-locked-1', childId: TOM_ID, name: 'À venir', status: 'locked' },
-  { id: 'tom-locked-2', childId: TOM_ID, name: 'À venir', status: 'locked' },
 ];

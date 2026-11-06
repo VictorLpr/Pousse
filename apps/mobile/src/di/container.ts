@@ -7,7 +7,6 @@ import { GetEveningStreak } from '@/modules/journal/application/use-cases/get-ev
 import { GetJournalEntries } from '@/modules/journal/application/use-cases/get-journal-entries';
 import { GetTrophies } from '@/modules/challenges/application/use-cases/get-trophies';
 import { GetWeeklyChallenge } from '@/modules/challenges/application/use-cases/get-weekly-challenge';
-import { InitializeChildProgress } from '@/modules/challenges/application/use-cases/initialize-child-progress';
 import { ListChildren } from '@/modules/auth/application/use-cases/list-children';
 import { RegisterParent } from '@/modules/auth/application/use-cases/register-parent';
 import { SetEveningReminder } from '@/modules/auth/application/use-cases/set-evening-reminder';
@@ -27,6 +26,7 @@ import {
   seedParentAccounts,
 } from '@/modules/auth/infrastructure/persistence/in-memory/seed';
 import {
+  challengeTitlePool,
   seedTrophies,
   seedWeeklyChallenges,
 } from '@/modules/challenges/infrastructure/persistence/in-memory/seed';
@@ -70,20 +70,17 @@ export function createAppServices(): AppServices {
   );
   const challengeRepository = new InMemoryWeeklyChallengeRepository(
     seedWeeklyChallenges,
+    challengeTitlePool,
     idGenerator,
   );
   const trophyRepository = new InMemoryTrophyRepository(seedTrophies, idGenerator);
-  const initializeChildProgress = new InitializeChildProgress(
-    challengeRepository,
-    trophyRepository,
-  );
 
   return {
     signInParent: new SignInParent(authGateway, householdRepository),
     registerParent: new RegisterParent(authGateway),
     signOutParent: new SignOutParent(authGateway),
     createHousehold: new CreateHousehold(householdRepository, accountRepository),
-    createChildProfile: new CreateChildProfile(childRepository, initializeChildProgress),
+    createChildProfile: new CreateChildProfile(childRepository),
     listChildren: new ListChildren(childRepository),
     getChild: new GetChild(childRepository),
     completeEveningRitual: new CompleteEveningRitual(journalRepository),
