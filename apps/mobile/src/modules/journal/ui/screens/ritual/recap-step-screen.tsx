@@ -8,8 +8,8 @@ import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
+import { journalErrorMessage } from '@/modules/journal/ui/format/journal-error';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
-import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -46,7 +46,7 @@ export function RecapStepScreen() {
       adoptChild(child);
       router.replace('/ritual/done');
     } catch (error) {
-      setErrorMessage(authErrorMessage(error, 'Impossible de garder ce moment, réessayez.'));
+      setErrorMessage(journalErrorMessage(error, 'Impossible de garder ce moment, réessayez.'));
     } finally {
       setIsSaving(false);
     }
