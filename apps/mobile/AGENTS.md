@@ -57,13 +57,12 @@ src/shared/   generic code with zero business logic (theme, generic
 - **A module never imports another module's domain port/entity or
   infrastructure adapter directly, and never touches another module's
   repository.** A service may call another module's use-case (via its
-  barrel) exactly like Fastify services do on the backend. Concrete example:
-  `auth`'s `CreateChildProfile` used to write directly to `challenges`'
-  `WeeklyChallengeRepository`/`TrophyRepository` — this was fixed by
-  extracting `challenges/application/use-cases/initialize-child-progress.ts`
-  and having `CreateChildProfile` depend on it through `@/modules/challenges`
-  instead.
-  Follow the same pattern for any new cross-module need.
+  barrel) exactly like Fastify services do on the backend.
+  Follow the same pattern for any new cross-module need. Before adding one,
+  check whether the backend already does the work on its own: a new child's
+  first weekly challenge is drawn by the API, so the in-memory challenge
+  adapter provides it and `auth`'s `CreateChildProfile` calls nothing in
+  `challenges`.
 - **Documented exception**: `shared/ui/components/app-shell.tsx` is the
   global navigation shell and needs app-wide state to render nav
   guards/badges, so it imports `auth`'s active-child state and `journal`'s
