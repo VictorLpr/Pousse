@@ -1,8 +1,9 @@
 # Pousse API — Rules for agents
 
 `apps/api` is the REST API of the Pousse monorepo: Fastify 5 + TypeScript,
-consumed only by `apps/mobile`. Authentication (BetterAuth) is wired; no
-business route exists yet. This document puts into practice the decisions
+consumed only by `apps/mobile`. Authentication (BetterAuth) is wired; the
+first business routes are the child profiles (`/children`, auth module).
+This document puts into practice the decisions
 already accepted in `../../docs/adr/` (0001 to 0007); when in doubt, the
 ADR wins and this file gets fixed to stay consistent with it, never the
 other way around.
@@ -35,6 +36,16 @@ Use the English names when writing code.
   whose responses are produced and validated by BetterAuth.
 - `@fastify/swagger` generates the OpenAPI spec from the same schemas. Never
   maintain API docs separately from the code.
+- Errors: a service throws one of the `shared/errors` classes (`NotFoundError`,
+  `ValidationError`, `UnauthorizedError`) with a stable code;
+  `shared/errors/error-handler.ts` answers `{ code, message }` with its status,
+  Zod validation failures as 400 `VALIDATION_FAILED`, unknown routes as 404
+  `ROUTE_NOT_FOUND`. Routes declare `errorResponse` for each error status
+  they can return.
+- A business route reserved to the signed-in parent registers
+  `requireParent(auth)` (`modules/auth/parent-session.ts`) as an `onRequest`
+  hook and reads the parent with `parentIdOf(request)`. A resource of another
+  parent answers 404, never 403.
 - Pino is already embedded (`Fastify({ logger: true })`): don't add a second
   logger. BetterAuth's logs are routed to it (`modules/auth/auth.ts`).
 
@@ -123,7 +134,9 @@ prefix: '/x' })`, see `src/app.ts`). Crossing a module boundary must fail
   reach `dist/`. `test/support/global-setup.ts` starts the container once
   and applies the drizzle-kit migrations; `useTestApp()` builds a fresh app
   per test on a rolled-back transaction (`useTestDatabase()`) and exposes
-  that transaction to check what the routes wrote.
+  that transaction to check what the routes wrote. `test/support/fixtures.ts`
+  holds the shared fixtures: `signUpParent()` (a parent signed in through
+  BetterAuth, with its session cookies), `insertChild()`, `birthDateForAge()`.
 - Jest runs the tests as native ES modules (BetterAuth only ships ESM) and
   Node strips the types (`test/support/strip-types-transformer.mjs`): only
   erasable TypeScript syntax is allowed (`erasableSyntaxOnly`) — no `enum`,
