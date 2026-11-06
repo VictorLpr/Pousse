@@ -14,7 +14,8 @@ runs on its own.
 
 Notion is reached through the Notion MCP tools; ids, properties, statuses and
 the French page templates are in [notion.md](notion.md). Code, commits and the
-PR are in English (root `AGENTS.md`); what you write in Notion is in French.
+PR are in English (root `AGENTS.md`); what you write in Notion and every
+message to the user (plan, questions, reports) is in French.
 
 ## 1. Read the ticket
 
@@ -41,8 +42,13 @@ ticket is ready and you can name every file the description lists.
   `<type>-<code>-<slug>` (e.g. `fix-b1-trophy-icons`).
 
 Bring the branch up to date with `main` (`sync_with_base_branch` when the
-tool is available, else `git fetch origin && git merge origin/main`), run
-`npm install` if the lockfile changed, then set the ticket to `En cours`.
+tool is available, else `git fetch origin && git merge origin/main`). A fresh
+worktree has no `node_modules`: start `npm ci --prefer-offline` in the
+background now and carry on with step 3 while it runs. Give each worktree its
+own install, a real directory: a link to the main checkout's `node_modules`
+gets emptied when the worktree is removed. Ticket touching `apps/api`: check
+`docker info` now and tell the user at once if Docker is down. Then set the
+ticket to `En cours`.
 
 ## 3. Plan, then wait
 
@@ -65,13 +71,17 @@ before you start.
 
 ## 4. Implement
 
-Follow the plan, matching the surrounding code. Work found along the way that
+Follow the plan, matching the surrounding code. Change files with the `Edit`
+and `Write` tools: each one is reviewed as a diff, where a script that
+rewrites files stops for the user's approval. Work found along the way that
 the ticket does not ask for becomes a new backlog ticket ([notion.md](notion.md)),
 never part of this branch. If the plan turns out wrong in a way that changes
 scope, files or flags, go back to the user with the revised plan.
 
-Commit in small steps, Conventional Commits with a scope, as in `git log`
-(`fix(mobile): …`, `feat(api): …`). Done when every planned change is in.
+Commit in small steps, Conventional Commits with a scope, as in `git log`,
+every subject ending with the ticket code: `fix(mobile): show earned trophy
+icons [B1]`. A one-commit PR is squashed under its commit subject, so the code
+reaches `main` only through it. Done when every planned change is in.
 
 ## 5. Prove it
 
@@ -98,7 +108,15 @@ left and every checklist rule was applied.
 ## 7. Open the PR
 
 Push the branch and open the PR with `gh pr create`, body from
-[pr-template.md](pr-template.md). Then read its CI and offer Auto-fix. Two
+[pr-template.md](pr-template.md). Then read its CI and offer Auto-fix.
+
+Sibling sessions merge their PRs while yours waits. After every push, and
+whenever you hear that another PR was merged, read
+`gh pr view --json mergeable`: on `CONFLICTING`, bring the branch up to date
+with `main` as in step 2, resolve, re-run step 5 for what moved, and push.
+Done when the PR is `MERGEABLE` with its CI green.
+
+Two
 GitHub workflows are manual and cost quota or need approval: the Claude review
 (comment `/review` on the PR) and the staging deploy. Mention them to the
 user; trigger them only when asked.
@@ -108,5 +126,8 @@ user; trigger them only when asked.
 Set the ticket to `En revue` and add the delivery section to its page
 ([notion.md](notion.md)). Then give the user a short report: PR link, proofs,
 what was not verified, tickets created. The ticket becomes `Terminé` only once
-its PR is merged, which is the user's call; when they tell you it is merged,
-apply the "after merge" steps of [notion.md](notion.md).
+its PR is merged, which is the user's call. When they tell you it is merged:
+apply the "after merge" steps of [notion.md](notion.md), report them, then
+stop what you started (preview server, containers) and archive this session
+(`archive_session` with `self`), which removes its worktree. The user wants
+merged worktrees cleaned.
