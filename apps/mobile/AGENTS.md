@@ -91,9 +91,14 @@ and `defaultNow` columns). The in-memory adapters are the fake backend: they
 generate ids with `IdGenerator` and timestamps with `Clock`
 (`src/shared/infrastructure/`), injected in `container.ts`. `save` stays on a
 port only to update an existing entity. Never call `new Date()` or build ids
-inside a use case. Temporary exception: `RegisterParent` still receives
-`IdGenerator` (whose port is still in `src/shared/domain/ports/`) until the
-auth module follows the BetterAuth contract (L2-2).
+inside a use case.
+
+Sign-up, sign-in and sign-out go through the `AuthGateway` port
+(`modules/auth/domain/ports/auth-gateway.ts`), shaped after BetterAuth's
+email/password client. Validation (email format, password length) and email
+uniqueness belong to the server: the in-memory adapter enforces them and
+throws `AuthError` with the API's codes. Auth use cases hold no validation
+rule; screens keep only ergonomic checks (the two passwords match).
 
 ## 2. Clean code conventions
 

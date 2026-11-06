@@ -1,7 +1,7 @@
 import type { ParentAccount } from '../entities/parent-account';
 
+/** Sign-up and sign-in go through `AuthGateway`; this port only links an account to its household. */
 export interface ParentAccountRepository {
-  findByEmail(email: string): Promise<ParentAccount | null>;
   findById(id: string): Promise<ParentAccount | null>;
   save(account: ParentAccount): Promise<void>;
 }

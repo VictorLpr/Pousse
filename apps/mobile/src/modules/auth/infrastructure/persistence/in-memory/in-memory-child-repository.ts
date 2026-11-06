@@ -1,6 +1,6 @@
 import type { Child } from '@/modules/auth/domain/entities/child';
 import type { ChildRepository } from '@/modules/auth/domain/ports/child-repository';
-import type { IdGenerator } from '@/shared/domain/ports/id-generator';
+import type { IdGenerator } from '@/shared/infrastructure/ids/id-generator';
 
 export class InMemoryChildRepository implements ChildRepository {
   private readonly childrenById = new Map<string, Child>();
