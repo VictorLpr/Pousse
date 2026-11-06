@@ -2,7 +2,6 @@ import type { FastifyInstance } from 'fastify';
 
 import { AUTH_BASE_PATH, type Auth } from '#/modules/auth/auth.js';
 import { registerAuthRoute } from '#/modules/auth/auth-route.js';
-import { createChildRepository } from '#/modules/auth/child-repository.js';
 import { registerChildRoutes } from '#/modules/auth/child-routes.js';
 import { createChildService } from '#/modules/auth/child-service.js';
 import { requireParent } from '#/modules/auth/parent-session.js';
@@ -38,7 +37,7 @@ export async function authModule(
     { prefix: AUTH_BASE_PATH },
   );
 
-  const children = createChildService(createChildRepository(db));
+  const children = createChildService(db);
   await app.register(
     async (scope) => {
       scope.decorateRequest('parentId', undefined);

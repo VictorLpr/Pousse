@@ -5,6 +5,7 @@ import { z } from 'zod';
 import {
   childParams,
   childResponse,
+  consentResponse,
   createChildBody,
   updateChildBody,
 } from '#/modules/auth/child-schemas.js';
@@ -75,5 +76,23 @@ export function registerChildRoutes(app: FastifyInstance, children: ChildService
       },
     },
     async (request) => children.update(parentIdOf(request), request.params.id, request.body),
+  );
+
+  // A profile created before consent was required answers 404
+  // `CONSENT_NOT_FOUND`.
+  routes.get(
+    '/:id/consent',
+    {
+      schema: {
+        params: childParams,
+        response: {
+          200: consentResponse,
+          400: errorResponse,
+          401: errorResponse,
+          404: errorResponse,
+        },
+      },
+    },
+    async (request) => children.getConsent(parentIdOf(request), request.params.id),
   );
 }
