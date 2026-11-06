@@ -37,6 +37,16 @@ const TROPHY_ICONS: Record<string, ComponentType<TrophyIconProps>> = {
   courage: Star,
 };
 
+/** Locked slots drawn after the earned trophies; they are never stored. */
+const LOCKED_TROPHY_SLOTS = 2;
+
+interface TrophySlot {
+  readonly key: string;
+  readonly name: string;
+  readonly isEarned: boolean;
+  readonly Icon: ComponentType<TrophyIconProps>;
+}
+
 export function ChallengesScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
@@ -67,7 +77,22 @@ export function ChallengesScreen() {
     }
   };
 
-  const earnedCount = trophies.filter((trophy) => trophy.status === 'earned').length;
+  const earnedTrophies = trophies.filter((trophy) => trophy.status === 'earned');
+  const earnedCount = earnedTrophies.length;
+  const trophySlots: TrophySlot[] = [
+    ...earnedTrophies.map((trophy) => ({
+      key: trophy.id,
+      name: trophy.name,
+      isEarned: true,
+      Icon: TROPHY_ICONS[trophy.id] ?? Award,
+    })),
+    ...Array.from({ length: LOCKED_TROPHY_SLOTS }, (_, index) => ({
+      key: `locked-slot-${index + 1}`,
+      name: 'À venir',
+      isEarned: false,
+      Icon: Lock,
+    })),
+  ];
 
   return (
     <AppShell route="challenges">
@@ -119,43 +144,37 @@ export function ChallengesScreen() {
       </View>
 
       <View style={styles.trophyGrid}>
-        {trophies.map((trophy) => {
-          const isEarned = trophy.status === 'earned';
-          const Icon = TROPHY_ICONS[trophy.id] ?? Award;
-          return (
-            <View
-              key={trophy.id}
-              accessible
-              accessibilityLabel={
-                isEarned ? `Trophée gagné : ${trophy.name}` : 'Trophée à venir, encore verrouillé'
-              }
-              style={styles.trophyCell}
-            >
-              <View style={styles.trophyCircle}>
-                {isEarned ? (
-                  <SketchShape
-                    shape="circle"
-                    fill={colors.peach}
-                    stroke={colors.ink}
-                    strokeWidth={1.6}
-                  />
-                ) : (
-                  <SketchShape shape="circle" stroke={colors.dashedBorder} strokeWidth={2} dashed />
-                )}
-                <View>
-                  {isEarned ? (
-                    <Icon size={26} color={colors.ink} strokeWidth={1.8} />
-                  ) : (
-                    <Lock size={24} color={colors.moss} strokeWidth={1.8} />
-                  )}
-                </View>
+        {trophySlots.map(({ key, name, isEarned, Icon }) => (
+          <View
+            key={key}
+            accessible
+            accessibilityLabel={
+              isEarned ? `Trophée gagné : ${name}` : 'Trophée à venir, encore verrouillé'
+            }
+            style={styles.trophyCell}
+          >
+            <View style={styles.trophyCircle}>
+              {isEarned ? (
+                <SketchShape
+                  shape="circle"
+                  fill={colors.peach}
+                  stroke={colors.ink}
+                  strokeWidth={1.6}
+                />
+              ) : (
+                <SketchShape shape="circle" stroke={colors.dashedBorder} strokeWidth={2} dashed />
+              )}
+              <View>
+                <Icon
+                  size={isEarned ? 26 : 24}
+                  color={isEarned ? colors.ink : colors.moss}
+                  strokeWidth={1.8}
+                />
               </View>
-              <Text style={[styles.trophyName, !isEarned && styles.lockedTrophyName]}>
-                {trophy.name}
-              </Text>
             </View>
-          );
-        })}
+            <Text style={[styles.trophyName, !isEarned && styles.lockedTrophyName]}>{name}</Text>
+          </View>
+        ))}
       </View>
     </AppShell>
   );
