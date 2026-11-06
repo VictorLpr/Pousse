@@ -23,10 +23,7 @@ export class InMemoryAuthGateway implements AuthGateway {
   ) {}
 
   async signUp({ email, password }: EmailCredentials): Promise<ParentProfile> {
-    const normalizedEmail = normalizeEmail(email);
-    if (!EMAIL_PATTERN.test(normalizedEmail)) {
-      throw new AuthError('INVALID_EMAIL', 'Invalid email');
-    }
+    const normalizedEmail = validEmail(email);
     if (password.length < MIN_PASSWORD_LENGTH) {
       throw new AuthError('PASSWORD_TOO_SHORT', 'Password too short');
     }
@@ -51,7 +48,7 @@ export class InMemoryAuthGateway implements AuthGateway {
   }
 
   async signIn({ email, password }: EmailCredentials): Promise<ParentProfile> {
-    const account = await this.accounts.findByEmail(normalizeEmail(email));
+    const account = await this.accounts.findByEmail(validEmail(email));
     if (!account || account.password !== password) {
       throw new AuthError('INVALID_EMAIL_OR_PASSWORD', 'Invalid email or password');
     }
@@ -63,6 +60,11 @@ export class InMemoryAuthGateway implements AuthGateway {
   }
 }
 
-function normalizeEmail(email: string): string {
-  return email.trim().toLowerCase();
+/** Both endpoints reject a malformed email with `INVALID_EMAIL` before anything else. */
+function validEmail(email: string): string {
+  const normalizedEmail = email.trim().toLowerCase();
+  if (!EMAIL_PATTERN.test(normalizedEmail)) {
+    throw new AuthError('INVALID_EMAIL', 'Invalid email');
+  }
+  return normalizedEmail;
 }
