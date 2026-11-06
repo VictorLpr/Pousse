@@ -1,6 +1,10 @@
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { BookOpen, Menu, Trophy } from 'lucide-react-native';
+import { useCallback, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+
+import { localDayOf } from '@/modules/journal/domain/entities/journal-entry';
+import { useServices } from '@/di/services-provider';
 
 import { AppShell, useInShell } from '@/shared/ui/components/app-shell';
 import { RITUAL_STEP_COUNT } from '@/modules/journal/ui/components/ritual-step-layout';
@@ -15,8 +19,22 @@ import { colors, fonts } from '@/shared/ui/theme';
 
 export function HomeScreen() {
   const router = useRouter();
+  const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
   const { resetDraft } = useRitualDraft();
+  const [doneTonight, setDoneTonight] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!activeChild) {
+        return;
+      }
+      const today = localDayOf(new Date());
+      services.getJournalEntries
+        .execute(activeChild.id)
+        .then((entries) => setDoneTonight(entries.some((entry) => entry.date === today)));
+    }, [services, activeChild]),
+  );
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -42,16 +60,27 @@ export function HomeScreen() {
 
       <Divider variant="sprout" spacing={28} />
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel="Commencer notre moment du soir"
-        accessibilityHint={`${RITUAL_STEP_COUNT} étapes, environ 5 minutes`}
-        onPress={startRitual}
-        style={({ pressed }) => [styles.ritualCta, pressed && styles.pressed]}
-      >
-        <Text style={styles.ritualTitle}>Notre moment du soir</Text>
-        <Text style={styles.ritualSubtitle}>{RITUAL_STEP_COUNT} étapes · environ 5 min</Text>
-      </Pressable>
+      {doneTonight ? (
+        <View
+          accessible
+          accessibilityLabel="Notre moment du soir est gardé. On se retrouve demain soir."
+          style={styles.ritualDone}
+        >
+          <Text style={styles.ritualDoneTitle}>Moment du soir gardé</Text>
+          <Text style={styles.ritualDoneSubtitle}>On se retrouve demain soir.</Text>
+        </View>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Commencer notre moment du soir"
+          accessibilityHint={`${RITUAL_STEP_COUNT} étapes, environ 5 minutes`}
+          onPress={startRitual}
+          style={({ pressed }) => [styles.ritualCta, pressed && styles.pressed]}
+        >
+          <Text style={styles.ritualTitle}>Notre moment du soir</Text>
+          <Text style={styles.ritualSubtitle}>{RITUAL_STEP_COUNT} étapes · environ 5 min</Text>
+        </Pressable>
+      )}
 
       <View style={styles.shortcuts}>
         <Pressable
@@ -147,6 +176,22 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.ink,
     opacity: 0.82,
+  },
+  ritualDone: {
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 12,
+  },
+  ritualDoneTitle: {
+    fontFamily: fonts.heading,
+    fontSize: 30,
+    lineHeight: 32,
+    color: colors.ink,
+  },
+  ritualDoneSubtitle: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.inkSoft,
   },
   shortcuts: {
     flexDirection: 'row',
