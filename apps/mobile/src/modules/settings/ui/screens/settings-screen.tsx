@@ -7,6 +7,7 @@ import {
   LogOut,
   Users,
 } from 'lucide-react-native';
+import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 
 import { useServices } from '@/di/services-provider';
@@ -19,6 +20,7 @@ import { SettingsRow } from '@/shared/ui/components/settings-row';
 import { ageRangeWithYears, childInitial, reminderLabel } from '@/modules/auth/ui/format/child';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useSession } from '@/modules/auth/ui/state/session-context';
+import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
 function showComingSoon() {
@@ -30,6 +32,8 @@ export function SettingsScreen() {
   const services = useServices();
   const { activeChild, adoptChild, clearActiveChild, isLoading } = useActiveChild();
   const { signOut } = useSession();
+  const { resetDraft } = useRitualDraft();
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -39,12 +43,18 @@ export function SettingsScreen() {
   }
 
   const toggleReminder = async (enabled: boolean) => {
-    adoptChild(await services.setEveningReminder.execute(activeChild.id, enabled));
+    setErrorMessage(null);
+    try {
+      adoptChild(await services.setEveningReminder.execute(activeChild.id, enabled));
+    } catch {
+      setErrorMessage('Impossible de changer le rappel, réessayez.');
+    }
   };
 
   const logOut = () => {
     signOut();
     clearActiveChild();
+    resetDraft();
     router.dismissAll();
   };
 
@@ -86,6 +96,11 @@ export function SettingsScreen() {
           />
         }
       />
+      {errorMessage ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errorMessage}
+        </Text>
+      ) : null}
       <Divider />
       <SettingsRow
         icon={<ImageIcon size={20} color={colors.ink} strokeWidth={1.9} />}
@@ -150,5 +165,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.inkSoft,
     textDecorationLine: 'underline',
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
   },
 });
