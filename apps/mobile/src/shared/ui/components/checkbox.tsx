@@ -18,7 +18,8 @@ export function Checkbox({ label, checked, onChange, accessibilityHint }: Checkb
       accessibilityRole="checkbox"
       accessibilityLabel={label}
       accessibilityHint={accessibilityHint}
-      accessibilityState={{ checked }}
+      // react-native-web 0.21 ignores `accessibilityState`; native reads `aria-checked` too.
+      aria-checked={checked}
       onPress={() => onChange(!checked)}
       style={styles.row}
     >
