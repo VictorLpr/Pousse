@@ -66,9 +66,19 @@ describe('auth routes (BetterAuth, ADR-0003)', () => {
     });
   }
 
+  function updateUser(body: Record<string, unknown>, cookie?: string) {
+    return app().inject({
+      method: 'POST',
+      url: '/auth/update-user',
+      headers: { origin: TEST_ORIGIN },
+      cookies: cookie ? { [SESSION_COOKIE]: cookie } : {},
+      payload: body,
+    });
+  }
+
   /** Signs up and returns the session cookie. */
-  async function signedUpCookie(): Promise<string> {
-    const cookie = sessionCookie(await signUp());
+  async function signedUpCookie(body: Partial<SignUpBody> = {}): Promise<string> {
+    const cookie = sessionCookie(await signUp(body));
     if (!cookie) throw new Error('Sign-up did not open a session');
     return cookie;
   }
@@ -179,6 +189,39 @@ describe('auth routes (BetterAuth, ADR-0003)', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.json()).toBeNull();
+    });
+  });
+
+  // The household name shown in the app comes from the parent's last name.
+  describe('POST /auth/update-user', () => {
+    const OTHER_EMAIL = 'other-parent@example.com';
+
+    it("updates the signed-in parent's first and last names", async () => {
+      await signUp({ email: OTHER_EMAIL, firstName: 'Alex', lastName: 'Petit' });
+      const cookie = await signedUpCookie({ firstName: 'Camille', lastName: 'Martin' });
+
+      const response = await updateUser({ firstName: 'Lou', lastName: 'Durand' }, cookie);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({ status: true });
+      expect((await getSession(cookie)).json()).toMatchObject({
+        user: { email: EMAIL, firstName: 'Lou', lastName: 'Durand' },
+      });
+      const [row] = await db().select().from(user).where(eq(user.email, EMAIL));
+      expect(row).toMatchObject({ firstName: 'Lou', lastName: 'Durand' });
+      const [other] = await db().select().from(user).where(eq(user.email, OTHER_EMAIL));
+      expect(other).toMatchObject({ firstName: 'Alex', lastName: 'Petit' });
+    });
+
+    it('refuses an update without a session', async () => {
+      await signUp({ firstName: 'Camille', lastName: 'Martin' });
+
+      const response = await updateUser({ firstName: 'Lou', lastName: 'Durand' });
+
+      expect(response.statusCode).toBe(401);
+      expect(response.json()).toMatchObject({ code: 'UNAUTHORIZED' });
+      const [row] = await db().select().from(user).where(eq(user.email, EMAIL));
+      expect(row).toMatchObject({ firstName: 'Camille', lastName: 'Martin' });
     });
   });
 
