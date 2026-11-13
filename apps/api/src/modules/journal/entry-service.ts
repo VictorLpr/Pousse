@@ -108,13 +108,9 @@ export function createEntryService(
       assertNearToday(input.date);
       const emotionId = await emotionIdOf(input.emotionCode);
       try {
-        const { id } = await entries.insert({
-          childId: input.childId,
-          emotionId,
-          text: input.text,
-          date: input.date,
-        });
-        return await getEntry(id);
+        const values = { childId: input.childId, text: input.text, date: input.date };
+        const { id, createdAt } = await entries.insert({ ...values, emotionId });
+        return toResponse({ id, emotionCode: input.emotionCode, createdAt, ...values });
       } catch (error) {
         if (isOneEntryPerDayViolation(error)) {
           throw new ConflictError(

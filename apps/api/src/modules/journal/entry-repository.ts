@@ -46,9 +46,12 @@ export function createEntryRepository(db: DbExecutor) {
      * The insert runs in its own transaction (a savepoint when `db` already
      * is one), so the violation doesn't abort the caller's transaction.
      */
-    async insert(values: NewEntryRow): Promise<{ id: string }> {
+    async insert(values: NewEntryRow): Promise<{ id: string; createdAt: Date }> {
       const [row] = await db.transaction((tx) =>
-        tx.insert(journalEntry).values(values).returning({ id: journalEntry.id }),
+        tx
+          .insert(journalEntry)
+          .values(values)
+          .returning({ id: journalEntry.id, createdAt: journalEntry.createdAt }),
       );
       if (!row) throw new Error('Journal entry insert returned no row');
       return row;
@@ -70,13 +73,12 @@ export function createEntryRepository(db: DbExecutor) {
       await db.update(journalEntry).set(changes).where(eq(journalEntry.id, id));
     },
 
-    /** Days a child has an entry on, up to `lastDay`, newest first. */
+    /** Days a child has an entry on, up to `lastDay`, in no particular order. */
     async listDatesUpTo(childId: string, lastDay: string): Promise<string[]> {
       const rows = await db
         .select({ date: journalEntry.date })
         .from(journalEntry)
-        .where(and(eq(journalEntry.childId, childId), lte(journalEntry.date, lastDay)))
-        .orderBy(desc(journalEntry.date));
+        .where(and(eq(journalEntry.childId, childId), lte(journalEntry.date, lastDay)));
       return rows.map(({ date }) => date);
     },
   };
