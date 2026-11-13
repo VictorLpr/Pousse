@@ -24,11 +24,18 @@ export function JournalScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const [loadFailed, setLoadFailed] = useState(false);
   const catalog = useEmotions();
 
   useEffect(() => {
     if (activeChild) {
-      services.getJournalEntries.execute(activeChild.id).then(setEntries);
+      services.getJournalEntries
+        .execute(activeChild.id)
+        .then((loaded) => {
+          setEntries(loaded);
+          setLoadFailed(false);
+        })
+        .catch(() => setLoadFailed(true));
     }
   }, [services, activeChild]);
 
@@ -73,7 +80,13 @@ export function JournalScreen() {
         );
       })}
 
-      {entries.length === 0 && (
+      {loadFailed ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          Impossible d'afficher le journal pour l'instant.
+        </Text>
+      ) : null}
+
+      {!loadFailed && entries.length === 0 && (
         <Text style={styles.emptyText}>
           Aucun souvenir pour l'instant. Le rituel du soir remplira ce journal !
         </Text>
@@ -120,6 +133,12 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: colors.ink,
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
+    marginTop: 24,
   },
   emptyText: {
     fontFamily: fonts.body,
