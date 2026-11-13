@@ -104,12 +104,9 @@ rule; screens keep only ergonomic checks (the two passwords match).
 
 ## 2. Clean code conventions
 
-- File names: kebab-case (`complete-evening-ritual.ts`, `screen-header.tsx`). One
-  entity/use case/component per file. Screens end in `-screen.tsx` under
-  `src/modules/<name>/ui/screens/<feature>/`.
+- Screens end in `-screen.tsx` under `src/modules/<name>/ui/screens/<feature>/`.
 - Imports use the `@/` alias (maps to `src/`), grouped externals-first, alphabetical.
-- TypeScript strict, no `any`, `import type` for type-only imports. Run `npx tsc --noEmit`
-  before finishing — it must pass with zero errors.
+- No `any`, `import type` for type-only imports.
 - **Language: code in English, UI copy in French** (root `AGENTS.md`). Identifiers, file and
   folder names, module names, route paths and query params (`?from=household`),
   stored/code values (`EmotionId`, trophy ids), comments, doc comments and every
@@ -128,21 +125,13 @@ rule; screens keep only ergonomic checks (the two passwords match).
 - Derive display strings through the formatters in `src/shared/ui/format/` (generic, e.g.
   dates) or `src/modules/<name>/ui/format/` (entity-specific, e.g. `auth/ui/format/child.ts`
   for age ranges and streaks) instead of inlining string logic in screens.
-- No new dependencies without a strong reason. Icons: `lucide-react-native` (already
-  installed); custom SVGs only when the mockup shape has no lucide equivalent (see
+- Icons: `lucide-react-native`; custom SVGs only when the mockup shape has no lucide equivalent (see
   `emotion-icon.tsx`).
 
 ## 3. Design system ("Cocon" mockup)
 
 All values come from `src/shared/ui/theme/` — **never hardcode a color or font family in a screen**.
-
-Palette (`colors`): `background #FEF4EB` (cream), `coral #FFB089` (CTAs only, never a
-text color), `peach #FFDAC4` (accents/selection), `ink #2E4449` (main text),
-`inkSoft #4E6B73` (secondary text), `border/sage #DEE0D0`, `sageDeep #9DA986`,
-`overline #7C8F84`, `dashedBorder #B7BCA2`, `moss #5E7168`, `surface #FFFFFF`.
-
-Typography (`fonts`): Caveat 700 for headings/first names (`heading`), Quicksand 500/600/700
-for body (`body`, `bodySemiBold`, `bodyBold`). Fonts load in `src/app/_layout.tsx`.
+`coral` is for CTAs only, never a text color.
 
 **Layout philosophy — "evening notebook" (flat & editorial). No boxes-in-boxes:**
 

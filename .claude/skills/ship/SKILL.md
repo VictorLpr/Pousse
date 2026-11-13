@@ -20,9 +20,10 @@ message to the user (plan, questions, reports) is in French.
 ## 1. Read the ticket
 
 Resolve `$ARGUMENTS` to a ticket page of the backlog and fetch it: properties,
-description, its epic (`Ticket Epic`), its sprint. Then read the root
-`AGENTS.md`, the `AGENTS.md` of every app the ticket touches, and each ADR the
-ticket or those files point at for this area.
+description, its epic (`Ticket Epic`), its sprint. The root `AGENTS.md` is
+already in your context, and each app's `AGENTS.md` loads on its own once you
+open a file under that app: don't re-read them. Read each ADR the ticket or
+those files point at for this area.
 
 The ticket is **ready** when all three hold:
 
@@ -94,13 +95,15 @@ reaches `main` only through it. Done when every planned change is in.
   is not, say so instead of skipping silently).
 - `apps/mobile` touched: start the `pousse-web` preview and walk the changed
   flow end to end, reading the accessibility tree, as `apps/mobile/AGENTS.md`
-  §6 asks.
+  §6 asks. Read with `read_page` / `get_page_text`; take screenshots only
+  for the UI the PR shows.
 
 Done when every acceptance criterion has its proof in hand.
 
 ## 6. Review
 
-Run the `code-review` skill on the branch diff against `main`, then go through
+Run the `code-review` skill at `medium` effort (`medium` as the first arg) on
+the branch diff against `main`, then go through
 [review-checklist.md](review-checklist.md) rule by rule. Fix what holds up,
 re-run step 5 for what the fixes touched. Done when no confirmed finding is
 left and every checklist rule was applied.
