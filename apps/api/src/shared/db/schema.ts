@@ -242,6 +242,12 @@ export const photo = pgTable(
       'photo_mime_type_allowed',
       sql`${table.mimeType} in ('image/jpeg', 'image/png', 'image/webp')`,
     ),
+    // A file name, never a path: no slash (iOS, Android, file URI) nor
+    // backslash (Windows).
+    check(
+      'photo_file_name_no_path',
+      sql`strpos(${table.fileName}, '/') = 0 and strpos(${table.fileName}, '\\') = 0`,
+    ),
   ],
 );
 
