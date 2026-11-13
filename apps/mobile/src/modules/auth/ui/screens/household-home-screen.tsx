@@ -22,11 +22,16 @@ export function HouseholdHomeScreen() {
   const { account } = useSession();
   const { selectChild } = useActiveChild();
   const [children, setChildren] = useState<Child[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
       if (account) {
-        services.listChildren.execute(account.id).then(setChildren);
+        setErrorMessage(null);
+        services.listChildren
+          .execute(account.id)
+          .then(setChildren)
+          .catch(() => setErrorMessage('Impossible d’afficher les enfants, réessayez.'));
       }
     }, [services, account]),
   );
@@ -59,7 +64,13 @@ export function HouseholdHomeScreen() {
         </Fragment>
       ))}
 
-      {children.length === 0 && (
+      {errorMessage ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errorMessage}
+        </Text>
+      ) : null}
+
+      {children.length === 0 && !errorMessage && (
         <Text style={styles.emptyText}>
           Votre foyer est prêt ! Ajoutez le profil de votre premier enfant.
         </Text>
@@ -151,6 +162,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 13,
     color: colors.inkSoft,
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
+    paddingVertical: 18,
   },
   emptyText: {
     fontFamily: fonts.body,
