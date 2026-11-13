@@ -2,11 +2,12 @@ import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 
 import { useServices } from '@/di/services-provider';
+import { localDayOf } from '@/modules/journal/domain/entities/journal-entry';
 import type { EveningStreak } from '@/modules/journal/ui/format/streak';
 
 const LOADING: EveningStreak = { status: 'loading' };
 
-/** The child's streak, read again each time the screen gains focus. */
+/** The child's streak up to the family's today, read again each time the screen gains focus. */
 export function useEveningStreak(childId: string | undefined): EveningStreak {
   const services = useServices();
   const [loaded, setLoaded] = useState<{ childId: string; streak: EveningStreak } | null>(null);
@@ -19,7 +20,7 @@ export function useEveningStreak(childId: string | undefined): EveningStreak {
       let isCurrent = true;
       const settle = (streak: EveningStreak) => isCurrent && setLoaded({ childId, streak });
       services.getEveningStreak
-        .execute(childId)
+        .execute(childId, localDayOf(new Date()))
         .then((evenings) => settle({ status: 'ready', evenings }))
         .catch(() => settle({ status: 'failed' }));
       return () => {

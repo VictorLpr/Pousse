@@ -1,5 +1,7 @@
 import type { Emotion } from '@/modules/journal/domain/entities/emotion';
 import { type JournalEntry, localDayOf } from '@/modules/journal/domain/entities/journal-entry';
+import { entryPhotoOf } from '@/modules/journal/domain/entities/photo';
+import { PLACEHOLDER_PHOTO } from '@/modules/journal/infrastructure/device/placeholder-photo-picker';
 
 /** The API's emotion catalog (`apps/api/src/shared/db/catalogs/emotions.ts`), in display order. */
 export const seedEmotions: readonly Emotion[] = [
@@ -11,7 +13,8 @@ export const seedEmotions: readonly Emotion[] = [
   { code: 'angry', label: 'fâché' },
 ];
 
-export const SEED_PHOTO_URI = 'memory://photo-placeholder';
+/** The demo memories' photo, the same stand-in the ritual's photo step picks. */
+const SEED_PHOTO = entryPhotoOf(PLACEHOLDER_PHOTO);
 
 const LEA_ID = 'child-lea';
 
@@ -28,41 +31,41 @@ export const seedJournalEntries: readonly JournalEntry[] = [
   {
     id: 'entry-1',
     childId: LEA_ID,
-    emotionId: 'proud',
-    prideText: "J'ai aidé mon copain à faire ses maths et il a réussi tout seul après.",
-    photoUri: SEED_PHOTO_URI,
+    emotionCode: 'proud',
+    text: "J'ai aidé mon copain à faire ses maths et il a réussi tout seul après.",
+    photo: SEED_PHOTO,
     ...eveningOf(1),
   },
   {
     id: 'entry-2',
     childId: LEA_ID,
-    emotionId: 'happy',
-    prideText: 'On a fait un gâteau au chocolat avec maman pour le goûter.',
-    photoUri: SEED_PHOTO_URI,
+    emotionCode: 'happy',
+    text: 'On a fait un gâteau au chocolat avec maman pour le goûter.',
+    photo: SEED_PHOTO,
     ...eveningOf(2),
   },
   {
     id: 'entry-3',
     childId: LEA_ID,
-    emotionId: 'calm',
-    prideText: 'On a lu trois histoires avant de dormir, blotti dans le canapé.',
-    photoUri: SEED_PHOTO_URI,
+    emotionCode: 'calm',
+    text: 'On a lu trois histoires avant de dormir, blotti dans le canapé.',
+    photo: SEED_PHOTO,
     ...eveningOf(3),
   },
   {
     id: 'entry-4',
     childId: LEA_ID,
-    emotionId: 'proud',
-    prideText: "J'ai réussi à faire du vélo sans les petites roues.",
-    photoUri: SEED_PHOTO_URI,
+    emotionCode: 'proud',
+    text: "J'ai réussi à faire du vélo sans les petites roues.",
+    photo: SEED_PHOTO,
     ...eveningOf(5),
   },
   {
     id: 'entry-5',
     childId: LEA_ID,
-    emotionId: 'happy',
-    prideText: 'On a construit une cabane géante dans le salon.',
-    photoUri: SEED_PHOTO_URI,
+    emotionCode: 'happy',
+    text: 'On a construit une cabane géante dans le salon.',
+    photo: SEED_PHOTO,
     ...eveningOf(6),
   },
 ];

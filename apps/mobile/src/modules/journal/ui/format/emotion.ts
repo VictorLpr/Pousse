@@ -1,4 +1,4 @@
-import type { Emotion, EmotionId } from '@/modules/journal/domain/entities/emotion';
+import type { Emotion, EmotionCode } from '@/modules/journal/domain/entities/emotion';
 
 export type EmotionCatalogState =
   | { readonly status: 'loading' }
@@ -12,7 +12,7 @@ const UNKNOWN_EMOTION_LABEL = 'émotion';
  * a code the catalog does not know or when it could not load; null while it
  * loads, so nothing flickers.
  */
-export function emotionLabel(catalog: EmotionCatalogState, code: EmotionId): string | null {
+export function emotionLabel(catalog: EmotionCatalogState, code: EmotionCode): string | null {
   switch (catalog.status) {
     case 'loading':
       return null;

@@ -1,11 +1,11 @@
 import { View } from 'react-native';
 import Svg, { Circle, Line, Path } from 'react-native-svg';
 
-import type { EmotionId } from '@/modules/journal/domain/entities/emotion';
+import type { EmotionCode } from '@/modules/journal/domain/entities/emotion';
 import { colors } from '@/shared/ui/theme';
 
 interface EmotionIconProps {
-  emotionId: EmotionId;
+  emotionCode: EmotionCode;
   size?: number;
   color?: string;
 }
@@ -15,7 +15,7 @@ interface EmotionIconProps {
  * to it names the emotion. The wrapper hides it, as `accessible` on the Svg
  * would reach the web DOM as an invalid attribute.
  */
-export function EmotionIcon({ emotionId, size = 26, color = colors.ink }: EmotionIconProps) {
+export function EmotionIcon({ emotionCode, size = 26, color = colors.ink }: EmotionIconProps) {
   const strokeProps = {
     stroke: color,
     strokeWidth: 1.8,
@@ -27,20 +27,20 @@ export function EmotionIcon({ emotionId, size = 26, color = colors.ink }: Emotio
   return (
     <View aria-hidden accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <Svg viewBox="0 0 24 24" width={size} height={size}>
-        {emotionId === 'calm' ? (
+        {emotionCode === 'calm' ? (
           <Path d="M12 3a6.4 6.4 0 0 0 9 9 9 9 0 1 1-9-9Z" {...strokeProps} />
         ) : (
           <>
             <Circle cx={12} cy={12} r={10} {...strokeProps} />
-            {emotionId === 'happy' && (
+            {emotionCode === 'happy' && (
               <Path d="M18 13a6 6 0 0 1-6 5 6 6 0 0 1-6-5h12Z" {...strokeProps} />
             )}
-            {emotionId === 'proud' && <Path d="M8 14s1.5 2 4 2 4-2 4-2" {...strokeProps} />}
-            {emotionId === 'surprised' && <Circle cx={12} cy={15} r={1.6} {...strokeProps} />}
-            {(emotionId === 'sad' || emotionId === 'angry') && (
+            {emotionCode === 'proud' && <Path d="M8 14s1.5 2 4 2 4-2 4-2" {...strokeProps} />}
+            {emotionCode === 'surprised' && <Circle cx={12} cy={15} r={1.6} {...strokeProps} />}
+            {(emotionCode === 'sad' || emotionCode === 'angry') && (
               <Path d="M16 16s-1.5-2-4-2-4 2-4 2" {...strokeProps} />
             )}
-            {emotionId === 'angry' ? (
+            {emotionCode === 'angry' ? (
               <>
                 <Path d="M7.5 8 10 9" {...strokeProps} />
                 <Path d="m14 9 2.5-1" {...strokeProps} />

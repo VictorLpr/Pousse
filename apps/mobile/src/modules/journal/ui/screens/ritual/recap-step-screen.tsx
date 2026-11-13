@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { useServices } from '@/di/services-provider';
+import { entryPhotoOf } from '@/modules/journal/domain/entities/photo';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
@@ -23,7 +24,7 @@ export function RecapStepScreen() {
   const router = useRouter();
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
-  const { emotionId, prideText, photoUri } = useRitualDraft();
+  const { date, emotionCode, text, photo } = useRitualDraft();
   const catalog = useEmotions();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -31,11 +32,11 @@ export function RecapStepScreen() {
   if (isLoading) {
     return null;
   }
-  if (!activeChild || !emotionId) {
+  if (!activeChild || !emotionCode) {
     return <Redirect href="/home" />;
   }
 
-  const label = emotionLabel(catalog, emotionId);
+  const label = emotionLabel(catalog, emotionCode);
 
   const saveRitual = async () => {
     setIsSaving(true);
@@ -43,9 +44,10 @@ export function RecapStepScreen() {
     try {
       await services.completeEveningRitual.execute({
         childId: activeChild.id,
-        emotionId,
-        prideText,
-        photoUri,
+        emotionCode,
+        text,
+        date,
+        photo: photo && entryPhotoOf(photo),
       });
       router.replace('/ritual/done');
     } catch (error) {
@@ -58,7 +60,7 @@ export function RecapStepScreen() {
   return (
     <RitualStepLayout step={4} title="Notre moment" subtitle="On le garde ensemble ?">
       <View style={styles.emotionRow}>
-        <EmotionIcon emotionId={emotionId} size={34} />
+        <EmotionIcon emotionCode={emotionCode} size={34} />
         <Text style={styles.emotionLabel}>{label ? capitalize(label) : null}</Text>
       </View>
 
@@ -66,10 +68,10 @@ export function RecapStepScreen() {
 
       <View style={styles.prideQuote}>
         <View style={styles.quoteBar} />
-        <Text style={styles.prideText}>{prideText}</Text>
+        <Text style={styles.prideText}>{text}</Text>
       </View>
 
-      {photoUri ? (
+      {photo ? (
         <View accessible accessibilityLabel="Photo du jour ajoutée" style={styles.photoPlaceholder}>
           <ImageIcon size={30} color={colors.overline} strokeWidth={1.8} />
         </View>
