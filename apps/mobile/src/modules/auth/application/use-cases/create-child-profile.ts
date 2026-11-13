@@ -3,7 +3,7 @@ import { AuthError } from '@/modules/auth/domain/errors/auth-error';
 import type { ChildRepository } from '@/modules/auth/domain/ports/child-repository';
 
 export interface CreateChildProfileInput {
-  readonly householdId: string;
+  readonly parentId: string;
   readonly firstName: string;
   readonly ageRange: AgeRange;
   readonly reminderTime: string;
@@ -23,7 +23,7 @@ export class CreateChildProfile {
     }
 
     return this.children.create({
-      householdId: input.householdId,
+      parentId: input.parentId,
       firstName,
       ageRange: input.ageRange,
       reminder: { time: input.reminderTime, enabled: true },

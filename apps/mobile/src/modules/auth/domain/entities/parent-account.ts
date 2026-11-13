@@ -5,11 +5,16 @@
 export const MIN_PASSWORD_LENGTH = 8;
 export const MAX_PASSWORD_LENGTH = 128;
 
-/** What the use cases hand to the UI: a parent account without its password. */
+/**
+ * What the use cases hand to the UI: a parent account without its password.
+ * The household is this parent and their children; its display name comes
+ * from `lastName`. Both names are optional, as on the API's user.
+ */
 export interface ParentProfile {
   readonly id: string;
   readonly email: string;
-  readonly householdId: string | null;
+  readonly firstName: string | null;
+  readonly lastName: string | null;
 }
 
 export interface ParentAccount extends ParentProfile {
@@ -17,11 +22,26 @@ export interface ParentAccount extends ParentProfile {
   readonly password: string;
 }
 
-/** Copies the public fields: a ParentAccount typed as ParentProfile would still carry its password. */
-export function toParentProfile(account: ParentAccount): ParentProfile {
-  return { id: account.id, email: account.email, householdId: account.householdId };
+/** Fields `POST /auth/update-user` accepts for a parent; an omitted field is left as is. */
+export interface ParentNameUpdate {
+  readonly firstName?: string;
+  readonly lastName?: string;
 }
 
-export function withHousehold(account: ParentAccount, householdId: string): ParentAccount {
-  return { ...account, householdId };
+/** Copies the public fields: a ParentAccount typed as ParentProfile would still carry its password. */
+export function toParentProfile(account: ParentAccount): ParentProfile {
+  return {
+    id: account.id,
+    email: account.email,
+    firstName: account.firstName,
+    lastName: account.lastName,
+  };
+}
+
+export function withParentName<T extends ParentProfile>(parent: T, update: ParentNameUpdate): T {
+  return {
+    ...parent,
+    ...(update.firstName !== undefined && { firstName: update.firstName }),
+    ...(update.lastName !== undefined && { lastName: update.lastName }),
+  };
 }

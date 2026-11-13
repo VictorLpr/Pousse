@@ -1,7 +1,7 @@
 import type { ParentAccount } from '@/modules/auth/domain/entities/parent-account';
-import type { ParentAccountRepository } from '@/modules/auth/domain/ports/parent-account-repository';
 
-export class InMemoryParentAccountRepository implements ParentAccountRepository {
+/** The fake server's `user` table, read and written by `InMemoryAuthGateway` only. */
+export class InMemoryParentAccountRepository {
   private readonly accountsById = new Map<string, ParentAccount>();
 
   constructor(seed: readonly ParentAccount[] = []) {

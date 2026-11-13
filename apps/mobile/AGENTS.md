@@ -23,7 +23,8 @@ src/app  →  src/modules/<name>/ui  →  src/modules/<name>/application  →  s
 
 ```
 src/modules/
-  auth/       parent accounts, households, children, session
+  auth/       parent accounts, children, session (the household is the
+              parent and their children, named after the parent's last name)
   journal/    evening ritual, journal entries
   challenges/ weekly challenges, trophies (badges live here — they're
               consumed only by this module, mirroring ADR-0006's rule for
@@ -92,9 +93,11 @@ generate ids with `IdGenerator` and timestamps with `Clock`
 port only to update an existing entity. Never call `new Date()` or build ids
 inside a use case.
 
-Sign-up, sign-in and sign-out go through the `AuthGateway` port
-(`modules/auth/domain/ports/auth-gateway.ts`), shaped after BetterAuth's
-email/password client. Validation (email format, password length) and email
+Sign-up, sign-in, sign-out and renaming the signed-in parent
+(`updateUser`, i.e. `POST /auth/update-user`) go through the `AuthGateway`
+port (`modules/auth/domain/ports/auth-gateway.ts`), shaped after BetterAuth's
+email/password client. The in-memory adapter holds the open session, as the
+session cookie does for the API. Validation (email format, password length) and email
 uniqueness belong to the server: the in-memory adapter enforces them and
 throws `AuthError` with the API's codes. Auth use cases hold no validation
 rule; screens keep only ergonomic checks (the two passwords match).
@@ -182,11 +185,14 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
 
 ## 5. Screen patterns & pitfalls
 
-- Session (parent account + household) lives in `useSession()`; the active child in
+- Session (the signed-in parent, `account`) lives in `useSession()`; the active child in
   `useActiveChild()`. Both are in-memory: a full reload logs the user out — expected.
-  Screens behind login guard with `if (!household) return <Redirect href="/" />` (or
-  `!activeChild` for child-scoped screens). Children always belong to a household
-  (`householdId`); list them via `listChildren.execute(household.id)`.
+  There is no household entity: the household is the parent and their children, and its
+  display name comes from `account.lastName` through `householdTitle()` /
+  `householdLabel()` (`modules/auth/ui/format/household.ts`), which fall back when the
+  name is empty. Screens behind login guard with `if (!account) return <Redirect href="/" />`
+  (or `!activeChild` for child-scoped screens). Children always belong to a parent
+  (`parentId`); list them via `listChildren.execute(account.id)`.
 - Passwords are stored in plain text in the in-memory adapter on purpose (front-only
   demo); hashing (scrypt, ADR-0003) is done by the API. Don't add crypto client-side.
 - Screens needing the active child use `useActiveChild()` and must handle **both** states:
