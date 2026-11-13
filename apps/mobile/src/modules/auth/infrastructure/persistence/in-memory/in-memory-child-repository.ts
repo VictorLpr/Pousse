@@ -57,8 +57,9 @@ export class InMemoryChildRepository implements ChildRepository {
     this.assertAgeInRange(newChild.birthDate);
     const grant = this.validConsent(consent);
     const record: ChildRecord = { ...newChild, id: this.idGenerator.next() };
-    this.recordsById.set(record.id, record);
+    // Consent first: like the API's transaction, no child is stored without one.
     this.consents.record(record.id, grant);
+    this.recordsById.set(record.id, record);
     return this.toChild(record);
   }
 
@@ -83,7 +84,11 @@ export class InMemoryChildRepository implements ChildRepository {
     }
   }
 
-  /** Same rule as the API's schema: an attestation that is `true`, a 1-10 character version. */
+  /**
+   * Same rule as the API's schema: an attestation that is `true`, a 1-10
+   * character version. `undefined` is checked too, as the API checks a body
+   * that comes without `consent`.
+   */
   private validConsent(consent: ConsentGrant | undefined): ConsentGrant {
     if (consent?.guardianAttested !== true) {
       throw new AuthError(

@@ -46,7 +46,6 @@ export function ChildProfileScreen() {
   const canSubmit = isFilled && guardianAttested && !isSaving;
 
   const createProfile = async () => {
-    if (!guardianAttested) return;
     setIsSaving(true);
     setErrorMessage(null);
     try {

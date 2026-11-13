@@ -16,7 +16,7 @@ const AUTH_ERROR_COPY: Record<AuthErrorCode, string> = {
   CHILD_AGE_OUT_OF_RANGE: `Pousse accompagne les enfants de ${MIN_CHILD_AGE} à ${MAX_CHILD_AGE} ans : vérifie la date de naissance.`,
   GUARDIAN_ATTESTATION_REQUIRED:
     'Coche la case pour confirmer que tu es son parent ou son représentant légal.',
-  POLICY_VERSION_INVALID: 'Version de la politique de confidentialité inconnue.',
+  POLICY_VERSION_INVALID: 'Version de la politique de confidentialité invalide.',
 };
 
 /** E.g. "Au moins 8 caractères", shown under the password field. */
