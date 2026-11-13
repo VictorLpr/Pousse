@@ -28,9 +28,13 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || (github.event.issue.pull_request && startsWith(github.event.comment.body, '/review'))
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # These scope the workflow's own GITHUB_TOKEN only. Claude itself writes
+    # with the Claude GitHub App token (obtained through `id-token`), which
+    # already has pull request and issue write access. `pull-requests: write`
+    # is for the last step, which posts a fallback comment.
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
       issues: read
       id-token: write
     env:
@@ -43,13 +47,48 @@ jobs:
           ref: refs/pull/${{ github.event.issue.number || inputs.pr }}/merge
           fetch-depth: 1
 
+      - name: Record the review start time
+        run: echo "REVIEW_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+
       - name: Code review
+        id: review
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           plugin_marketplaces: 'https://github.com/anthropics/claude-code.git'
           plugins: 'code-review@claude-code-plugins'
-          prompt: '/code-review:code-review --comment ${{ github.repository }}/pull/${{ env.PR }}'
-          # Without this line the action doesn't start the MCP server that posts
-          # inline comments, even if the skill already allows it.
-          claude_args: '--allowedTools "mcp__github_inline_comment__create_inline_comment"'
+          # A full PR URL: `gh pr comment` doesn't accept `owner/repo/pull/n`.
+          prompt: '/code-review:code-review --comment ${{ github.server_url }}/${{ github.repository }}/pull/${{ env.PR }}'
+          # The plugin's own tool list. The inline-comment MCP server only
+          # starts when its tool is listed here; `gh pr comment` posts the
+          # "No issues found" summary when there is nothing to comment inline.
+          claude_args: >-
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*),Bash(gh issue view:*),Bash(gh issue list:*),Bash(gh search:*)"
+
+      # The plugin can stop without posting anything (PR closed or draft,
+      # change judged trivial, Claude already commented on the PR), and the
+      # action hides Claude's output from the log. Leave a comment so a
+      # `/review` never ends in silence.
+      - name: Report a review that posted nothing
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REVIEW_OUTCOME: ${{ steps.review.outcome }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          since="${REVIEW_STARTED_AT:-1970-01-01T00:00:00Z}"
+          filter=".[] | select(.user.login == \"claude[bot]\" and .created_at >= \"$since\") | .id"
+          posted=$( {
+            gh api --paginate "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --jq "$filter"
+            gh api --paginate "repos/$GITHUB_REPOSITORY/pulls/$PR/comments" --jq "$filter"
+          } | wc -l )
+          echo "Comments posted by Claude during this run: $posted"
+          if [ "$posted" -gt 0 ]; then
+            exit 0
+          fi
+          if [ "$REVIEW_OUTCOME" = "success" ]; then
+            body="**Claude code review** finished without posting a comment. The code-review plugin stops silently when the PR is closed or a draft, when it judges the change trivial, or when Claude already commented on this PR. [Run log]($RUN_URL)"
+          else
+            body="**Claude code review** did not complete (outcome: \`${REVIEW_OUTCOME:-not run}\`), nothing was posted. [Run log]($RUN_URL)"
+          fi
+          gh pr comment "$PR" --repo "$GITHUB_REPOSITORY" --body "$body"
