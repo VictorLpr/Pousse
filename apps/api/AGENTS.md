@@ -1,10 +1,7 @@
 # Pousse API — Rules for agents
 
 `apps/api` is the REST API of the Pousse monorepo: Fastify 5 + TypeScript,
-consumed only by `apps/mobile`. Authentication (BetterAuth) is wired; the
-business routes so far are the child profiles (`/children`, auth module),
-the emotion catalog, the journal entries and the streak of evenings
-(`/journal/emotions`, `/journal/entries`, `/journal/streak`). This document puts into practice
+consumed only by `apps/mobile`. This document puts into practice
 the decisions already accepted in `../../docs/adr/` (0001 to 0007); when in
 doubt, the ADR wins and this file gets fixed to stay consistent with it,
 never the other way around.
@@ -21,11 +18,6 @@ French UI copy. Don't add a translation layer to the API. Row content is
 the one exception: catalog labels (`emotion.label`, `challenge.title`,
 `badge.label`…) and user-written text may be French, and the API returns
 them as data.
-
-The ADRs are written in French and use French names (`prenom` →
-`first_name`, `nom_famille` → `last_name`, `defis` → `challenges`,
-`souvenirs` → `memories`, `lettres` → `letters`, see the root `AGENTS.md`).
-Use the English names when writing code.
 
 ## 1. Framework and validation (ADR-0001)
 
@@ -134,10 +126,9 @@ src/
 - **A route never touches a repository directly** — always through a
   service.
 - **A service may call another module's service. It never touches another
-  module's repository.** That's the rule behind the fix applied on the
-  mobile side (`InitializeChildProgress`, see `apps/mobile/AGENTS.md`):
-  apply the same reflex here before writing a service that imports another
-  module's repository. Example: the journal checks that a child belongs to
+  module's repository.** The mobile side follows the same rule (see
+  `apps/mobile/AGENTS.md` §1): before writing a service that imports another
+  module's repository, check whether the work belongs elsewhere. Example: the journal checks that a child belongs to
   the parent with the auth module's `ChildService.get()` (exported by
   `modules/auth/index.ts`, injected by `app.ts`), and its queries never read
   the `child` table.
@@ -181,7 +172,6 @@ prefix: '/x' })`, see `src/app.ts`). Crossing a module boundary must fail
 
 ## 6. Conventions
 
-- Kebab-case file names, one service/repository/route per file.
 - Internal imports through Node's native `#/*` mapping (`package.json` →
   `imports`), **with the `.js` extension** and `/index.js` for a module:
   `import { buildApp } from '#/app.js'`. In development, the `development`
