@@ -1,30 +1,33 @@
 import { useRouter } from 'expo-router';
 import { Camera, ChevronRight, Image as ImageIcon } from 'lucide-react-native';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
-/**
- * The camera and photo library are not wired yet: a symbolic "memory"
- * photo is kept until the API lands.
- */
-const PLACEHOLDER_PHOTO_URI = 'memory://photo-placeholder';
-
 export function PhotoStepScreen() {
   const router = useRouter();
-  const { setPhotoUri } = useRitualDraft();
+  const services = useServices();
+  const { setPhoto } = useRitualDraft();
+  const [pickFailed, setPickFailed] = useState(false);
 
-  const continueWithPhoto = () => {
-    setPhotoUri(PLACEHOLDER_PHOTO_URI);
-    router.push('/ritual/recap');
+  const continueWithPhoto = async () => {
+    setPickFailed(false);
+    try {
+      setPhoto(await services.pickRitualPhoto.execute());
+      router.push('/ritual/recap');
+    } catch {
+      setPickFailed(true);
+    }
   };
 
   const skipPhoto = () => {
-    setPhotoUri(null);
+    setPhoto(null);
     router.push('/ritual/recap');
   };
 
@@ -56,6 +59,12 @@ export function PhotoStepScreen() {
 
       <Divider />
 
+      {pickFailed ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          Impossible de récupérer la photo, réessayez ou passez cette étape.
+        </Text>
+      ) : null}
+
       <View style={styles.footer}>
         <AppButton label="Passer cette étape" variant="ghost" onPress={skipPhoto} />
       </View>
@@ -78,6 +87,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemiBold,
     fontSize: 16,
     color: colors.ink,
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
+    marginTop: 16,
   },
   footer: {
     marginTop: 'auto',

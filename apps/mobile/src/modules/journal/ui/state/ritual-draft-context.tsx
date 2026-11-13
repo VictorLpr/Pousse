@@ -7,48 +7,59 @@ import {
   type PropsWithChildren,
 } from 'react';
 
-import type { EmotionId } from '@/modules/journal/domain/entities/emotion';
+import type { EmotionCode } from '@/modules/journal/domain/entities/emotion';
+import { localDayOf } from '@/modules/journal/domain/entities/journal-entry';
+import type { LocalPhoto } from '@/modules/journal/domain/entities/photo';
 
-/** Evening ritual draft, built step by step. */
+/** Evening ritual draft, built step by step and kept only at the recap. */
 interface RitualDraft {
-  readonly emotionId: EmotionId | null;
-  readonly prideText: string;
-  readonly photoUri: string | null;
+  /**
+   * The family's local day when the ritual began: a ritual finished after
+   * midnight still belongs to the evening it started on.
+   */
+  readonly date: string;
+  readonly emotionCode: EmotionCode | null;
+  readonly text: string;
+  /** The photo on this device; only its file name and type reach the journal. */
+  readonly photo: LocalPhoto | null;
 }
 
 interface RitualDraftContextValue extends RitualDraft {
-  setEmotion(emotionId: EmotionId): void;
-  setPrideText(text: string): void;
-  setPhotoUri(uri: string | null): void;
+  setEmotion(emotionCode: EmotionCode): void;
+  setText(text: string): void;
+  setPhoto(photo: LocalPhoto | null): void;
+  /** Starts a new ritual, dated today. */
   resetDraft(): void;
 }
 
-const EMPTY_DRAFT: RitualDraft = { emotionId: null, prideText: '', photoUri: null };
+function newDraft(): RitualDraft {
+  return { date: localDayOf(new Date()), emotionCode: null, text: '', photo: null };
+}
 
 const RitualDraftContext = createContext<RitualDraftContextValue | null>(null);
 
 export function RitualDraftProvider({ children }: PropsWithChildren) {
-  const [draft, setDraft] = useState<RitualDraft>(EMPTY_DRAFT);
+  const [draft, setDraft] = useState<RitualDraft>(newDraft);
 
-  const setEmotion = useCallback((emotionId: EmotionId) => {
-    setDraft((current) => ({ ...current, emotionId }));
+  const setEmotion = useCallback((emotionCode: EmotionCode) => {
+    setDraft((current) => ({ ...current, emotionCode }));
   }, []);
 
-  const setPrideText = useCallback((prideText: string) => {
-    setDraft((current) => ({ ...current, prideText }));
+  const setText = useCallback((text: string) => {
+    setDraft((current) => ({ ...current, text }));
   }, []);
 
-  const setPhotoUri = useCallback((photoUri: string | null) => {
-    setDraft((current) => ({ ...current, photoUri }));
+  const setPhoto = useCallback((photo: LocalPhoto | null) => {
+    setDraft((current) => ({ ...current, photo }));
   }, []);
 
   const resetDraft = useCallback(() => {
-    setDraft(EMPTY_DRAFT);
+    setDraft(newDraft());
   }, []);
 
   const value = useMemo(
-    () => ({ ...draft, setEmotion, setPrideText, setPhotoUri, resetDraft }),
-    [draft, setEmotion, setPrideText, setPhotoUri, resetDraft],
+    () => ({ ...draft, setEmotion, setText, setPhoto, resetDraft }),
+    [draft, setEmotion, setText, setPhoto, resetDraft],
   );
 
   return <RitualDraftContext.Provider value={value}>{children}</RitualDraftContext.Provider>;

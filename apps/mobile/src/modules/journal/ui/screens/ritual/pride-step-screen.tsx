@@ -2,9 +2,11 @@ import { useRouter } from 'expo-router';
 import { Sparkles } from 'lucide-react-native';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 
+import { JOURNAL_TEXT_MAX_LENGTH } from '@/modules/journal/domain/entities/journal-entry';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
+import { textCounter } from '@/modules/journal/ui/format/text-counter';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -12,7 +14,8 @@ const WRITING_PROMPT = "Qu'est-ce qui t'a fait sourire aujourd'hui ?";
 
 export function PrideStepScreen() {
   const router = useRouter();
-  const { prideText, setPrideText } = useRitualDraft();
+  const { text, setText } = useRitualDraft();
+  const counter = textCounter(text.length);
 
   return (
     <RitualStepLayout step={2} title="Le moment de fierté" subtitle="Écrivez-le ensemble">
@@ -31,19 +34,27 @@ export function PrideStepScreen() {
       <TextInput
         accessibilityLabel="Le moment de fierté du jour"
         accessibilityHint={WRITING_PROMPT}
-        value={prideText}
-        onChangeText={setPrideText}
+        value={text}
+        onChangeText={setText}
+        maxLength={JOURNAL_TEXT_MAX_LENGTH}
         placeholder="Raconte ton moment…"
         placeholderTextColor={colors.overline}
         multiline
         textAlignVertical="top"
         style={styles.input}
       />
+      <Text
+        accessibilityLabel={counter.accessibilityLabel}
+        accessibilityLiveRegion="polite"
+        style={styles.counter}
+      >
+        {counter.display}
+      </Text>
       <Divider variant="stitched" spacing={18} />
 
       <AppButton
         label="Continuer"
-        disabled={prideText.trim().length === 0}
+        disabled={text.trim().length === 0}
         onPress={() => router.push('/ritual/photo')}
       />
     </RitualStepLayout>
@@ -89,5 +100,12 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     color: colors.ink,
     paddingVertical: 4,
+  },
+  counter: {
+    alignSelf: 'flex-end',
+    marginTop: 6,
+    fontFamily: fonts.body,
+    fontSize: 12,
+    color: colors.inkSoft,
   },
 });

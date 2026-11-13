@@ -24,13 +24,18 @@ export function GalleryScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
   const [entriesWithPhoto, setEntriesWithPhoto] = useState<JournalEntry[]>([]);
+  const [loadFailed, setLoadFailed] = useState(false);
   const catalog = useEmotions();
 
   useEffect(() => {
     if (activeChild) {
       services.getJournalEntries
         .execute(activeChild.id)
-        .then((entries) => setEntriesWithPhoto(entries.filter((entry) => entry.photoUri !== null)));
+        .then((entries) => {
+          setEntriesWithPhoto(entries.filter((entry) => entry.photo !== null));
+          setLoadFailed(false);
+        })
+        .catch(() => setLoadFailed(true));
     }
   }, [services, activeChild]);
 
@@ -51,11 +56,17 @@ export function GalleryScreen() {
         subtitle={`${photoCount} photo${photoCount > 1 ? 's' : ''} gardée${photoCount > 1 ? 's' : ''}`}
       />
 
+      {loadFailed ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          Impossible d'afficher les photos pour l'instant.
+        </Text>
+      ) : null}
+
       {monthLabel && <OverlineLabel style={styles.monthLabel}>{monthLabel}</OverlineLabel>}
 
       <View style={styles.grid}>
         {entriesWithPhoto.map((entry) => {
-          const label = capitalize(emotionLabel(catalog, entry.emotionId) ?? '');
+          const label = capitalize(emotionLabel(catalog, entry.emotionCode) ?? '');
           const dateLabel = formatShortDate(entry.createdAt);
           return (
             <View
@@ -67,7 +78,7 @@ export function GalleryScreen() {
               <View
                 style={[
                   styles.photo,
-                  { backgroundColor: entry.emotionId === 'proud' ? colors.peach : colors.sage },
+                  { backgroundColor: entry.emotionCode === 'proud' ? colors.peach : colors.sage },
                 ]}
               />
               <Text style={styles.caption}>
@@ -108,6 +119,12 @@ export function GalleryScreen() {
 }
 
 const styles = StyleSheet.create({
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
+    marginBottom: 14,
+  },
   monthLabel: {
     marginBottom: 14,
   },
