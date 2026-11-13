@@ -235,12 +235,21 @@ export const photo = pgTable(
       .unique()
       .references(() => journalEntry.id, { onDelete: 'cascade' }),
     fileName: varchar('file_name', { length: 255 }).notNull(),
-    mimeType: varchar('mime_type', { length: 30 }).notNull(),
+    // The type mirrors `photo_mime_type_allowed` below.
+    mimeType: varchar('mime_type', { length: 30 })
+      .$type<'image/jpeg' | 'image/png' | 'image/webp'>()
+      .notNull(),
   },
   (table) => [
     check(
       'photo_mime_type_allowed',
       sql`${table.mimeType} in ('image/jpeg', 'image/png', 'image/webp')`,
+    ),
+    // A file name, never a path: no slash (iOS, Android, file URI) nor
+    // backslash (Windows).
+    check(
+      'photo_file_name_no_path',
+      sql`strpos(${table.fileName}, '/') = 0 and strpos(${table.fileName}, '\\') = 0`,
     ),
   ],
 );

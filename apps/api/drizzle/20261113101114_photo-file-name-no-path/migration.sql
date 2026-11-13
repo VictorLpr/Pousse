@@ -1,0 +1,1 @@
+ALTER TABLE "photo" ADD CONSTRAINT "photo_file_name_no_path" CHECK (strpos("file_name", '/') = 0 and strpos("file_name", '\') = 0);
