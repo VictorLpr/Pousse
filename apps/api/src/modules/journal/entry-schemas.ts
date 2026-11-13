@@ -7,6 +7,9 @@ const emotionCode = z.string().min(1).max(20);
 /** The family's local day, `YYYY-MM-DD`: the client knows it, the API doesn't. */
 const localDate = z.iso.date();
 
+/** The photo types the database takes (`photo_mime_type_allowed`). */
+const photoMimeType = z.enum(['image/jpeg', 'image/png', 'image/webp']);
+
 /**
  * The entry's photo as the API knows it: the picture stays on the device
  * (ADR-0004). Only the file name is kept, never a path — an absolute iOS or
@@ -19,7 +22,7 @@ const photoInput = z.object({
     .min(1)
     .max(255)
     .regex(/^[^/\\]+$/, { error: 'A file name, not a path: no slash nor backslash' }),
-  mimeType: z.enum(['image/jpeg', 'image/png', 'image/webp']),
+  mimeType: photoMimeType,
 });
 
 export const createEntryBody = z.object({
@@ -66,7 +69,7 @@ export const entryResponse = z.object({
   text: z.string(),
   date: z.string(),
   createdAt: z.iso.datetime(),
-  photo: z.object({ fileName: z.string(), mimeType: z.string() }).nullable(),
+  photo: z.object({ fileName: z.string(), mimeType: photoMimeType }).nullable(),
 });
 
 export type EntryResponse = z.infer<typeof entryResponse>;

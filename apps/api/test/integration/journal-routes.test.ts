@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 
+import { createEntryRepository } from '#/modules/journal/entry-repository.js';
 import { emotion, journalEntry, photo } from '#/shared/db/schema.js';
 import { seedCatalogs } from '#/shared/db/seed-catalogs.js';
 import { insertChild, isoDate, signUpParent, type SignedInParent } from '../support/fixtures.js';
@@ -11,7 +12,7 @@ const UNKNOWN_ID = '00000000-0000-4000-8000-000000000000';
 const HOUR_MS = 60 * 60 * 1000;
 
 /** A photo as the app sends it: the file name only, the picture stays on the device. */
-const PHOTO = { fileName: '3f2b9c4e-souvenir.jpg', mimeType: 'image/jpeg' };
+const PHOTO = { fileName: '3f2b9c4e-souvenir.jpg', mimeType: 'image/jpeg' } as const;
 
 /** Photos the API refuses: a path in any shape instead of a file name, or a type it doesn't take. */
 const INVALID_PHOTOS = [
@@ -570,7 +571,8 @@ describe('journal routes', () => {
       await expect(
         db()
           .insert(photo)
-          .values({ journalEntryId, ...PHOTO, mimeType: 'image/gif' }),
+          // The column's TypeScript type forbids it; the database must refuse it too.
+          .values({ journalEntryId, ...PHOTO, mimeType: 'image/gif' as typeof PHOTO.mimeType }),
       ).rejects.toMatchObject({ cause: { constraint: 'photo_mime_type_allowed' } });
     });
 
@@ -586,6 +588,20 @@ describe('journal routes', () => {
         ).rejects.toMatchObject({ cause: { constraint: 'photo_file_name_no_path' } });
       },
     );
+
+    it('writes no entry when its photo is refused', async () => {
+      const { child } = await parentWithChild();
+      const [happy] = await db().select().from(emotion).where(eq(emotion.code, 'happy'));
+      if (!happy) throw new Error('Emotion catalog is not seeded');
+
+      await expect(
+        createEntryRepository(db()).insert(
+          { childId: child.id, emotionId: happy.id, text: 'Souvenir', date: isoDate() },
+          { ...PHOTO, fileName: 'C:\\Users\\lou\\a.jpg' },
+        ),
+      ).rejects.toMatchObject({ cause: { constraint: 'photo_file_name_no_path' } });
+      expect(await db().select().from(journalEntry)).toHaveLength(0);
+    });
 
     it('deletes the photo with its entry', async () => {
       const journalEntryId = await entryId();

@@ -235,7 +235,10 @@ export const photo = pgTable(
       .unique()
       .references(() => journalEntry.id, { onDelete: 'cascade' }),
     fileName: varchar('file_name', { length: 255 }).notNull(),
-    mimeType: varchar('mime_type', { length: 30 }).notNull(),
+    // The type mirrors `photo_mime_type_allowed` below.
+    mimeType: varchar('mime_type', { length: 30 })
+      .$type<'image/jpeg' | 'image/png' | 'image/webp'>()
+      .notNull(),
   },
   (table) => [
     check(
