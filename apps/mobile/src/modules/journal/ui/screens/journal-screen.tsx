@@ -55,7 +55,7 @@ export function JournalScreen() {
             {index > 0 && <Divider />}
             <View
               accessible
-              accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, ${label} :${entry.prideText}`}
+              accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, ${label} : ${entry.prideText}`}
               style={styles.entry}
             >
               <View style={styles.entryIcon}>
