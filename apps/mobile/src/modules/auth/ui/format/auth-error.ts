@@ -14,6 +14,9 @@ const AUTH_ERROR_COPY: Record<AuthErrorCode, string> = {
   FIRST_NAME_REQUIRED: 'Le prénom est requis.',
   BIRTH_DATE_INVALID: "Cette date de naissance n'existe pas.",
   CHILD_AGE_OUT_OF_RANGE: `Pousse accompagne les enfants de ${MIN_CHILD_AGE} à ${MAX_CHILD_AGE} ans : vérifie la date de naissance.`,
+  GUARDIAN_ATTESTATION_REQUIRED:
+    'Coche la case pour confirmer que tu es son parent ou son représentant légal.',
+  POLICY_VERSION_INVALID: 'Version de la politique de confidentialité inconnue.',
 };
 
 /** E.g. "Au moins 8 caractères", shown under the password field. */

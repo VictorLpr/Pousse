@@ -7,12 +7,15 @@ import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { Avatar } from '@/shared/ui/components/avatar';
+import { Checkbox } from '@/shared/ui/components/checkbox';
 import { Divider } from '@/shared/ui/components/divider';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
+import { PRIVACY_POLICY_VERSION } from '@/modules/auth/domain/entities/consent';
 import { authErrorMessage, CHILD_AGE_HINT } from '@/modules/auth/ui/format/auth-error';
 import { birthDateFromParts, childInitial } from '@/modules/auth/ui/format/child';
+import { guardianConsentLabel } from '@/modules/auth/ui/format/consent';
 import { householdLabel } from '@/modules/auth/ui/format/household';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -29,6 +32,7 @@ export function ChildProfileScreen() {
   const [birthDay, setBirthDay] = useState('');
   const [birthMonth, setBirthMonth] = useState('');
   const [birthYear, setBirthYear] = useState('');
+  const [guardianAttested, setGuardianAttested] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -39,9 +43,10 @@ export function ChildProfileScreen() {
   const isFilled = [firstName, birthDay, birthMonth, birthYear].every(
     (value) => value.trim().length > 0,
   );
-  const canSubmit = isFilled && !isSaving;
+  const canSubmit = isFilled && guardianAttested && !isSaving;
 
   const createProfile = async () => {
+    if (!guardianAttested) return;
     setIsSaving(true);
     setErrorMessage(null);
     try {
@@ -50,6 +55,7 @@ export function ChildProfileScreen() {
         firstName,
         birthDate: birthDateFromParts(birthDay, birthMonth, birthYear),
         reminderTime: DEFAULT_REMINDER_TIME,
+        consent: { policyVersion: PRIVACY_POLICY_VERSION, guardianAttested: true },
       });
       if (from === 'household') {
         router.back();
@@ -139,6 +145,15 @@ export function ChildProfileScreen() {
         <Text style={styles.reminderText}>Tous les soirs · {DEFAULT_REMINDER_TIME}</Text>
         <ChevronRight size={18} color={colors.inkSoft} strokeWidth={2} />
       </Pressable>
+
+      <Divider variant="stitched" spacing={26} />
+
+      <Checkbox
+        label={guardianConsentLabel(PRIVACY_POLICY_VERSION)}
+        checked={guardianAttested}
+        onChange={setGuardianAttested}
+        accessibilityHint="Obligatoire pour créer le profil"
+      />
 
       {errorMessage ? (
         <Text accessibilityRole="alert" style={styles.error}>

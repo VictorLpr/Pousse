@@ -12,6 +12,8 @@ export { SignInParent } from '@/modules/auth/application/use-cases/sign-in-paren
 export { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-parent';
 export { UpdateParentName } from '@/modules/auth/application/use-cases/update-parent-name';
 export type { Child, AgeRange } from '@/modules/auth/domain/entities/child';
+export { PRIVACY_POLICY_VERSION } from '@/modules/auth/domain/entities/consent';
+export type { Consent, ConsentGrant } from '@/modules/auth/domain/entities/consent';
 export type {
   ParentNameUpdate,
   ParentProfile,

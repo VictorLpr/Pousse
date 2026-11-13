@@ -16,6 +16,7 @@ import { UpdateParentName } from '@/modules/auth/application/use-cases/update-pa
 import { SequentialIdGenerator } from '@/shared/infrastructure/ids/sequential-id-generator';
 import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-auth-gateway';
 import { InMemoryChildRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
+import { InMemoryConsentRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-consent-repository';
 import { InMemoryEmotionCatalog } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-emotion-catalog';
 import { InMemoryJournalEntryRepository } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-journal-entry-repository';
 import { InMemoryParentAccountRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-parent-account-repository';
@@ -23,6 +24,7 @@ import { InMemoryTrophyRepository } from '@/modules/challenges/infrastructure/pe
 import { InMemoryWeeklyChallengeRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-weekly-challenge-repository';
 import {
   seedChildren,
+  seedConsents,
   seedParentAccounts,
 } from '@/modules/auth/infrastructure/persistence/in-memory/seed';
 import {
@@ -65,7 +67,13 @@ export function createAppServices(): AppServices {
 
   const accountRepository = new InMemoryParentAccountRepository(seedParentAccounts);
   const authGateway = new InMemoryAuthGateway(accountRepository, idGenerator);
-  const childRepository = new InMemoryChildRepository(seedChildren, idGenerator, clock);
+  const consentRepository = new InMemoryConsentRepository(seedConsents, clock);
+  const childRepository = new InMemoryChildRepository(
+    seedChildren,
+    consentRepository,
+    idGenerator,
+    clock,
+  );
   const journalRepository = new InMemoryJournalEntryRepository(
     seedJournalEntries,
     idGenerator,
