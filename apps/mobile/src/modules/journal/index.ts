@@ -6,6 +6,6 @@
 export { CompleteEveningRitual } from '@/modules/journal/application/use-cases/complete-evening-ritual';
 export { GetEveningStreak } from '@/modules/journal/application/use-cases/get-evening-streak';
 export { GetJournalEntries } from '@/modules/journal/application/use-cases/get-journal-entries';
+export { ListEmotions } from '@/modules/journal/application/use-cases/list-emotions';
 export type { JournalEntry } from '@/modules/journal/domain/entities/journal-entry';
-export { EMOTIONS, getEmotion } from '@/modules/journal/domain/entities/emotion';
 export type { Emotion, EmotionId } from '@/modules/journal/domain/entities/emotion';
