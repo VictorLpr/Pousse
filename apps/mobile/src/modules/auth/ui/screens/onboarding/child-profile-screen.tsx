@@ -15,6 +15,7 @@ import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
 import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
 import { ageRangeLabel, childInitial } from '@/modules/auth/ui/format/child';
+import { householdLabel } from '@/modules/auth/ui/format/household';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -23,7 +24,7 @@ const DEFAULT_REMINDER_TIME = '20:00';
 export function ChildProfileScreen() {
   const router = useRouter();
   const services = useServices();
-  const { household } = useSession();
+  const { account } = useSession();
   const { from } = useLocalSearchParams<{ from?: string }>();
 
   const [firstName, setFirstName] = useState('');
@@ -31,7 +32,7 @@ export function ChildProfileScreen() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  if (!household) {
+  if (!account) {
     return <Redirect href="/" />;
   }
 
@@ -42,7 +43,7 @@ export function ChildProfileScreen() {
     setErrorMessage(null);
     try {
       await services.createChildProfile.execute({
-        householdId: household.id,
+        parentId: account.id,
         firstName,
         ageRange,
         reminderTime: DEFAULT_REMINDER_TIME,
@@ -63,7 +64,7 @@ export function ChildProfileScreen() {
     <ScreenContainer>
       <ScreenHeader
         title="Un nouvel enfant"
-        subtitle={`On crée son profil dans le foyer ${household.name}`}
+        subtitle={`On crée son profil dans ${householdLabel(account)}`}
         showBackButton={from === 'household'}
       />
 

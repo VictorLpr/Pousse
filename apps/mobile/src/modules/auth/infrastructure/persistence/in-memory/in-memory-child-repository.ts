@@ -12,8 +12,8 @@ export class InMemoryChildRepository implements ChildRepository {
     seed.forEach((child) => this.childrenById.set(child.id, child));
   }
 
-  async findByHouseholdId(householdId: string): Promise<Child[]> {
-    return [...this.childrenById.values()].filter((child) => child.householdId === householdId);
+  async findByParentId(parentId: string): Promise<Child[]> {
+    return [...this.childrenById.values()].filter((child) => child.parentId === parentId);
   }
 
   async findById(id: string): Promise<Child | null> {

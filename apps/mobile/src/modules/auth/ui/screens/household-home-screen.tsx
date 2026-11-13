@@ -9,6 +9,7 @@ import { Avatar } from '@/shared/ui/components/avatar';
 import { Divider } from '@/shared/ui/components/divider';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ageRangeWithYears, childInitial } from '@/modules/auth/ui/format/child';
+import { householdTitle } from '@/modules/auth/ui/format/household';
 import { streakLabel } from '@/modules/journal/ui/format/streak';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useEveningStreak } from '@/modules/journal/ui/hooks/use-evening-streak';
@@ -18,19 +19,24 @@ import { colors, fonts } from '@/shared/ui/theme';
 export function HouseholdHomeScreen() {
   const router = useRouter();
   const services = useServices();
-  const { household } = useSession();
+  const { account } = useSession();
   const { selectChild } = useActiveChild();
   const [children, setChildren] = useState<Child[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useFocusEffect(
     useCallback(() => {
-      if (household) {
-        services.listChildren.execute(household.id).then(setChildren);
+      if (account) {
+        setErrorMessage(null);
+        services.listChildren
+          .execute(account.id)
+          .then(setChildren)
+          .catch(() => setErrorMessage('Impossible d’afficher les enfants, réessayez.'));
       }
-    }, [services, household]),
+    }, [services, account]),
   );
 
-  if (!household) {
+  if (!account) {
     return <Redirect href="/" />;
   }
 
@@ -44,7 +50,7 @@ export function HouseholdHomeScreen() {
       <View style={styles.header}>
         <Text style={styles.greeting}>Bonsoir,</Text>
         <Text accessibilityRole="header" style={styles.title}>
-          Le foyer {household.name}
+          {householdTitle(account)}
         </Text>
         <Text style={styles.subtitle}>Qui participe au rituel ce soir ?</Text>
       </View>
@@ -58,7 +64,13 @@ export function HouseholdHomeScreen() {
         </Fragment>
       ))}
 
-      {children.length === 0 && (
+      {errorMessage ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          {errorMessage}
+        </Text>
+      ) : null}
+
+      {children.length === 0 && !errorMessage && (
         <Text style={styles.emptyText}>
           Votre foyer est prêt ! Ajoutez le profil de votre premier enfant.
         </Text>
@@ -150,6 +162,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.body,
     fontSize: 13,
     color: colors.inkSoft,
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
+    paddingVertical: 18,
   },
   emptyText: {
     fontFamily: fonts.body,

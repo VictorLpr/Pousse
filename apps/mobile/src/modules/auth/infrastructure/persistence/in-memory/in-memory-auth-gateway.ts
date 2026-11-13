@@ -2,7 +2,9 @@ import {
   MAX_PASSWORD_LENGTH,
   MIN_PASSWORD_LENGTH,
   toParentProfile,
+  withParentName,
   type ParentAccount,
+  type ParentNameUpdate,
   type ParentProfile,
 } from '@/modules/auth/domain/entities/parent-account';
 import { AuthError } from '@/modules/auth/domain/errors/auth-error';
@@ -14,9 +16,13 @@ const EMAIL_PATTERN = /^\S+@\S+\.\S+$/;
 
 /**
  * Fake BetterAuth server: same checks, codes and English messages as
- * `POST /auth/sign-up/email` and `POST /auth/sign-in/email`.
+ * `POST /auth/sign-up/email`, `POST /auth/sign-in/email` and
+ * `POST /auth/update-user`. Holds the one open session in place of the
+ * session cookie.
  */
 export class InMemoryAuthGateway implements AuthGateway {
+  private sessionAccountId: string | null = null;
+
   constructor(
     private readonly accounts: InMemoryParentAccountRepository,
     private readonly idGenerator: IdGenerator,
@@ -41,9 +47,11 @@ export class InMemoryAuthGateway implements AuthGateway {
       id: this.idGenerator.next(),
       email: normalizedEmail,
       password,
-      householdId: null,
+      firstName: null,
+      lastName: null,
     };
     await this.accounts.save(account);
+    this.sessionAccountId = account.id;
     return toParentProfile(account);
   }
 
@@ -52,11 +60,23 @@ export class InMemoryAuthGateway implements AuthGateway {
     if (!account || account.password !== password) {
       throw new AuthError('INVALID_EMAIL_OR_PASSWORD', 'Invalid email or password');
     }
+    this.sessionAccountId = account.id;
     return toParentProfile(account);
   }
 
   async signOut(): Promise<void> {
-    // No server-side session to revoke while the front end runs alone.
+    this.sessionAccountId = null;
+  }
+
+  async updateUser(update: ParentNameUpdate): Promise<void> {
+    const account = this.sessionAccountId
+      ? await this.accounts.findById(this.sessionAccountId)
+      : null;
+    if (!account) {
+      // The API answers 401 without a session; screens guard on the session first.
+      throw new Error('No session to update.');
+    }
+    await this.accounts.save(withParentName(account, update));
   }
 }
 

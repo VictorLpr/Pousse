@@ -10,7 +10,6 @@ const AUTH_ERROR_COPY: Record<AuthErrorCode, string> = {
   PASSWORD_TOO_LONG: `Le mot de passe doit contenir au plus ${MAX_PASSWORD_LENGTH} caractères.`,
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL: 'Un compte existe déjà avec cet email.',
   INVALID_EMAIL_OR_PASSWORD: 'Email ou mot de passe incorrect.',
-  HOUSEHOLD_NAME_REQUIRED: 'Le nom du foyer est requis.',
   FIRST_NAME_REQUIRED: 'Le prénom est requis.',
 };
 

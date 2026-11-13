@@ -8,7 +8,6 @@ export type AuthErrorCode =
   | 'PASSWORD_TOO_LONG'
   | 'USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL'
   | 'INVALID_EMAIL_OR_PASSWORD'
-  | 'HOUSEHOLD_NAME_REQUIRED'
   | 'FIRST_NAME_REQUIRED';
 
 /** Business error the UI turns into display copy through its `code`. */

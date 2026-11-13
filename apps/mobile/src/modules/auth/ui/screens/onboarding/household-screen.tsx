@@ -11,11 +11,12 @@ import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
+/** The household is the parent and their children: naming it sets the parent's last name. */
 export function HouseholdScreen() {
   const router = useRouter();
-  const { account, createHousehold } = useSession();
+  const { account, updateLastName } = useSession();
 
-  const [name, setName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -23,13 +24,13 @@ export function HouseholdScreen() {
     return <Redirect href="/" />;
   }
 
-  const canSubmit = name.trim().length > 0 && !isSubmitting;
+  const canSubmit = lastName.trim().length > 0 && !isSubmitting;
 
   const submit = async () => {
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      await createHousehold(name);
+      await updateLastName(lastName);
       router.replace('/onboarding/child-profile');
     } catch (error) {
       setErrorMessage(authErrorMessage(error, 'Création impossible.'));
@@ -46,18 +47,23 @@ export function HouseholdScreen() {
         showBackButton={false}
       />
 
-      <OverlineLabel style={styles.fieldLabel}>Nom du foyer</OverlineLabel>
+      <OverlineLabel style={styles.fieldLabel}>Votre nom de famille</OverlineLabel>
       <AppTextInput
-        accessibilityLabel="Nom du foyer"
-        value={name}
-        onChangeText={setName}
+        accessibilityLabel="Votre nom de famille"
+        accessibilityHint="Il donne son nom à votre foyer"
+        value={lastName}
+        onChangeText={setLastName}
         placeholder="Dupont"
         autoCapitalize="words"
+        autoComplete="family-name"
         style={styles.inputText}
         spacing={14}
       />
 
-      <Text style={styles.helper}>Vous ajouterez ensuite le profil de votre premier enfant.</Text>
+      <Text style={styles.helper}>
+        Il donne son nom à votre foyer, comme « Le foyer Dupont ». Vous ajouterez ensuite le profil
+        de votre premier enfant.
+      </Text>
 
       {errorMessage ? (
         <Text accessibilityRole="alert" style={styles.error}>

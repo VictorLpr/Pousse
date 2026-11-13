@@ -7,17 +7,16 @@ import {
   type PropsWithChildren,
 } from 'react';
 
-import type { Household } from '@/modules/auth/domain/entities/household';
 import type { ParentProfile } from '@/modules/auth/domain/entities/parent-account';
 import { useServices } from '@/di/services-provider';
 
 interface SessionContextValue {
+  /** The signed-in parent; the household is this parent and their children. */
   readonly account: ParentProfile | null;
-  readonly household: Household | null;
-  /** Returns the account's household, or null if it is still to be created. */
-  signIn(email: string, password: string): Promise<Household | null>;
+  signIn(email: string, password: string): Promise<ParentProfile>;
   register(email: string, password: string): Promise<void>;
-  createHousehold(name: string): Promise<void>;
+  /** Sets the last name the household is named after. */
+  updateLastName(lastName: string): Promise<void>;
   signOut(): Promise<void>;
 }
 
@@ -26,14 +25,12 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 export function SessionProvider({ children }: PropsWithChildren) {
   const services = useServices();
   const [account, setAccount] = useState<ParentProfile | null>(null);
-  const [household, setHousehold] = useState<Household | null>(null);
 
   const signIn = useCallback(
     async (email: string, password: string) => {
-      const result = await services.signInParent.execute(email, password);
-      setAccount(result.account);
-      setHousehold(result.household);
-      return result.household;
+      const signedIn = await services.signInParent.execute(email, password);
+      setAccount(signedIn);
+      return signedIn;
     },
     [services],
   );
@@ -41,17 +38,16 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const register = useCallback(
     async (email: string, password: string) => {
       setAccount(await services.registerParent.execute(email, password));
-      setHousehold(null);
     },
     [services],
   );
 
-  const createHousehold = useCallback(
-    async (name: string) => {
+  const updateLastName = useCallback(
+    async (lastName: string) => {
       if (!account) {
         throw new Error('No signed-in account.');
       }
-      setHousehold(await services.createHousehold.execute(account.id, name));
+      setAccount(await services.updateParentName.execute(account, { lastName }));
     },
     [services, account],
   );
@@ -59,12 +55,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
   const signOut = useCallback(async () => {
     await services.signOutParent.execute();
     setAccount(null);
-    setHousehold(null);
   }, [services]);
 
   const value = useMemo(
-    () => ({ account, household, signIn, register, createHousehold, signOut }),
-    [account, household, signIn, register, createHousehold, signOut],
+    () => ({ account, signIn, register, updateLastName, signOut }),
+    [account, signIn, register, updateLastName, signOut],
   );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
