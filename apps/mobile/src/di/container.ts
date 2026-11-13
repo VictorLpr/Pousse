@@ -65,7 +65,7 @@ export function createAppServices(): AppServices {
 
   const accountRepository = new InMemoryParentAccountRepository(seedParentAccounts);
   const authGateway = new InMemoryAuthGateway(accountRepository, idGenerator);
-  const childRepository = new InMemoryChildRepository(seedChildren, idGenerator);
+  const childRepository = new InMemoryChildRepository(seedChildren, idGenerator, clock);
   const journalRepository = new InMemoryJournalEntryRepository(
     seedJournalEntries,
     idGenerator,

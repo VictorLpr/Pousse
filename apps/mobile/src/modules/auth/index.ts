@@ -11,7 +11,6 @@ export { SetEveningReminder } from '@/modules/auth/application/use-cases/set-eve
 export { SignInParent } from '@/modules/auth/application/use-cases/sign-in-parent';
 export { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-parent';
 export { UpdateParentName } from '@/modules/auth/application/use-cases/update-parent-name';
-export { AGE_RANGES } from '@/modules/auth/domain/entities/child';
 export type { Child, AgeRange } from '@/modules/auth/domain/entities/child';
 export type {
   ParentNameUpdate,

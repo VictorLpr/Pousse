@@ -1,5 +1,5 @@
-import type { Child } from '@/modules/auth/domain/entities/child';
 import type { ParentAccount } from '@/modules/auth/domain/entities/parent-account';
+import type { ChildRecord } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
 
 /** Demo account shown on the sign-in screen. */
 export const DEMO_EMAIL = 'parent@demo.fr';
@@ -19,19 +19,22 @@ export const seedParentAccounts: readonly ParentAccount[] = [
   },
 ];
 
-export const seedChildren: readonly Child[] = [
+/** Léa is 8 (age range 8-12) and Tom 5 (4-7) in late 2026. */
+export const seedChildren: readonly ChildRecord[] = [
   {
     id: LEA_ID,
     parentId: PARENT_ID,
     firstName: 'Léa',
-    ageRange: '7-9',
+    birthDate: '2018-03-14',
+    avatar: null,
     reminder: { time: '20:00', enabled: true },
   },
   {
     id: TOM_ID,
     parentId: PARENT_ID,
     firstName: 'Tom',
-    ageRange: '4-6',
+    birthDate: '2021-06-02',
+    avatar: null,
     reminder: { time: '20:00', enabled: true },
   },
 ];

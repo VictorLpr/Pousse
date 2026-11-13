@@ -1,20 +1,18 @@
 import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
-import { Camera, ChevronRight } from 'lucide-react-native';
+import { ChevronRight } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { AGE_RANGES, type AgeRange } from '@/modules/auth/domain/entities/child';
 import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { Avatar } from '@/shared/ui/components/avatar';
-import { ChoiceChip } from '@/shared/ui/components/choice-chip';
 import { Divider } from '@/shared/ui/components/divider';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
-import { authErrorMessage } from '@/modules/auth/ui/format/auth-error';
-import { ageRangeLabel, childInitial } from '@/modules/auth/ui/format/child';
+import { authErrorMessage, CHILD_AGE_HINT } from '@/modules/auth/ui/format/auth-error';
+import { birthDateFromParts, childInitial } from '@/modules/auth/ui/format/child';
 import { householdLabel } from '@/modules/auth/ui/format/household';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -28,7 +26,9 @@ export function ChildProfileScreen() {
   const { from } = useLocalSearchParams<{ from?: string }>();
 
   const [firstName, setFirstName] = useState('');
-  const [ageRange, setAgeRange] = useState<AgeRange>('7-9');
+  const [birthDay, setBirthDay] = useState('');
+  const [birthMonth, setBirthMonth] = useState('');
+  const [birthYear, setBirthYear] = useState('');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -36,7 +36,10 @@ export function ChildProfileScreen() {
     return <Redirect href="/" />;
   }
 
-  const canSubmit = firstName.trim().length > 0 && !isSaving;
+  const isFilled = [firstName, birthDay, birthMonth, birthYear].every(
+    (value) => value.trim().length > 0,
+  );
+  const canSubmit = isFilled && !isSaving;
 
   const createProfile = async () => {
     setIsSaving(true);
@@ -45,7 +48,7 @@ export function ChildProfileScreen() {
       await services.createChildProfile.execute({
         parentId: account.id,
         firstName,
-        ageRange,
+        birthDate: birthDateFromParts(birthDay, birthMonth, birthYear),
         reminderTime: DEFAULT_REMINDER_TIME,
       });
       if (from === 'household') {
@@ -69,12 +72,7 @@ export function ChildProfileScreen() {
       />
 
       <View style={styles.avatarZone}>
-        <View>
-          <Avatar initial={childInitial(firstName)} size={96} />
-          <View style={styles.cameraBadge}>
-            <Camera size={15} color={colors.ink} strokeWidth={2} />
-          </View>
-        </View>
+        <Avatar initial={childInitial(firstName)} size={96} />
       </View>
 
       <OverlineLabel style={styles.fieldLabel}>Prénom</OverlineLabel>
@@ -88,18 +86,46 @@ export function ChildProfileScreen() {
         spacing={26}
       />
 
-      <OverlineLabel style={styles.fieldLabel}>Tranche d'âge</OverlineLabel>
-      <View accessibilityRole="radiogroup" accessibilityLabel="Tranche d'âge" style={styles.ageRow}>
-        {AGE_RANGES.map((range) => (
-          <ChoiceChip
-            key={range}
-            label={ageRangeLabel(range)}
-            accessibilityLabel={`Tranche d'âge ${ageRangeLabel(range)} ans`}
-            selected={ageRange === range}
-            onPress={() => setAgeRange(range)}
+      <OverlineLabel style={styles.fieldLabel}>Date de naissance</OverlineLabel>
+      <View style={styles.birthDateRow}>
+        <View style={styles.dayOrMonth}>
+          <AppTextInput
+            accessibilityLabel="Jour de naissance"
+            value={birthDay}
+            onChangeText={setBirthDay}
+            placeholder="JJ"
+            keyboardType="number-pad"
+            inputMode="numeric"
+            maxLength={2}
+            style={styles.inputText}
           />
-        ))}
+        </View>
+        <View style={styles.dayOrMonth}>
+          <AppTextInput
+            accessibilityLabel="Mois de naissance"
+            value={birthMonth}
+            onChangeText={setBirthMonth}
+            placeholder="MM"
+            keyboardType="number-pad"
+            inputMode="numeric"
+            maxLength={2}
+            style={styles.inputText}
+          />
+        </View>
+        <View style={styles.year}>
+          <AppTextInput
+            accessibilityLabel="Année de naissance"
+            value={birthYear}
+            onChangeText={setBirthYear}
+            placeholder="AAAA"
+            keyboardType="number-pad"
+            inputMode="numeric"
+            maxLength={4}
+            style={styles.inputText}
+          />
+        </View>
       </View>
+      <Text style={styles.hint}>{CHILD_AGE_HINT}</Text>
 
       <Divider variant="stitched" spacing={26} />
 
@@ -132,26 +158,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 30,
   },
-  cameraBadge: {
-    position: 'absolute',
-    right: -4,
-    bottom: -4,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.background,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   fieldLabel: {
     marginBottom: 6,
   },
   inputText: {
     fontSize: 18,
   },
-  ageRow: {
+  birthDateRow: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 16,
+  },
+  dayOrMonth: {
+    flex: 1,
+  },
+  year: {
+    flex: 2,
+  },
+  hint: {
+    fontFamily: fonts.body,
+    fontSize: 13,
+    color: colors.inkSoft,
+    marginTop: 6,
   },
   reminderRow: {
     flexDirection: 'row',

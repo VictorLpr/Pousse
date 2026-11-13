@@ -1,17 +1,18 @@
-import type { AgeRange, Child } from '@/modules/auth/domain/entities/child';
+import type { Child } from '@/modules/auth/domain/entities/child';
 import { AuthError } from '@/modules/auth/domain/errors/auth-error';
 import type { ChildRepository } from '@/modules/auth/domain/ports/child-repository';
 
 export interface CreateChildProfileInput {
   readonly parentId: string;
   readonly firstName: string;
-  readonly ageRange: AgeRange;
+  /** Calendar date, `YYYY-MM-DD`; the backend checks the child is 4 to 12. */
+  readonly birthDate: string;
   readonly reminderTime: string;
 }
 
 /**
- * Creates the child profile. Its first weekly challenge is drawn by the
- * backend, not set up here (see AGENTS.md).
+ * Creates the child profile. Its age range and first weekly challenge come
+ * from the backend, not from here (see AGENTS.md).
  */
 export class CreateChildProfile {
   constructor(private readonly children: ChildRepository) {}
@@ -25,7 +26,8 @@ export class CreateChildProfile {
     return this.children.create({
       parentId: input.parentId,
       firstName,
-      ageRange: input.ageRange,
+      birthDate: input.birthDate,
+      avatar: null,
       reminder: { time: input.reminderTime, enabled: true },
     });
   }
