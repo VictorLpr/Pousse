@@ -2,8 +2,9 @@
 
 `apps/api` is the REST API of the Pousse monorepo: Fastify 5 + TypeScript,
 consumed only by `apps/mobile`. Authentication (BetterAuth) is wired; the
-first business routes are the child profiles (`/children`, auth module) and
-the emotion catalog (`/journal/emotions`). This document puts into practice
+business routes so far are the child profiles (`/children`, auth module),
+the emotion catalog, the journal entries and the streak of evenings
+(`/journal/emotions`, `/journal/entries`, `/journal/streak`). This document puts into practice
 the decisions already accepted in `../../docs/adr/` (0001 to 0007); when in
 doubt, the ADR wins and this file gets fixed to stay consistent with it,
 never the other way around.
@@ -36,8 +37,10 @@ Use the English names when writing code.
   whose responses are produced and validated by BetterAuth.
 - `@fastify/swagger` generates the OpenAPI spec from the same schemas. Never
   maintain API docs separately from the code.
-- Errors: a service throws one of the `shared/errors` classes (`NotFoundError`,
-  `ValidationError`, `UnauthorizedError`) with a stable code;
+- Errors: a service throws one of the `shared/errors` classes (`NotFoundError`
+  404, `ValidationError` 422, `ConflictError` 409, `UnauthorizedError` 401)
+  with a stable code; a unique constraint the database enforces is caught in
+  the service and turned into a `ConflictError` (e.g. `ENTRY_ALREADY_EXISTS`);
   `shared/errors/error-handler.ts` answers `{ code, message }` with its status,
   Zod validation failures as 400 `VALIDATION_FAILED`, unknown routes as 404
   `ROUTE_NOT_FOUND`. Routes declare `errorResponse` for each error status
@@ -134,7 +137,10 @@ src/
   module's repository.** That's the rule behind the fix applied on the
   mobile side (`InitializeChildProgress`, see `apps/mobile/AGENTS.md`):
   apply the same reflex here before writing a service that imports another
-  module's repository.
+  module's repository. Example: the journal checks that a child belongs to
+  the parent with the auth module's `ChildService.get()` (exported by
+  `modules/auth/index.ts`, injected by `app.ts`), and its queries never read
+  the `child` table.
 - `shared/` only holds infrastructure (database connection, error types,
   configuration) — no business logic.
 - A module is exposed as a Fastify plugin (`app.register(xModule, {
