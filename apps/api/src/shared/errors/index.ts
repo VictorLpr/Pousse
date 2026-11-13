@@ -34,6 +34,14 @@ export class ValidationError extends AppError {
   }
 }
 
+/** The request collides with the current state, e.g. a uniqueness rule. */
+export class ConflictError extends AppError {
+  constructor(code: string, message: string) {
+    super(code, message, 409);
+    this.name = 'ConflictError';
+  }
+}
+
 /** No valid session. */
 export class UnauthorizedError extends AppError {
   constructor(message = 'A valid session is required') {
