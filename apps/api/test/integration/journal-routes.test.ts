@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 
-import { emotion, journalEntry } from '#/shared/db/schema.js';
+import { createEntryRepository } from '#/modules/journal/entry-repository.js';
+import { emotion, journalEntry, photo } from '#/shared/db/schema.js';
 import { seedCatalogs } from '#/shared/db/seed-catalogs.js';
 import { insertChild, isoDate, signUpParent, type SignedInParent } from '../support/fixtures.js';
 import { useTestApp } from '../support/test-app.js';
@@ -9,6 +10,26 @@ import { useTestApp } from '../support/test-app.js';
 const UNKNOWN_ID = '00000000-0000-4000-8000-000000000000';
 
 const HOUR_MS = 60 * 60 * 1000;
+
+/** A photo as the app sends it: the file name only, the picture stays on the device. */
+const PHOTO = { fileName: '3f2b9c4e-souvenir.jpg', mimeType: 'image/jpeg' } as const;
+
+/** Photos the API refuses: a path in any shape instead of a file name, or a type it doesn't take. */
+const INVALID_PHOTOS = [
+  {
+    case: 'an absolute iOS path',
+    photo: { ...PHOTO, fileName: '/var/mobile/Containers/Data/Application/0F4C/Documents/a.jpg' },
+  },
+  {
+    case: 'an absolute Android path',
+    photo: { ...PHOTO, fileName: '/data/user/0/app/files/a.jpg' },
+  },
+  { case: 'a file URI', photo: { ...PHOTO, fileName: 'file:///data/user/0/app/files/a.jpg' } },
+  { case: 'a Windows path', photo: { ...PHOTO, fileName: 'C:\\Users\\lou\\Pictures\\a.jpg' } },
+  { case: 'an empty file name', photo: { ...PHOTO, fileName: '' } },
+  { case: 'a GIF', photo: { ...PHOTO, mimeType: 'image/gif' } },
+  { case: 'no type', photo: { fileName: PHOTO.fileName } },
+];
 
 describe('journal routes', () => {
   const { app, db } = useTestApp();
@@ -116,8 +137,38 @@ describe('journal routes', () => {
         text: 'J’ai rangé ma chambre.',
         date,
         createdAt: expect.any(String),
+        photo: null,
       });
+      expect(await db().select().from(photo)).toHaveLength(0);
     });
+
+    it('creates the entry with its photo, file name and type only', async () => {
+      const { parent, child } = await parentWithChild();
+
+      const response = await createEntry(parent, { childId: child.id, photo: PHOTO });
+
+      expect(response.statusCode).toBe(201);
+      const { id, photo: returned } = response.json<{ id: string; photo: unknown }>();
+      // `toEqual`: the photo's `id` or `journalEntryId` leaking past the schema would fail.
+      expect(returned).toEqual(PHOTO);
+      expect(await db().select().from(photo)).toEqual([
+        { id: expect.any(String), journalEntryId: id, ...PHOTO },
+      ]);
+    });
+
+    it.each(INVALID_PHOTOS)(
+      'answers 400 VALIDATION_FAILED to a photo with $case',
+      async ({ photo: invalid }) => {
+        const { parent, child } = await parentWithChild();
+
+        const response = await createEntry(parent, { childId: child.id, photo: invalid });
+
+        expect(response.statusCode).toBe(400);
+        expect(response.json()).toMatchObject({ code: 'VALIDATION_FAILED' });
+        expect(await db().select().from(journalEntry)).toHaveLength(0);
+        expect(await db().select().from(photo)).toHaveLength(0);
+      },
+    );
 
     it('answers 409 ENTRY_ALREADY_EXISTS to a second entry the same day', async () => {
       const { parent, child } = await parentWithChild();
@@ -211,6 +262,19 @@ describe('journal routes', () => {
       ]);
     });
 
+    it('returns each entry with its photo, or null', async () => {
+      const { parent, child } = await parentWithChild();
+      await insertEntries(child.id, [isoDate({ days: -1 })]);
+      await createEntry(parent, { childId: child.id, photo: PHOTO });
+
+      const response = await listEntries(parent, child.id);
+
+      expect(response.json<{ date: string; photo: unknown }[]>()).toEqual([
+        expect.objectContaining({ date: isoDate(), photo: PHOTO }),
+        expect.objectContaining({ date: isoDate({ days: -1 }), photo: null }),
+      ]);
+    });
+
     it('answers 404 CHILD_NOT_FOUND for a child of another parent', async () => {
       const { child } = await parentWithChild();
       await insertEntries(child.id, [isoDate()]);
@@ -236,11 +300,85 @@ describe('journal routes', () => {
   });
 
   describe('PATCH /journal/entries/:id', () => {
-    async function parentWithEntry() {
+    async function parentWithEntry(payload: Record<string, unknown> = {}) {
       const { parent, child } = await parentWithChild();
-      const created = await createEntry(parent, { childId: child.id });
+      const created = await createEntry(parent, { childId: child.id, ...payload });
       return { parent, child, entry: created.json<{ id: string; date: string }>() };
     }
+
+    describe('photo', () => {
+      it('adds a photo to an entry without one, alone in the body', async () => {
+        const { parent, entry } = await parentWithEntry();
+
+        const response = await updateEntry(parent, entry.id, { photo: PHOTO });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({
+          text: 'J’ai aidé à mettre la table.',
+          photo: PHOTO,
+        });
+        expect(await db().select().from(photo)).toEqual([
+          { id: expect.any(String), journalEntryId: entry.id, ...PHOTO },
+        ]);
+      });
+
+      it('replaces the photo, keeping one row per entry', async () => {
+        const { parent, entry } = await parentWithEntry({ photo: PHOTO });
+        const other = { fileName: '9a7d-dessin.png', mimeType: 'image/png' };
+
+        const response = await updateEntry(parent, entry.id, { photo: other });
+
+        expect(response.json()).toMatchObject({ photo: other });
+        expect(await db().select().from(photo)).toEqual([
+          { id: expect.any(String), journalEntryId: entry.id, ...other },
+        ]);
+      });
+
+      it('removes the photo with null', async () => {
+        const { parent, entry } = await parentWithEntry({ photo: PHOTO });
+
+        const response = await updateEntry(parent, entry.id, { photo: null });
+
+        expect(response.statusCode).toBe(200);
+        expect(response.json()).toMatchObject({ photo: null });
+        expect(await db().select().from(photo)).toHaveLength(0);
+      });
+
+      it('keeps the photo when the body leaves it out', async () => {
+        const { parent, entry } = await parentWithEntry({ photo: PHOTO });
+
+        const response = await updateEntry(parent, entry.id, { text: 'Un autre souvenir' });
+
+        expect(response.json()).toMatchObject({ text: 'Un autre souvenir', photo: PHOTO });
+      });
+
+      it('answers 422 ENTRY_EDIT_WINDOW_CLOSED to a photo change after 24 hours', async () => {
+        const { parent, entry } = await parentWithEntry({ photo: PHOTO });
+        await db()
+          .update(journalEntry)
+          .set({ createdAt: new Date(Date.now() - 25 * HOUR_MS) })
+          .where(eq(journalEntry.id, entry.id));
+
+        const response = await updateEntry(parent, entry.id, { photo: null });
+
+        expect(response.statusCode).toBe(422);
+        expect(response.json()).toMatchObject({ code: 'ENTRY_EDIT_WINDOW_CLOSED' });
+        expect(await db().select().from(photo)).toHaveLength(1);
+      });
+
+      it.each(INVALID_PHOTOS)(
+        'answers 400 VALIDATION_FAILED to a photo with $case',
+        async ({ photo: invalid }) => {
+          const { parent, entry } = await parentWithEntry();
+
+          const response = await updateEntry(parent, entry.id, { photo: invalid });
+
+          expect(response.statusCode).toBe(400);
+          expect(response.json()).toMatchObject({ code: 'VALIDATION_FAILED' });
+          expect(await db().select().from(photo)).toHaveLength(0);
+        },
+      );
+    });
 
     it('changes the text and the emotion within 24 hours, never the date', async () => {
       const { parent, child, entry } = await parentWithEntry();
@@ -401,6 +539,79 @@ describe('journal routes', () => {
 
       expect(response.statusCode).toBe(404);
       expect(response.json()).toMatchObject({ code: 'CHILD_NOT_FOUND' });
+    });
+  });
+
+  describe('photo constraints', () => {
+    // Straight to the database, past the Zod validation: the schema must refuse on its own.
+    async function entryId() {
+      const { child } = await parentWithChild();
+      await insertEntries(child.id, [isoDate()]);
+      const [entry] = await db().select().from(journalEntry);
+      if (!entry) throw new Error('Journal entry was not inserted');
+      return entry.id;
+    }
+
+    it('refuses a second photo for the same entry (photo_journal_entry_id_key)', async () => {
+      const journalEntryId = await entryId();
+      await db()
+        .insert(photo)
+        .values({ journalEntryId, ...PHOTO });
+
+      await expect(
+        db()
+          .insert(photo)
+          .values({ journalEntryId, ...PHOTO, fileName: 'autre.jpg' }),
+      ).rejects.toMatchObject({ cause: { constraint: 'photo_journal_entry_id_key' } });
+    });
+
+    it('refuses a type other than JPEG, PNG or WebP (photo_mime_type_allowed)', async () => {
+      const journalEntryId = await entryId();
+
+      await expect(
+        db()
+          .insert(photo)
+          // The column's TypeScript type forbids it; the database must refuse it too.
+          .values({ journalEntryId, ...PHOTO, mimeType: 'image/gif' as typeof PHOTO.mimeType }),
+      ).rejects.toMatchObject({ cause: { constraint: 'photo_mime_type_allowed' } });
+    });
+
+    it.each(['/data/user/0/app/files/a.jpg', 'C:\\Users\\lou\\a.jpg'])(
+      'refuses the path %s as a file name (photo_file_name_no_path)',
+      async (fileName) => {
+        const journalEntryId = await entryId();
+
+        await expect(
+          db()
+            .insert(photo)
+            .values({ journalEntryId, ...PHOTO, fileName }),
+        ).rejects.toMatchObject({ cause: { constraint: 'photo_file_name_no_path' } });
+      },
+    );
+
+    it('writes no entry when its photo is refused', async () => {
+      const { child } = await parentWithChild();
+      const [happy] = await db().select().from(emotion).where(eq(emotion.code, 'happy'));
+      if (!happy) throw new Error('Emotion catalog is not seeded');
+
+      await expect(
+        createEntryRepository(db()).insert(
+          { childId: child.id, emotionId: happy.id, text: 'Souvenir', date: isoDate() },
+          { ...PHOTO, fileName: 'C:\\Users\\lou\\a.jpg' },
+        ),
+      ).rejects.toMatchObject({ cause: { constraint: 'photo_file_name_no_path' } });
+      expect(await db().select().from(journalEntry)).toHaveLength(0);
+    });
+
+    it('deletes the photo with its entry', async () => {
+      const journalEntryId = await entryId();
+      await db()
+        .insert(photo)
+        .values({ journalEntryId, ...PHOTO });
+
+      await db().delete(journalEntry).where(eq(journalEntry.id, journalEntryId));
+
+      expect(await db().select().from(photo)).toHaveLength(0);
     });
   });
 });

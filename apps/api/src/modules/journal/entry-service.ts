@@ -38,6 +38,7 @@ function toResponse(row: EntryRow): EntryResponse {
     text: row.text,
     date: row.date,
     createdAt: row.createdAt.toISOString(),
+    photo: row.photo,
   };
 }
 
@@ -109,8 +110,9 @@ export function createEntryService(
       const emotionId = await emotionIdOf(input.emotionCode);
       try {
         const values = { childId: input.childId, text: input.text, date: input.date };
-        const { id, createdAt } = await entries.insert({ ...values, emotionId });
-        return toResponse({ id, emotionCode: input.emotionCode, createdAt, ...values });
+        const photo = input.photo ?? null;
+        const { id, createdAt } = await entries.insert({ ...values, emotionId }, photo);
+        return toResponse({ id, emotionCode: input.emotionCode, createdAt, photo, ...values });
       } catch (error) {
         if (isOneEntryPerDayViolation(error)) {
           throw new ConflictError(
@@ -135,11 +137,15 @@ export function createEntryService(
           `Journal entry ${id} can only be edited within 24 hours of its creation`,
         );
       }
-      await entries.update(id, {
-        text: input.text,
-        emotionId:
-          input.emotionCode === undefined ? undefined : await emotionIdOf(input.emotionCode),
-      });
+      await entries.update(
+        id,
+        {
+          text: input.text,
+          emotionId:
+            input.emotionCode === undefined ? undefined : await emotionIdOf(input.emotionCode),
+        },
+        input.photo,
+      );
       return getEntry(id);
     },
 
