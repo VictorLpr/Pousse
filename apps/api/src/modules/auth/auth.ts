@@ -32,7 +32,8 @@ export interface AuthConfig {
  * Routes exposed under `/auth` (full list in the BetterAuth docs):
  * `POST /sign-up/email` creates the parent account and opens its session,
  * `POST /sign-in/email` opens a session, `POST /sign-out` revokes it,
- * `GET /get-session` returns the current session.
+ * `GET /get-session` returns the current session, `POST /update-user`
+ * changes the signed-in parent's `firstName` / `lastName`.
  *
  * Error responses carry BetterAuth's English `message` and a stable `code`
  * (e.g. `INVALID_EMAIL_OR_PASSWORD`): the client maps the code to its own

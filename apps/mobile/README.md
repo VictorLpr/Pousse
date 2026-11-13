@@ -20,7 +20,7 @@ details in [AGENTS.md](AGENTS.md).
 ```
 src/
 ├── modules/
-│   ├── auth/         # parent accounts, households, children, session
+│   ├── auth/         # parent accounts, children, session (household = parent + children)
 │   ├── journal/      # evening ritual, journal entries
 │   ├── challenges/   # weekly challenges, trophies
 │   ├── memories/     # photo gallery (ui/ only, consumes journal)
@@ -38,9 +38,10 @@ Nothing else changes.
 
 ## Screens
 
-- Onboarding: welcome, sign-up (email + password), household creation, child profile
+- Onboarding: welcome, sign-up (email + password), the parent's last name (which names
+  the household: "Le foyer Dupont"), child profile
 - Sign-in: email + password (demo account: `parent@demo.fr` / `pousse123`)
-- Household: home page listing the household's children, picking tonight's child
+- Household: home page listing the parent's children, picking tonight's child
 - Child home: evening streak, starting the ritual
 - Evening ritual (4 steps): emotion → pride → photo → recap, then a "Bravo" screen
 - Memory journal, challenges & trophies, gallery

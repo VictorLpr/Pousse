@@ -8,6 +8,10 @@ import { requireParent } from '#/modules/auth/parent-session.js';
 import type { Db } from '#/shared/db/client.js';
 
 export { AUTH_BASE_PATH, createAuth, type Auth, type AuthConfig } from '#/modules/auth/auth.js';
+// Other modules check that a child belongs to the signed-in parent through
+// this service, never through the child repository (ADR-0006).
+export { createChildService, type ChildService } from '#/modules/auth/child-service.js';
+export { parentIdOf, requireParent } from '#/modules/auth/parent-session.js';
 
 export interface AuthModuleOptions {
   readonly db: Db;

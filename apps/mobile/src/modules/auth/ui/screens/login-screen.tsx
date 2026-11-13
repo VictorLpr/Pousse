@@ -26,8 +26,9 @@ export function LoginScreen() {
     setIsSubmitting(true);
     setErrorMessage(null);
     try {
-      const household = await signIn(email, password);
-      router.replace(household ? '/household' : '/onboarding/household');
+      const account = await signIn(email, password);
+      // A parent without a last name has not finished onboarding yet.
+      router.replace(account.lastName ? '/household' : '/onboarding/household');
     } catch (error) {
       setErrorMessage(authErrorMessage(error, 'Connexion impossible.'));
     } finally {

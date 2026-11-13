@@ -1,7 +1,6 @@
 import { CompleteEveningRitual } from '@/modules/journal/application/use-cases/complete-evening-ritual';
 import { CompleteWeeklyChallenge } from '@/modules/challenges/application/use-cases/complete-weekly-challenge';
 import { CreateChildProfile } from '@/modules/auth/application/use-cases/create-child-profile';
-import { CreateHousehold } from '@/modules/auth/application/use-cases/create-household';
 import { GetChild } from '@/modules/auth/application/use-cases/get-child';
 import { GetEveningStreak } from '@/modules/journal/application/use-cases/get-evening-streak';
 import { GetJournalEntries } from '@/modules/journal/application/use-cases/get-journal-entries';
@@ -13,18 +12,17 @@ import { RegisterParent } from '@/modules/auth/application/use-cases/register-pa
 import { SetEveningReminder } from '@/modules/auth/application/use-cases/set-evening-reminder';
 import { SignInParent } from '@/modules/auth/application/use-cases/sign-in-parent';
 import { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-parent';
+import { UpdateParentName } from '@/modules/auth/application/use-cases/update-parent-name';
 import { SequentialIdGenerator } from '@/shared/infrastructure/ids/sequential-id-generator';
 import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-auth-gateway';
 import { InMemoryChildRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
 import { InMemoryEmotionCatalog } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-emotion-catalog';
-import { InMemoryHouseholdRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-household-repository';
 import { InMemoryJournalEntryRepository } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-journal-entry-repository';
 import { InMemoryParentAccountRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-parent-account-repository';
 import { InMemoryTrophyRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-trophy-repository';
 import { InMemoryWeeklyChallengeRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-weekly-challenge-repository';
 import {
   seedChildren,
-  seedHouseholds,
   seedParentAccounts,
 } from '@/modules/auth/infrastructure/persistence/in-memory/seed';
 import {
@@ -42,7 +40,7 @@ export interface AppServices {
   readonly signInParent: SignInParent;
   readonly registerParent: RegisterParent;
   readonly signOutParent: SignOutParent;
-  readonly createHousehold: CreateHousehold;
+  readonly updateParentName: UpdateParentName;
   readonly createChildProfile: CreateChildProfile;
   readonly listChildren: ListChildren;
   readonly getChild: GetChild;
@@ -67,7 +65,6 @@ export function createAppServices(): AppServices {
 
   const accountRepository = new InMemoryParentAccountRepository(seedParentAccounts);
   const authGateway = new InMemoryAuthGateway(accountRepository, idGenerator);
-  const householdRepository = new InMemoryHouseholdRepository(seedHouseholds, idGenerator);
   const childRepository = new InMemoryChildRepository(seedChildren, idGenerator);
   const journalRepository = new InMemoryJournalEntryRepository(
     seedJournalEntries,
@@ -83,10 +80,10 @@ export function createAppServices(): AppServices {
   const trophyRepository = new InMemoryTrophyRepository(seedTrophies, idGenerator);
 
   return {
-    signInParent: new SignInParent(authGateway, householdRepository),
+    signInParent: new SignInParent(authGateway),
     registerParent: new RegisterParent(authGateway),
     signOutParent: new SignOutParent(authGateway),
-    createHousehold: new CreateHousehold(householdRepository, accountRepository),
+    updateParentName: new UpdateParentName(authGateway),
     createChildProfile: new CreateChildProfile(childRepository),
     listChildren: new ListChildren(childRepository),
     getChild: new GetChild(childRepository),
