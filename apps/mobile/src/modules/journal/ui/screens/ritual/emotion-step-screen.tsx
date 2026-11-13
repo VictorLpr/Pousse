@@ -1,30 +1,37 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { EMOTIONS } from '@/modules/journal/domain/entities/emotion';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
 import { SketchShape } from '@/shared/ui/components/sketch-shape';
+import { useEmotions } from '@/modules/journal/ui/hooks/use-emotions';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
 export function EmotionStepScreen() {
   const router = useRouter();
   const { emotionId, setEmotion } = useRitualDraft();
+  const catalog = useEmotions();
+  const emotions = catalog.status === 'ready' ? catalog.emotions : [];
 
   return (
     <RitualStepLayout step={1} title="Comment tu te sens ?" subtitle="Choisis ton émotion du soir">
+      {catalog.status === 'failed' ? (
+        <Text accessibilityRole="alert" style={styles.error}>
+          Impossible d'afficher les émotions pour l'instant.
+        </Text>
+      ) : null}
       <View accessibilityRole="radiogroup" accessibilityLabel="Émotion du soir" style={styles.grid}>
-        {EMOTIONS.map((emotion) => {
-          const selected = emotion.id === emotionId;
+        {emotions.map((emotion) => {
+          const selected = emotion.code === emotionId;
           return (
             <Pressable
-              key={emotion.id}
+              key={emotion.code}
               accessibilityRole="radio"
               accessibilityLabel={`Émotion ${emotion.label}`}
               accessibilityState={{ selected }}
-              onPress={() => setEmotion(emotion.id)}
+              onPress={() => setEmotion(emotion.code)}
               style={styles.cell}
             >
               <View style={styles.iconHalo}>
@@ -37,7 +44,7 @@ export function EmotionStepScreen() {
                   />
                 ) : null}
                 <View>
-                  <EmotionIcon emotionId={emotion.id} size={32} />
+                  <EmotionIcon emotionId={emotion.code} size={32} />
                 </View>
               </View>
               <Text style={[styles.cellLabel, selected && styles.selectedCellLabel]}>
@@ -83,6 +90,11 @@ const styles = StyleSheet.create({
   selectedCellLabel: {
     fontFamily: fonts.bodyBold,
     color: colors.ink,
+  },
+  error: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.error,
   },
   footer: {
     marginTop: 'auto',

@@ -7,6 +7,7 @@ import { GetJournalEntries } from '@/modules/journal/application/use-cases/get-j
 import { GetTrophies } from '@/modules/challenges/application/use-cases/get-trophies';
 import { GetWeeklyChallenge } from '@/modules/challenges/application/use-cases/get-weekly-challenge';
 import { ListChildren } from '@/modules/auth/application/use-cases/list-children';
+import { ListEmotions } from '@/modules/journal/application/use-cases/list-emotions';
 import { RegisterParent } from '@/modules/auth/application/use-cases/register-parent';
 import { SetEveningReminder } from '@/modules/auth/application/use-cases/set-evening-reminder';
 import { SignInParent } from '@/modules/auth/application/use-cases/sign-in-parent';
@@ -15,6 +16,7 @@ import { UpdateParentName } from '@/modules/auth/application/use-cases/update-pa
 import { SequentialIdGenerator } from '@/shared/infrastructure/ids/sequential-id-generator';
 import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-auth-gateway';
 import { InMemoryChildRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
+import { InMemoryEmotionCatalog } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-emotion-catalog';
 import { InMemoryJournalEntryRepository } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-journal-entry-repository';
 import { InMemoryParentAccountRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-parent-account-repository';
 import { InMemoryTrophyRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-trophy-repository';
@@ -28,7 +30,10 @@ import {
   seedTrophies,
   seedWeeklyChallenges,
 } from '@/modules/challenges/infrastructure/persistence/in-memory/seed';
-import { seedJournalEntries } from '@/modules/journal/infrastructure/persistence/in-memory/seed';
+import {
+  seedEmotions,
+  seedJournalEntries,
+} from '@/modules/journal/infrastructure/persistence/in-memory/seed';
 import { SystemClock } from '@/shared/infrastructure/time/system-clock';
 
 export interface AppServices {
@@ -42,6 +47,7 @@ export interface AppServices {
   readonly completeEveningRitual: CompleteEveningRitual;
   readonly getJournalEntries: GetJournalEntries;
   readonly getEveningStreak: GetEveningStreak;
+  readonly listEmotions: ListEmotions;
   readonly getWeeklyChallenge: GetWeeklyChallenge;
   readonly completeWeeklyChallenge: CompleteWeeklyChallenge;
   readonly getTrophies: GetTrophies;
@@ -65,6 +71,7 @@ export function createAppServices(): AppServices {
     idGenerator,
     clock,
   );
+  const emotionCatalog = new InMemoryEmotionCatalog(seedEmotions);
   const challengeRepository = new InMemoryWeeklyChallengeRepository(
     seedWeeklyChallenges,
     challengeTitlePool,
@@ -83,6 +90,7 @@ export function createAppServices(): AppServices {
     completeEveningRitual: new CompleteEveningRitual(journalRepository),
     getJournalEntries: new GetJournalEntries(journalRepository),
     getEveningStreak: new GetEveningStreak(journalRepository),
+    listEmotions: new ListEmotions(emotionCatalog),
     getWeeklyChallenge: new GetWeeklyChallenge(challengeRepository),
     completeWeeklyChallenge: new CompleteWeeklyChallenge(challengeRepository),
     getTrophies: new GetTrophies(trophyRepository),

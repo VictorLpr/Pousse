@@ -3,14 +3,15 @@ import { Image as ImageIcon } from 'lucide-react-native';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { getEmotion } from '@/modules/journal/domain/entities/emotion';
 import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
+import { emotionLabel } from '@/modules/journal/ui/format/emotion';
 import { journalErrorMessage } from '@/modules/journal/ui/format/journal-error';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import { useEmotions } from '@/modules/journal/ui/hooks/use-emotions';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -23,6 +24,7 @@ export function RecapStepScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
   const { emotionId, prideText, photoUri } = useRitualDraft();
+  const catalog = useEmotions();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -32,6 +34,8 @@ export function RecapStepScreen() {
   if (!activeChild || !emotionId) {
     return <Redirect href="/home" />;
   }
+
+  const label = emotionLabel(catalog, emotionId);
 
   const saveRitual = async () => {
     setIsSaving(true);
@@ -55,7 +59,7 @@ export function RecapStepScreen() {
     <RitualStepLayout step={4} title="Notre moment" subtitle="On le garde ensemble ?">
       <View style={styles.emotionRow}>
         <EmotionIcon emotionId={emotionId} size={34} />
-        <Text style={styles.emotionLabel}>{capitalize(getEmotion(emotionId).label)}</Text>
+        <Text style={styles.emotionLabel}>{label ? capitalize(label) : null}</Text>
       </View>
 
       <Divider variant="stitched" spacing={20} />

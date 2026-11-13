@@ -1,4 +1,15 @@
+import type { Emotion } from '@/modules/journal/domain/entities/emotion';
 import { type JournalEntry, localDayOf } from '@/modules/journal/domain/entities/journal-entry';
+
+/** The API's emotion catalog (`apps/api/src/shared/db/catalogs/emotions.ts`), in display order. */
+export const seedEmotions: readonly Emotion[] = [
+  { code: 'happy', label: 'joyeux' },
+  { code: 'proud', label: 'fier' },
+  { code: 'calm', label: 'calme' },
+  { code: 'surprised', label: 'surpris' },
+  { code: 'sad', label: 'triste' },
+  { code: 'angry', label: 'fâché' },
+];
 
 export const SEED_PHOTO_URI = 'memory://photo-placeholder';
 

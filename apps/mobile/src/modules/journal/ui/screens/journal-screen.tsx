@@ -2,12 +2,13 @@ import { Redirect } from 'expo-router';
 import { Fragment, useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { getEmotion } from '@/modules/journal/domain/entities/emotion';
 import type { JournalEntry } from '@/modules/journal/domain/entities/journal-entry';
 import { useServices } from '@/di/services-provider';
 import { AppShell } from '@/shared/ui/components/app-shell';
 import { Divider } from '@/shared/ui/components/divider';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
+import { emotionLabel } from '@/modules/journal/ui/format/emotion';
+import { useEmotions } from '@/modules/journal/ui/hooks/use-emotions';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
@@ -23,6 +24,7 @@ export function JournalScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
+  const catalog = useEmotions();
 
   useEffect(() => {
     if (activeChild) {
@@ -46,29 +48,30 @@ export function JournalScreen() {
 
       <OverlineLabel style={styles.sectionLabel}>Cette semaine</OverlineLabel>
 
-      {entries.map((entry, index) => (
-        <Fragment key={entry.id}>
-          {index > 0 && <Divider />}
-          <View
-            accessible
-            accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, émotion ${getEmotion(entry.emotionId).label} : ${entry.prideText}`}
-            style={styles.entry}
-          >
-            <View style={styles.entryIcon}>
-              <EmotionIcon emotionId={entry.emotionId} size={26} />
-            </View>
-            <View style={styles.entryContent}>
-              <View style={styles.entryHeader}>
-                <Text style={styles.emotionName}>
-                  {capitalize(getEmotion(entry.emotionId).label)}
-                </Text>
-                <Text style={styles.entryDate}>{formatFullDate(entry.createdAt)}</Text>
+      {entries.map((entry, index) => {
+        const label = emotionLabel(catalog, entry.emotionId) ?? '';
+        return (
+          <Fragment key={entry.id}>
+            {index > 0 && <Divider />}
+            <View
+              accessible
+              accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, ${label} : ${entry.prideText}`}
+              style={styles.entry}
+            >
+              <View style={styles.entryIcon}>
+                <EmotionIcon emotionId={entry.emotionId} size={26} />
               </View>
-              <Text style={styles.entryText}>{entry.prideText}</Text>
+              <View style={styles.entryContent}>
+                <View style={styles.entryHeader}>
+                  <Text style={styles.emotionName}>{capitalize(label)}</Text>
+                  <Text style={styles.entryDate}>{formatFullDate(entry.createdAt)}</Text>
+                </View>
+                <Text style={styles.entryText}>{entry.prideText}</Text>
+              </View>
             </View>
-          </View>
-        </Fragment>
-      ))}
+          </Fragment>
+        );
+      })}
 
       {entries.length === 0 && (
         <Text style={styles.emptyText}>
