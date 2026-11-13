@@ -8,6 +8,7 @@ import { GetTrophies } from '@/modules/challenges/application/use-cases/get-trop
 import { GetWeeklyChallenge } from '@/modules/challenges/application/use-cases/get-weekly-challenge';
 import { ListChildren } from '@/modules/auth/application/use-cases/list-children';
 import { ListEmotions } from '@/modules/journal/application/use-cases/list-emotions';
+import { PickRitualPhoto } from '@/modules/journal/application/use-cases/pick-ritual-photo';
 import { RegisterParent } from '@/modules/auth/application/use-cases/register-parent';
 import { SetEveningReminder } from '@/modules/auth/application/use-cases/set-evening-reminder';
 import { SignInParent } from '@/modules/auth/application/use-cases/sign-in-parent';
@@ -18,6 +19,7 @@ import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/i
 import { InMemoryChildRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
 import { InMemoryEmotionCatalog } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-emotion-catalog';
 import { InMemoryJournalEntryRepository } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-journal-entry-repository';
+import { PlaceholderPhotoPicker } from '@/modules/journal/infrastructure/device/placeholder-photo-picker';
 import { InMemoryParentAccountRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-parent-account-repository';
 import { InMemoryTrophyRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-trophy-repository';
 import { InMemoryWeeklyChallengeRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-weekly-challenge-repository';
@@ -48,6 +50,7 @@ export interface AppServices {
   readonly getJournalEntries: GetJournalEntries;
   readonly getEveningStreak: GetEveningStreak;
   readonly listEmotions: ListEmotions;
+  readonly pickRitualPhoto: PickRitualPhoto;
   readonly getWeeklyChallenge: GetWeeklyChallenge;
   readonly completeWeeklyChallenge: CompleteWeeklyChallenge;
   readonly getTrophies: GetTrophies;
@@ -68,6 +71,8 @@ export function createAppServices(): AppServices {
   const childRepository = new InMemoryChildRepository(seedChildren, idGenerator, clock);
   const journalRepository = new InMemoryJournalEntryRepository(
     seedJournalEntries,
+    seedEmotions,
+    async (childId) => (await childRepository.findById(childId)) !== null,
     idGenerator,
     clock,
   );
@@ -91,6 +96,7 @@ export function createAppServices(): AppServices {
     getJournalEntries: new GetJournalEntries(journalRepository),
     getEveningStreak: new GetEveningStreak(journalRepository),
     listEmotions: new ListEmotions(emotionCatalog),
+    pickRitualPhoto: new PickRitualPhoto(new PlaceholderPhotoPicker()),
     getWeeklyChallenge: new GetWeeklyChallenge(challengeRepository),
     completeWeeklyChallenge: new CompleteWeeklyChallenge(challengeRepository),
     getTrophies: new GetTrophies(trophyRepository),

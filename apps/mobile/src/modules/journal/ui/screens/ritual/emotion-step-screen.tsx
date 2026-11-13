@@ -11,7 +11,7 @@ import { colors, fonts } from '@/shared/ui/theme';
 
 export function EmotionStepScreen() {
   const router = useRouter();
-  const { emotionId, setEmotion } = useRitualDraft();
+  const { emotionCode, setEmotion } = useRitualDraft();
   const catalog = useEmotions();
   const emotions = catalog.status === 'ready' ? catalog.emotions : [];
 
@@ -24,7 +24,7 @@ export function EmotionStepScreen() {
       ) : null}
       <View accessibilityRole="radiogroup" accessibilityLabel="Émotion du soir" style={styles.grid}>
         {emotions.map((emotion) => {
-          const selected = emotion.code === emotionId;
+          const selected = emotion.code === emotionCode;
           return (
             <Pressable
               key={emotion.code}
@@ -44,7 +44,7 @@ export function EmotionStepScreen() {
                   />
                 ) : null}
                 <View>
-                  <EmotionIcon emotionId={emotion.code} size={32} />
+                  <EmotionIcon emotionCode={emotion.code} size={32} />
                 </View>
               </View>
               <Text style={[styles.cellLabel, selected && styles.selectedCellLabel]}>
@@ -57,7 +57,7 @@ export function EmotionStepScreen() {
       <View style={styles.footer}>
         <AppButton
           label="Continuer"
-          disabled={!emotionId}
+          disabled={!emotionCode}
           onPress={() => router.push('/ritual/pride')}
         />
       </View>

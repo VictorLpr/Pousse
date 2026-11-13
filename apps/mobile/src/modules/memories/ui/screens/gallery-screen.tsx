@@ -30,7 +30,7 @@ export function GalleryScreen() {
     if (activeChild) {
       services.getJournalEntries
         .execute(activeChild.id)
-        .then((entries) => setEntriesWithPhoto(entries.filter((entry) => entry.photoUri !== null)));
+        .then((entries) => setEntriesWithPhoto(entries.filter((entry) => entry.photo !== null)));
     }
   }, [services, activeChild]);
 
@@ -55,7 +55,7 @@ export function GalleryScreen() {
 
       <View style={styles.grid}>
         {entriesWithPhoto.map((entry) => {
-          const label = capitalize(emotionLabel(catalog, entry.emotionId) ?? '');
+          const label = capitalize(emotionLabel(catalog, entry.emotionCode) ?? '');
           const dateLabel = formatShortDate(entry.createdAt);
           return (
             <View
@@ -67,7 +67,7 @@ export function GalleryScreen() {
               <View
                 style={[
                   styles.photo,
-                  { backgroundColor: entry.emotionId === 'proud' ? colors.peach : colors.sage },
+                  { backgroundColor: entry.emotionCode === 'proud' ? colors.peach : colors.sage },
                 ]}
               />
               <Text style={styles.caption}>

@@ -49,24 +49,24 @@ export function JournalScreen() {
       <OverlineLabel style={styles.sectionLabel}>Cette semaine</OverlineLabel>
 
       {entries.map((entry, index) => {
-        const label = emotionLabel(catalog, entry.emotionId) ?? '';
+        const label = emotionLabel(catalog, entry.emotionCode) ?? '';
         return (
           <Fragment key={entry.id}>
             {index > 0 && <Divider />}
             <View
               accessible
-              accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, ${label} : ${entry.prideText}`}
+              accessibilityLabel={`Souvenir du ${formatFullDate(entry.createdAt)}, ${label} : ${entry.text}`}
               style={styles.entry}
             >
               <View style={styles.entryIcon}>
-                <EmotionIcon emotionId={entry.emotionId} size={26} />
+                <EmotionIcon emotionCode={entry.emotionCode} size={26} />
               </View>
               <View style={styles.entryContent}>
                 <View style={styles.entryHeader}>
                   <Text style={styles.emotionName}>{capitalize(label)}</Text>
                   <Text style={styles.entryDate}>{formatFullDate(entry.createdAt)}</Text>
                 </View>
-                <Text style={styles.entryText}>{entry.prideText}</Text>
+                <Text style={styles.entryText}>{entry.text}</Text>
               </View>
             </View>
           </Fragment>
