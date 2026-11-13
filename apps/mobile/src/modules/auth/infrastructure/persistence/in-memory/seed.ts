@@ -1,3 +1,4 @@
+import { PRIVACY_POLICY_VERSION, type Consent } from '@/modules/auth/domain/entities/consent';
 import type { ParentAccount } from '@/modules/auth/domain/entities/parent-account';
 import type { ChildRecord } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
 
@@ -36,5 +37,19 @@ export const seedChildren: readonly ChildRecord[] = [
     birthDate: '2021-06-02',
     avatar: null,
     reminder: { time: '20:00', enabled: true },
+  },
+];
+
+/** The consent each demo profile was created with. */
+export const seedConsents: readonly Consent[] = [
+  {
+    childId: LEA_ID,
+    policyVersion: PRIVACY_POLICY_VERSION,
+    givenAt: new Date('2026-09-01T18:30:00Z'),
+  },
+  {
+    childId: TOM_ID,
+    policyVersion: PRIVACY_POLICY_VERSION,
+    givenAt: new Date('2026-09-01T18:32:00Z'),
   },
 ];
