@@ -182,6 +182,10 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
   name is empty. Screens behind login guard with `if (!account) return <Redirect href="/" />`
   (or `!activeChild` for child-scoped screens). Children always belong to a parent
   (`parentId`); list them via `listChildren.execute(account.id)`.
+- A child profile is created with its parental consent (`ConsentGrant`: the
+  `PRIVACY_POLICY_VERSION` accepted and `guardianAttested: true`), sent in the same
+  `ChildRepository.create` call as `POST /children` does; the fake backend refuses it
+  otherwise. A consent is never updated: `ConsentRepository` is read-only.
 - Passwords are stored in plain text in the in-memory adapter on purpose (front-only
   demo); hashing (scrypt, ADR-0003) is done by the API. Don't add crypto client-side.
 - Screens needing the active child use `useActiveChild()` and must handle **both** states:

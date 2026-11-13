@@ -1,8 +1,9 @@
 /**
  * Codes aligned with the API's error codes (BetterAuth's, `/children`'s)
  * where one exists, so the HTTP adapter can map responses onto the same
- * errors. `FIRST_NAME_REQUIRED` and `BIRTH_DATE_INVALID` are the client's
- * reading of the API's generic `VALIDATION_FAILED`.
+ * errors. `FIRST_NAME_REQUIRED`, `BIRTH_DATE_INVALID`,
+ * `GUARDIAN_ATTESTATION_REQUIRED` and `POLICY_VERSION_INVALID` are the
+ * client's reading of the API's generic `VALIDATION_FAILED`.
  */
 export type AuthErrorCode =
   | 'INVALID_EMAIL'
@@ -12,7 +13,9 @@ export type AuthErrorCode =
   | 'INVALID_EMAIL_OR_PASSWORD'
   | 'FIRST_NAME_REQUIRED'
   | 'BIRTH_DATE_INVALID'
-  | 'CHILD_AGE_OUT_OF_RANGE';
+  | 'CHILD_AGE_OUT_OF_RANGE'
+  | 'GUARDIAN_ATTESTATION_REQUIRED'
+  | 'POLICY_VERSION_INVALID';
 
 /** Business error the UI turns into display copy through its `code`. */
 export class AuthError extends Error {
