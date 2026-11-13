@@ -3,9 +3,10 @@ import { Plus } from 'lucide-react-native';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { getEmotion } from '@/modules/journal';
 import type { JournalEntry } from '@/modules/journal';
 import { useServices } from '@/di/services-provider';
+import { emotionLabel } from '@/modules/journal/ui/format/emotion';
+import { useEmotions } from '@/modules/journal/ui/hooks/use-emotions';
 import { AppShell } from '@/shared/ui/components/app-shell';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
@@ -23,6 +24,7 @@ export function GalleryScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
   const [entriesWithPhoto, setEntriesWithPhoto] = useState<JournalEntry[]>([]);
+  const catalog = useEmotions();
 
   useEffect(() => {
     if (activeChild) {
@@ -53,13 +55,13 @@ export function GalleryScreen() {
 
       <View style={styles.grid}>
         {entriesWithPhoto.map((entry) => {
-          const emotionLabel = capitalize(getEmotion(entry.emotionId).label);
+          const label = capitalize(emotionLabel(catalog, entry.emotionId) ?? '');
           const dateLabel = formatShortDate(entry.createdAt);
           return (
             <View
               key={entry.id}
               accessible
-              accessibilityLabel={`Photo souvenir, ${emotionLabel}, ${dateLabel}`}
+              accessibilityLabel={`Photo souvenir, ${label}, ${dateLabel}`}
               style={styles.item}
             >
               <View
@@ -69,7 +71,7 @@ export function GalleryScreen() {
                 ]}
               />
               <Text style={styles.caption}>
-                <Text style={styles.captionEmotion}>{emotionLabel}</Text> · {dateLabel}
+                <Text style={styles.captionEmotion}>{label}</Text> · {dateLabel}
               </Text>
             </View>
           );
