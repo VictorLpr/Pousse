@@ -5,9 +5,10 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 # Pousse — Rules for agents
 
 Pousse is a parent/child evening-ritual app (React Native + Expo SDK 57, expo-router,
-TypeScript strict). Frontend only for now: all data lives in in-memory repositories that act
-as a fake backend, and HTTP adapters to the API will replace them later. These rules are
-mandatory for any change.
+TypeScript strict). The app is moving onto the API module by module: auth (sign-up,
+sign-in, session) goes to BetterAuth; the other data still lives in in-memory repositories
+that act as a fake backend, until HTTP adapters replace them. These rules are mandatory for
+any change.
 
 ## 1. Modules by business domain, hexagonal inside each (non-negotiable)
 
@@ -96,11 +97,17 @@ inside a use case.
 Sign-up, sign-in, sign-out and renaming the signed-in parent
 (`updateUser`, i.e. `POST /auth/update-user`) go through the `AuthGateway`
 port (`modules/auth/domain/ports/auth-gateway.ts`), shaped after BetterAuth's
-email/password client. The in-memory adapter holds the open session, as the
-session cookie does for the API. Validation (email format, password length) and email
-uniqueness belong to the server: the in-memory adapter enforces them and
-throws `AuthError` with the API's codes. Auth use cases hold no validation
-rule; screens keep only ergonomic checks (the two passwords match).
+email/password client; `getSession` restores the session at launch. Its API adapter is
+`BetterAuthGateway` (`modules/auth/infrastructure/http/`), over a BetterAuth client built
+per platform: on the web, the `HttpOnly` session cookie is the browser's, same origin
+through the Worker (`/api`); natively, the Expo plugin keeps it in `expo-secure-store`
+and `sessionCookie()` hands it to business requests. `container.ts` keeps the in-memory
+adapter (which holds the open session in memory) under `expo start` unless
+`EXPO_PUBLIC_API_URL` is set: the dev preview has no Worker to forward `/api`. An exported
+build always uses BetterAuth; a native build requires `EXPO_PUBLIC_API_URL`. Validation
+(email format, password length) and email uniqueness belong to the server: both adapters
+throw `AuthError` with the API's codes. Auth use cases hold no validation rule; screens
+keep only ergonomic checks (the two passwords match).
 
 ## 2. Clean code conventions
 
@@ -175,7 +182,9 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
 ## 5. Screen patterns & pitfalls
 
 - Session (the signed-in parent, `account`) lives in `useSession()`; the active child in
-  `useActiveChild()`. Both are in-memory: a full reload logs the user out — expected.
+  `useActiveChild()`. `SessionProvider` restores the session before rendering any screen:
+  against the API it survives a reload; with the fake backend (dev preview) a full reload
+  logs the user out — expected.
   There is no household entity: the household is the parent and their children, and its
   display name comes from `account.lastName` through `householdTitle()` /
   `householdLabel()` (`modules/auth/ui/format/household.ts`), which fall back when the
