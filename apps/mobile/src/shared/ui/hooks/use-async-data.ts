@@ -26,7 +26,7 @@ const LOADING = { status: 'loading' } as const;
  * each time the screen gains focus. A result that arrives after the screen
  * unmounted or moved to another key is dropped, so one child's data never
  * shows on another's screen. A reload for the same key keeps the data on
- * screen until it settles. `null` loads nothing.
+ * screen, even when it fails. `null` loads nothing.
  */
 export function useAsyncData<T>(
   key: string | null,
@@ -44,15 +44,24 @@ export function useAsyncData<T>(
 
   const run = useCallback((requestKey: string) => {
     const request = ++latestRequest.current;
-    const settle = (state: AsyncData<T>) => {
-      if (request === latestRequest.current) {
-        setSettled({ key: requestKey, state });
-      }
-    };
+    const isLatest = () => request === latestRequest.current;
     loadRef
       .current(requestKey)
-      .then((data) => settle({ status: 'ready', data }))
-      .catch(() => settle({ status: 'failed' }));
+      .then((data) => {
+        if (isLatest()) {
+          setSettled({ key: requestKey, state: { status: 'ready', data } });
+        }
+      })
+      .catch(() => {
+        if (isLatest()) {
+          // A failed reload keeps the data already on screen; `retry` clears it first.
+          setSettled((current) =>
+            current?.key === requestKey && current.state.status === 'ready'
+              ? current
+              : { key: requestKey, state: { status: 'failed' } },
+          );
+        }
+      });
   }, []);
 
   useFocusEffect(
@@ -75,6 +84,8 @@ export function useAsyncData<T>(
   }, [key, run]);
 
   const update = useCallback((next: (current: T) => T) => {
+    // A reload already in flight was fetched before this change: drop it.
+    latestRequest.current += 1;
     setSettled((current) =>
       current?.state.status === 'ready'
         ? { key: current.key, state: { status: 'ready', data: next(current.state.data) } }
