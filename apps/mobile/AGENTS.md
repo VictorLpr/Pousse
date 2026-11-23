@@ -189,8 +189,17 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
 - Passwords are stored in plain text in the in-memory adapter on purpose (front-only
   demo); hashing (scrypt, ADR-0003) is done by the API. Don't add crypto client-side.
 - Screens needing the active child use `useActiveChild()` and must handle **both** states:
-  `isLoading` → render an empty `ScreenContainer` (never redirect while loading — this
-  broke deep links once), then `!activeChild` → `<Redirect href="/" />`.
+  `isLoading` (true while `selectChild` fetches the child) → render an empty
+  `ScreenContainer` (never redirect while loading — this broke deep links once), then
+  `!activeChild` → `<Redirect href="/" />`. `selectChild` rejects when the child can't be
+  loaded: the caller shows the error; only the latest selection lands.
+- A screen loads its data with `useAsyncData(key, load)` (`shared/ui/hooks/`), keyed by
+  what the data depends on (`activeChild?.id ?? null`, `account?.id ?? null`), and shows
+  `LoadStatus` (`shared/ui/components/`) until it is `ready`: a labelled `progressbar`
+  while loading, a French `alert` and « Réessayer » on failure. The hook reloads on focus,
+  drops answers for an older key or an unmounted screen, and `update()` applies what a
+  mutation returned. Never a bare `useEffect` with `.then()` and no cancellation: with
+  the network, a late answer shows another child's data.
 - Multi-step flows keep their draft in a context (`useRitualDraft()`), reset it when the
   flow starts, and persist through a use case only at the final step.
 - After a use case mutates the active child, refresh the context (`adoptChild(result)`).
