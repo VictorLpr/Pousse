@@ -186,6 +186,9 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
   `PRIVACY_POLICY_VERSION` accepted and `guardianAttested: true`), sent in the same
   `ChildRepository.create` call as `POST /children` does; the fake backend refuses it
   otherwise. A consent is never updated: `ConsentRepository` is read-only.
+  The policy text lives in `modules/auth/ui/format/privacy-policy.ts` (route
+  `/privacy`, readable signed out) and mirrors `docs/gdpr/record-of-processing.md`:
+  changing what it says means updating both and raising `PRIVACY_POLICY_VERSION`.
 - Passwords are stored in plain text in the in-memory adapter on purpose (front-only
   demo); hashing (scrypt, ADR-0003) is done by the API. Don't add crypto client-side.
 - Screens needing the active child use `useActiveChild()` and must handle **both** states:
