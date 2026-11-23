@@ -1,0 +1,93 @@
+# Record of processing activities
+
+Internal GDPR record for Pousse (art. 30 GDPR), kept next to the code so it
+changes with it. The parent-facing version, in plain French, is the privacy
+screen (`apps/mobile/src/modules/auth/ui/format/privacy-policy.ts`, route
+`/privacy`); both describe the same processing and must stay in step.
+
+Policy version in force: **1.0** (`PRIVACY_POLICY_VERSION`,
+`apps/mobile/src/modules/auth/domain/entities/consent.ts`).
+
+## Controller and data subjects
+
+- Controller: the Pousse project (single developer, end-of-studies project).
+- Data subjects: parents holding an account, and their children (minors,
+  usually under 15).
+
+## Legal basis
+
+- **Children's data**: consent given by the holder of parental
+  responsibility (art. 6.1.a and art. 8 GDPR; in France the age of digital
+  consent is 15, art. 45 of the _loi Informatique et Libertés_). The parent
+  ticks a box naming the child and attesting they are its parent or legal
+  guardian; it is never pre-ticked, and the profile cannot be created
+  without it. The proof is the `consent` row (one per child, never updated):
+  `given_at`, `policy_version`, `guardian_attested` (always true, enforced by
+  a check constraint).
+- **Parent account data**: performance of the service the parent signed up
+  for (art. 6.1.b).
+- **Connection data** (IP address, user agent): legitimate interest in
+  securing accounts (art. 6.1.f), used for sessions and rate limiting.
+
+## Processing activities
+
+| Purpose                        | Data                                                           | Tables                           |
+| ------------------------------ | -------------------------------------------------------------- | -------------------------------- |
+| Parent account and sign-in     | email, first name, last name, password hash (scrypt, ADR-0003) | `user`, `account`                |
+| Session security               | session token, expiry, IP address, user agent                  | `session`, `verification`        |
+| Child profile                  | first name, birth date, avatar, evening reminder time          | `child`                          |
+| Parental consent proof         | date, policy version, guardian attestation                     | `consent`                        |
+| Evening ritual (journal)       | date, emotion, short text (≤ 500 characters)                   | `journal_entry`                  |
+| Photo of an entry              | file name only — the photo stays on the device (ADR-0004)      | `photo`                          |
+| Weekly challenges and trophies | challenge drawn, chosen, completed; badges awarded             | `child_challenge`, `badge_award` |
+
+Catalog tables (`emotion`, `challenge`, `badge`) hold no personal data.
+
+**Not collected**: photos (never sent to the server, ADR-0004), location,
+contacts, advertising identifiers, analytics. BetterAuth telemetry is
+disabled.
+
+## Recipients and processors
+
+| Processor  | Role                                                                                                                       | Location            |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------- | ------------------- |
+| Scaleway   | API container (Serverless Containers) and PostgreSQL database (Serverless SQL Database)                                    | France, `fr-par`    |
+| Cloudflare | Worker that serves the PWA and relays `/api/*` to the API (ADR-0011); sees requests in transit, stores nothing applicative | global edge network |
+
+No data is sold, shared for advertising, or sent to any other third party.
+
+## Retention
+
+As long as the parent account exists. There is no automatic purge.
+Deleting a child deletes everything attached to it through `ON DELETE
+CASCADE` (consent, journal entries, photo rows, challenges, badges, pride
+letters); deleting the parent account deletes its children the same way.
+Photos on the device are removed with the app or by the parent.
+
+## Rights of the data subjects
+
+Access, portability and erasure will be exercised in the app (Preferences):
+the backlog tickets « Export des données enfant » and « Suppression des
+données enfant » deliver them. Until then the privacy screen tells the parent
+they are coming. Erasure as the ticket plans it: the parent confirms twice,
+the API deletes the `child` row and the cascade removes the rest; photo files
+live on the device, so the app has to remove them there.
+
+## Changing the policy
+
+The consent proves agreement to one version of the text. Any change of
+substance to what is collected, why, where or for how long:
+
+1. update the privacy screen copy and this record together;
+2. raise `PRIVACY_POLICY_VERSION`;
+3. plan how existing parents give a new consent (a new consent flow — the
+   `consent` row is never updated).
+
+## Planned processing, not active
+
+Monthly **pride letters** generated by an AI model (`pride_letter` table).
+Only the letter's `anonymous_id` would be sent to the model, never the
+child's first name (schema comment on `prideLetter`). Nothing is sent to
+any AI provider today. Before switching it on: add the provider to the
+processors above, describe the processing on the privacy screen, and raise
+the policy version (policy 1.1).
