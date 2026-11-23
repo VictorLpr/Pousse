@@ -7,6 +7,7 @@ export { CreateChildProfile } from '@/modules/auth/application/use-cases/create-
 export { GetChild } from '@/modules/auth/application/use-cases/get-child';
 export { ListChildren } from '@/modules/auth/application/use-cases/list-children';
 export { RegisterParent } from '@/modules/auth/application/use-cases/register-parent';
+export { RestoreSession } from '@/modules/auth/application/use-cases/restore-session';
 export { SetEveningReminder } from '@/modules/auth/application/use-cases/set-evening-reminder';
 export { SignInParent } from '@/modules/auth/application/use-cases/sign-in-parent';
 export { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-parent';
