@@ -1,17 +1,19 @@
-import { Redirect, useFocusEffect, useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { ChevronRight, Plus } from 'lucide-react-native';
-import { Fragment, useCallback, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Fragment, useState } from 'react';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Child } from '@/modules/auth/domain/entities/child';
 import { useServices } from '@/di/services-provider';
 import { Avatar } from '@/shared/ui/components/avatar';
 import { Divider } from '@/shared/ui/components/divider';
+import { LoadStatus } from '@/shared/ui/components/load-status';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ageRangeWithYears, childInitial } from '@/modules/auth/ui/format/child';
 import { householdTitle } from '@/modules/auth/ui/format/household';
 import { streakLabel } from '@/modules/journal/ui/format/streak';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import { useAsyncData } from '@/shared/ui/hooks/use-async-data';
 import { useEveningStreak } from '@/modules/journal/ui/hooks/use-evening-streak';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -20,30 +22,31 @@ export function HouseholdHomeScreen() {
   const router = useRouter();
   const services = useServices();
   const { account } = useSession();
-  const { selectChild } = useActiveChild();
-  const [children, setChildren] = useState<Child[]>([]);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useFocusEffect(
-    useCallback(() => {
-      if (account) {
-        setErrorMessage(null);
-        services.listChildren
-          .execute(account.id)
-          .then(setChildren)
-          .catch(() => setErrorMessage('Impossible d’afficher les enfants, réessayez.'));
-      }
-    }, [services, account]),
+  const { selectChild, isLoading: isSelecting } = useActiveChild();
+  const { state, retry } = useAsyncData(account?.id ?? null, (parentId) =>
+    services.listChildren.execute(parentId),
   );
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
+  const [selectionError, setSelectionError] = useState<string | null>(null);
 
   if (!account) {
     return <Redirect href="/" />;
   }
 
-  const chooseChild = async (childId: string) => {
-    await selectChild(childId);
-    router.push('/home');
+  const chooseChild = async (child: Child) => {
+    setSelectionError(null);
+    setSelectedChildId(child.id);
+    try {
+      await selectChild(child.id);
+      router.push('/home');
+    } catch {
+      setSelectionError(`Impossible d’ouvrir la soirée de ${child.firstName}, réessayez.`);
+    } finally {
+      setSelectedChildId(null);
+    }
   };
+
+  const children = state.status === 'ready' ? state.data : [];
 
   return (
     <ScreenContainer>
@@ -57,20 +60,32 @@ export function HouseholdHomeScreen() {
 
       <Divider variant="sprout" spacing={24} />
 
+      <LoadStatus
+        status={state.status}
+        loadingLabel="Chargement des enfants"
+        errorMessage="Impossible d’afficher les enfants pour l’instant."
+        onRetry={retry}
+      />
+
       {children.map((child, index) => (
         <Fragment key={child.id}>
           {index > 0 && <Divider />}
-          <ChildRow child={child} onPress={() => chooseChild(child.id)} />
+          <ChildRow
+            child={child}
+            isDisabled={isSelecting}
+            isSelecting={selectedChildId === child.id}
+            onPress={() => chooseChild(child)}
+          />
         </Fragment>
       ))}
 
-      {errorMessage ? (
+      {selectionError ? (
         <Text accessibilityRole="alert" style={styles.error}>
-          {errorMessage}
+          {selectionError}
         </Text>
       ) : null}
 
-      {children.length === 0 && !errorMessage && (
+      {state.status === 'ready' && children.length === 0 && (
         <Text style={styles.emptyText}>
           Votre foyer est prêt ! Ajoutez le profil de votre premier enfant.
         </Text>
@@ -93,11 +108,15 @@ export function HouseholdHomeScreen() {
 
 interface ChildRowProps {
   child: Child;
+  /** A child is being opened: no second tap until it settles. */
+  isDisabled: boolean;
+  /** This child is the one being opened. */
+  isSelecting: boolean;
   onPress: () => void;
 }
 
 /** One child of the household, with the streak the journal computes. */
-function ChildRow({ child, onPress }: ChildRowProps) {
+function ChildRow({ child, isDisabled, isSelecting, onPress }: ChildRowProps) {
   const streak = streakLabel(useEveningStreak(child.id));
   const details = [ageRangeWithYears(child.ageRange), streak].filter(Boolean).join(' · ');
 
@@ -105,15 +124,21 @@ function ChildRow({ child, onPress }: ChildRowProps) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Commencer la soirée avec ${child.firstName}, ${ageRangeWithYears(child.ageRange)}`}
+      accessibilityState={{ disabled: isDisabled, busy: isSelecting }}
+      disabled={isDisabled}
       onPress={onPress}
-      style={({ pressed }) => [styles.childRow, pressed && styles.pressed]}
+      style={({ pressed }) => [styles.childRow, pressed && !isDisabled && styles.pressed]}
     >
       <Avatar initial={childInitial(child.firstName)} size={56} />
       <View style={styles.childTexts}>
         <Text style={styles.childName}>{child.firstName}</Text>
         <Text style={styles.childDetails}>{details}</Text>
       </View>
-      <ChevronRight size={20} color={colors.overline} strokeWidth={2} />
+      {isSelecting ? (
+        <ActivityIndicator color={colors.moss} />
+      ) : (
+        <ChevronRight size={20} color={colors.overline} strokeWidth={2} />
+      )}
     </Pressable>
   );
 }
