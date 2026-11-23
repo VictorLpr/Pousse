@@ -1,6 +1,6 @@
-import { Redirect, useRouter } from 'expo-router';
+import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { ChevronRight, Plus } from 'lucide-react-native';
-import { Fragment, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Child } from '@/modules/auth/domain/entities/child';
@@ -28,6 +28,8 @@ export function HouseholdHomeScreen() {
   );
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);
+
+  useFocusEffect(useCallback(() => setSelectionError(null), []));
 
   if (!account) {
     return <Redirect href="/" />;
@@ -124,7 +126,8 @@ function ChildRow({ child, isDisabled, isSelecting, onPress }: ChildRowProps) {
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={`Commencer la soirée avec ${child.firstName}, ${ageRangeWithYears(child.ageRange)}`}
-      accessibilityState={{ disabled: isDisabled, busy: isSelecting }}
+      accessibilityState={{ disabled: isDisabled }}
+      aria-busy={isSelecting}
       disabled={isDisabled}
       onPress={onPress}
       style={({ pressed }) => [styles.childRow, pressed && !isDisabled && styles.pressed]}
