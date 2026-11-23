@@ -56,16 +56,16 @@ export class FetchHttpClient implements HttpClient {
     if (body !== undefined) {
       headers['Content-Type'] = 'application/json';
     }
-    const cookie = await this.options.sessionCookie?.();
-    if (cookie) {
-      headers.Cookie = cookie;
-    }
-
     // `AbortSignal.timeout` is missing from some React Native runtimes.
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), this.timeoutMs);
     try {
-      const response = await fetch(`${this.baseUrl}${path}`, {
+      const cookie = await this.options.sessionCookie?.();
+      if (cookie) {
+        headers.Cookie = cookie;
+      }
+      const url = `${this.baseUrl}${path.startsWith('/') ? path : `/${path}`}`;
+      const response = await fetch(url, {
         method,
         headers,
         body: body === undefined ? undefined : JSON.stringify(body),

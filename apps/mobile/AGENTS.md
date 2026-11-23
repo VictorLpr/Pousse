@@ -209,7 +209,8 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
 - Every HTTP adapter goes through the one shared client in
   `src/shared/infrastructure/http/`: it depends on the `HttpClient`
   interface (`get`/`post`/`put`/`patch`/`delete`, JSON in and out), and
-  `container.ts` gives it a `FetchHttpClient` on native `fetch`. No adapter
+  `container.ts` builds the one `FetchHttpClient` (native `fetch`) the
+  adapters receive. No adapter
   calls `fetch` itself, and no HTTP library is added.
 - Base URL: `API_BASE_URL` (`api-base-url.ts`) reads `EXPO_PUBLIC_API_URL`,
   inlined by Expo at build time, and defaults to `/api` — on the PWA the
@@ -240,3 +241,6 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
   app against the local API (`docker compose up`), build the web export
   (`npx expo export -p web`) and serve it with `npx wrangler dev` from
   `apps/mobile`: the local Worker relays `/api/*` to `localhost:3000`.
+  BetterAuth only trusts the `Origin` of its `BETTER_AUTH_URL` and refuses
+  the other POSTs (403): set it in `.env` to the Worker's origin
+  (`http://localhost:8787`), the public origin the browser sees.
