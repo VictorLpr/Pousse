@@ -203,3 +203,40 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
 2. Launch the web preview (config in `.claude/launch.json` at the repo root, runs
    `expo start --web` inside the `apps/mobile` workspace) and exercise the changed flow
    end-to-end, checking the accessibility tree, not just pixels.
+
+## 7. Connecting to the API
+
+- Every HTTP adapter goes through the one shared client in
+  `src/shared/infrastructure/http/`: it depends on the `HttpClient`
+  interface (`get`/`post`/`put`/`patch`/`delete`, JSON in and out), and
+  `container.ts` gives it a `FetchHttpClient` on native `fetch`. No adapter
+  calls `fetch` itself, and no HTTP library is added.
+- Base URL: `API_BASE_URL` (`api-base-url.ts`) reads `EXPO_PUBLIC_API_URL`,
+  inlined by Expo at build time, and defaults to `/api` — on the PWA the
+  Worker relays `/api/*` to the API on the same origin (ADR-0011). A native
+  build has no origin: it must set an absolute URL, e.g.
+  `https://<worker>/api`.
+- Session cookie: every call goes out with `credentials: 'include'`. On the
+  web the browser sends its `HttpOnly` cookie on its own (ADR-0010); the
+  token never lands in JS storage. On native, `container.ts` passes the
+  `sessionCookie` option, which reads the cookie the BetterAuth client keeps
+  in `expo-secure-store`, and the client sends it as the `Cookie` header
+  (ADR-0003). The client never calls `Platform`: the choice is made at
+  composition.
+- Errors: a failed call rejects with `ApiError` (`api-error.ts`), carrying
+  the HTTP `status` and the API's English `code` from its `{ code, message }`
+  body, or a client-side code: `NETWORK_UNAVAILABLE` (no response),
+  `TIMEOUT` (15 s by default), `UNEXPECTED_RESPONSE` (a body that isn't the
+  API's JSON). The module's adapter catches the codes it knows and rethrows
+  them as its domain error (`AuthError`, `JournalError`, whose codes already
+  match the API's), so screens keep using their formatters; anything else
+  reaches the formatter's fallback copy. `ApiError.message` is English text
+  for logs, never shown.
+- Response bodies are typed by the caller (`get<ChildDto>(…)`), not
+  validated: the adapter maps the API's shape onto the domain entity, in
+  its own file next to the adapter.
+- Local development: `expo start --web` serves no `/api`, and the API sends
+  no CORS headers, so Metro can't call `http://localhost:3000`. To run the
+  app against the local API (`docker compose up`), build the web export
+  (`npx expo export -p web`) and serve it with `npx wrangler dev` from
+  `apps/mobile`: the local Worker relays `/api/*` to `localhost:3000`.
