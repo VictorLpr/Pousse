@@ -163,7 +163,8 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
 
 - Every `Pressable` gets `accessibilityRole="button"` + a French `accessibilityLabel`
   describing the action (« Ouvrir le journal de Léa »), plus `accessibilityHint` when the
-  outcome isn't obvious.
+  outcome isn't obvious. Exception: an inline text link that only opens a page uses
+  `TextLink` (`accessibilityRole="link"`).
 - Selections: container `accessibilityRole="radiogroup"`, items `radio` with
   `accessibilityState={{ selected }}`. Disabled buttons expose
   `accessibilityState={{ disabled }}`.
