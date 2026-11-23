@@ -45,6 +45,8 @@ import {
 import { SystemClock } from '@/shared/infrastructure/time/system-clock';
 
 export interface AppServices {
+  /** True while auth runs on the fake backend, whose demo accounts the login screen lists. */
+  readonly hasDemoAccounts: boolean;
   readonly restoreSession: RestoreSession;
   readonly signInParent: SignInParent;
   readonly registerParent: RegisterParent;
@@ -67,7 +69,8 @@ export interface AppServices {
 /**
  * The API's public URL (e.g. `https://…/api`), inlined at bundle time.
  * Required by a native build; the web app falls back to `/api` on its own
- * origin, forwarded to the API by the Worker (ADR-0011).
+ * origin, forwarded to the API by the Worker (ADR-0011). The API answers no
+ * CORS: on the web, only a URL on the page's own origin works.
  */
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -76,11 +79,13 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
  * `expo start` without an API URL: the dev preview has no Worker to forward
  * `/api`, so it keeps the fake backend and its demo accounts.
  */
+const USES_FAKE_AUTH = __DEV__ && !API_URL;
+
 function createAuthGateway(
   accounts: InMemoryParentAccountRepository,
   idGenerator: SequentialIdGenerator,
 ): AuthGateway {
-  if (__DEV__ && !API_URL) {
+  if (USES_FAKE_AUTH) {
     return new InMemoryAuthGateway(accounts, idGenerator);
   }
   // `sessionCookie()` of the same setup is what business requests add to
@@ -123,6 +128,7 @@ export function createAppServices(): AppServices {
   const trophyRepository = new InMemoryTrophyRepository(seedTrophies, idGenerator);
 
   return {
+    hasDemoAccounts: USES_FAKE_AUTH,
     restoreSession: new RestoreSession(authGateway),
     signInParent: new SignInParent(authGateway),
     registerParent: new RegisterParent(authGateway),
