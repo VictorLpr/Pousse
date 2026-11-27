@@ -1,4 +1,8 @@
-import type { ChildChallenge, WeekChallenges } from '../entities/child-challenge';
+import type {
+  ChildChallenge,
+  CompletedChallenge,
+  WeekChallenges,
+} from '../entities/child-challenge';
 
 export interface ChildChallengeRepository {
   /**
@@ -18,9 +22,10 @@ export interface ChildChallengeRepository {
    */
   choose(childChallengeId: string): Promise<ChildChallenge>;
   /**
-   * Marks the chosen challenge as done together (`POST /challenges/:id/complete`).
-   * Throws `ChallengeError`: `INVALID_CHALLENGE_TRANSITION` if it isn't
-   * chosen, `CHILD_CHALLENGE_NOT_FOUND`.
+   * Marks the chosen challenge as done together (`POST /challenges/:id/complete`);
+   * the backend then awards the challenge badges it earns. Throws
+   * `ChallengeError`: `INVALID_CHALLENGE_TRANSITION` if it isn't chosen,
+   * `CHILD_CHALLENGE_NOT_FOUND`.
    */
-  complete(childChallengeId: string): Promise<ChildChallenge>;
+  complete(childChallengeId: string): Promise<CompletedChallenge>;
 }

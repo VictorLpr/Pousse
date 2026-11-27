@@ -5,8 +5,9 @@
  */
 export { ChooseChallenge } from '@/modules/challenges/application/use-cases/choose-challenge';
 export { CompleteChallenge } from '@/modules/challenges/application/use-cases/complete-challenge';
-export { GetTrophies } from '@/modules/challenges/application/use-cases/get-trophies';
+export { GetBadges } from '@/modules/challenges/application/use-cases/get-badges';
 export { GetWeekChallenges } from '@/modules/challenges/application/use-cases/get-week-challenges';
+export type { AwardedBadge, Badge } from '@/modules/challenges/domain/entities/badge';
 export type {
   Challenge,
   ChallengeAgeRange,
@@ -15,6 +16,6 @@ export type {
 export type {
   ChildChallenge,
   ChildChallengeStatus,
+  CompletedChallenge,
   WeekChallenges,
 } from '@/modules/challenges/domain/entities/child-challenge';
-export type { Trophy, TrophyStatus } from '@/modules/challenges/domain/entities/trophy';

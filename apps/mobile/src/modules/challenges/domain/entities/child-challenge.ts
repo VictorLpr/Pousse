@@ -1,3 +1,4 @@
+import type { AwardedBadge } from './badge';
 import type { Challenge } from './challenge';
 
 /**
@@ -15,6 +16,12 @@ export interface ChildChallenge {
   readonly chosenAt: Date | null;
   readonly completedAt: Date | null;
   readonly challenge: Challenge;
+}
+
+/** A challenge just done together, with the badges it earned (`POST /challenges/:id/complete`). */
+export interface CompletedChallenge extends ChildChallenge {
+  /** Only the badges this completion earned, in catalog order; empty when none. */
+  readonly awardedBadges: readonly AwardedBadge[];
 }
 
 /** The week's three proposals, as `GET /challenges/week` returns them. */

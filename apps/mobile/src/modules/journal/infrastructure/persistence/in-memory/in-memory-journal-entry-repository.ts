@@ -1,6 +1,8 @@
 import type { Emotion } from '@/modules/journal/domain/entities/emotion';
 import {
   JOURNAL_TEXT_MAX_LENGTH,
+  type AwardedBadge,
+  type CreatedJournalEntry,
   type JournalEntry,
   type NewJournalEntry,
 } from '@/modules/journal/domain/entities/journal-entry';
@@ -22,8 +24,9 @@ const PHOTO_FILE_NAME_MAX_LENGTH = 255;
 
 /**
  * Fake journal API (`/journal/entries`, `/journal/streak`): same rules,
- * codes and English messages. The family's local day always comes from the
- * client; the clock only bounds it and stamps `createdAt`.
+ * codes and English messages, and a new entry awards the evening badges its
+ * streak earns. The family's local day always comes from the client; the
+ * clock only bounds it and stamps `createdAt`.
  */
 export class InMemoryJournalEntryRepository implements JournalEntryRepository {
   private readonly entriesById = new Map<string, JournalEntry>();
@@ -33,6 +36,11 @@ export class InMemoryJournalEntryRepository implements JournalEntryRepository {
     private readonly emotions: readonly Emotion[],
     /** Whether the child exists: the API asks the auth module (ADR-0006). */
     private readonly childExists: (childId: string) => Promise<boolean>,
+    /**
+     * Awards the evening badges this streak earns and returns only the new
+     * ones: on the API, the challenges module's badge service does it.
+     */
+    private readonly awardEveningBadges: (childId: string, streak: number) => AwardedBadge[],
     private readonly idGenerator: IdGenerator,
     private readonly clock: Clock,
   ) {
@@ -44,7 +52,7 @@ export class InMemoryJournalEntryRepository implements JournalEntryRepository {
     return this.entriesOf(childId).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 
-  async create(newEntry: NewJournalEntry): Promise<JournalEntry> {
+  async create(newEntry: NewJournalEntry): Promise<CreatedJournalEntry> {
     const text = newEntry.text.trim();
     this.assertValidInput({ ...newEntry, text });
     await this.assertChildExists(newEntry.childId);
@@ -66,7 +74,8 @@ export class InMemoryJournalEntryRepository implements JournalEntryRepository {
       createdAt: this.clock.now(),
     };
     this.entriesById.set(entry.id, entry);
-    return entry;
+    const streak = this.streakEndingOn(entry.childId, entry.date);
+    return { ...entry, awardedBadges: this.awardEveningBadges(entry.childId, streak) };
   }
 
   async countEveningStreak(childId: string, today: string): Promise<number> {
@@ -76,12 +85,14 @@ export class InMemoryJournalEntryRepository implements JournalEntryRepository {
     await this.assertChildExists(childId);
     this.assertNearToday(today);
 
-    const daysWithEntry = new Set(
-      this.entriesOf(childId)
-        .map((entry) => entry.date)
-        .filter((date) => date <= today),
-    );
-    let cursor = daysWithEntry.has(today) ? today : previousDay(today);
+    const hasEntryToday = this.entriesOf(childId).some((entry) => entry.date === today);
+    return this.streakEndingOn(childId, hasEntryToday ? today : previousDay(today));
+  }
+
+  /** Consecutive days with an entry, counted back from `day`; 0 if `day` has none. */
+  private streakEndingOn(childId: string, day: string): number {
+    const daysWithEntry = new Set(this.entriesOf(childId).map((entry) => entry.date));
+    let cursor = day;
     let streak = 0;
     while (daysWithEntry.has(cursor)) {
       streak += 1;

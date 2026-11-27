@@ -4,16 +4,19 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '@/shared/ui/components/app-button';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
+import { AwardedBadgesNotice } from '@/modules/challenges/ui/components/awarded-badges-notice';
 import { StreakBadge } from '@/modules/journal/ui/components/streak-badge';
 import { streakLabel } from '@/modules/journal/ui/format/streak';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useEveningStreak } from '@/modules/journal/ui/hooks/use-evening-streak';
+import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
 export function RitualDoneScreen() {
   const router = useRouter();
   const { activeChild, isLoading } = useActiveChild();
   const streak = streakLabel(useEveningStreak(activeChild?.id));
+  const { awardedBadges } = useRitualDraft();
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -39,6 +42,7 @@ export function RitualDoneScreen() {
           <Text style={styles.subtitle}>Votre moment est gardé dans le journal.</Text>
         </View>
         {streak && <StreakBadge label={streak} />}
+        <AwardedBadgesNotice badges={awardedBadges} />
         <Text style={styles.farewell}>On se retrouve demain soir.</Text>
       </View>
       <AppButton

@@ -1,12 +1,15 @@
 import type {
+  CreatedJournalEntry,
   JournalEntry,
   NewJournalEntry,
 } from '@/modules/journal/domain/entities/journal-entry';
 import type { JournalEntryRepository } from '@/modules/journal/domain/ports/journal-entry-repository';
 import { journalErrorOf } from '@/modules/journal/infrastructure/http/journal-api-error';
 import {
+  createdJournalEntryFromDto,
   createJournalEntryBodyOf,
   journalEntryFromDto,
+  type CreatedJournalEntryDto,
   type JournalEntryDto,
 } from '@/modules/journal/infrastructure/http/journal-entry-dto';
 import type { HttpClient } from '@/shared/infrastructure/http/http-client';
@@ -29,13 +32,13 @@ export class HttpJournalEntryRepository implements JournalEntryRepository {
     }
   }
 
-  async create(entry: NewJournalEntry): Promise<JournalEntry> {
+  async create(entry: NewJournalEntry): Promise<CreatedJournalEntry> {
     try {
-      const created = await this.http.post<JournalEntryDto>(
+      const created = await this.http.post<CreatedJournalEntryDto>(
         '/journal/entries',
         createJournalEntryBodyOf(entry),
       );
-      return journalEntryFromDto(created);
+      return createdJournalEntryFromDto(created);
     } catch (error) {
       throw journalErrorOf(error);
     }

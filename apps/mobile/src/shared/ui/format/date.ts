@@ -9,6 +9,11 @@ const SHORT_DATE_FORMAT = new Intl.DateTimeFormat('fr-FR', {
   month: 'short',
 });
 
+const DAY_MONTH_FORMAT = new Intl.DateTimeFormat('fr-FR', {
+  day: 'numeric',
+  month: 'long',
+});
+
 const MONTH_FORMAT = new Intl.DateTimeFormat('fr-FR', { month: 'long' });
 
 function capitalize(text: string): string {
@@ -23,6 +28,11 @@ export function formatFullDate(date: Date): string {
 /** E.g. "8 juil.". */
 export function formatShortDate(date: Date): string {
   return SHORT_DATE_FORMAT.format(date);
+}
+
+/** E.g. "8 juillet". */
+export function formatDayMonth(date: Date): string {
+  return DAY_MONTH_FORMAT.format(date);
 }
 
 /** E.g. "Juillet". */

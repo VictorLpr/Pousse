@@ -2,8 +2,10 @@ import { Check } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
+import type { AwardedBadge } from '@/modules/challenges/domain/entities/badge';
 import type { ChildChallenge } from '@/modules/challenges/domain/entities/child-challenge';
 import { ChallengeCelebration } from '@/modules/challenges/ui/components/challenge-celebration';
+import { awardedBadgesMessage } from '@/modules/challenges/ui/format/badge';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { colors, fonts } from '@/shared/ui/theme';
 
@@ -14,6 +16,8 @@ interface ChosenChallengeCardProps {
   /** True while the completion is being sent: the button can't be pressed twice. */
   isSubmitting: boolean;
   errorMessage: string | null;
+  /** The badges the completion pressed here earned, announced with the congratulations. */
+  awardedBadges: readonly AwardedBadge[];
   onComplete(): void;
 }
 
@@ -22,8 +26,13 @@ export function ChosenChallengeCard({
   childChallenge,
   isSubmitting,
   errorMessage,
+  awardedBadges,
   onComplete,
 }: ChosenChallengeCardProps) {
+  const badgesMessage = awardedBadgesMessage(awardedBadges);
+  const celebrationMessage = badgesMessage
+    ? `${CELEBRATION_MESSAGE} ${badgesMessage}`
+    : CELEBRATION_MESSAGE;
   const isCompleted = childChallenge.status === 'completed';
   const isDisabled = isCompleted || isSubmitting;
 
@@ -45,7 +54,7 @@ export function ChosenChallengeCard({
       <OverlineLabel>Le défi de la semaine</OverlineLabel>
       <Text style={styles.challengeTitle}>{childChallenge.challenge.title}</Text>
       <Text style={styles.challengeDescription}>{childChallenge.challenge.description}</Text>
-      <ChallengeCelebration isCelebrating={isCelebrating} message={CELEBRATION_MESSAGE}>
+      <ChallengeCelebration isCelebrating={isCelebrating} message={celebrationMessage}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={

@@ -8,7 +8,7 @@ import {
 } from 'react';
 
 import type { EmotionCode } from '@/modules/journal/domain/entities/emotion';
-import { localDayOf } from '@/modules/journal/domain/entities/journal-entry';
+import { localDayOf, type AwardedBadge } from '@/modules/journal/domain/entities/journal-entry';
 import type { LocalPhoto } from '@/modules/journal/domain/entities/photo';
 
 /** Evening ritual draft, built step by step and kept only at the recap. */
@@ -22,18 +22,27 @@ interface RitualDraft {
   readonly text: string;
   /** The photo on this device; only its file name and type reach the journal. */
   readonly photo: LocalPhoto | null;
+  /** The badges the kept entry earned, for the closing screen to announce. */
+  readonly awardedBadges: readonly AwardedBadge[];
 }
 
 interface RitualDraftContextValue extends RitualDraft {
   setEmotion(emotionCode: EmotionCode): void;
   setText(text: string): void;
   setPhoto(photo: LocalPhoto | null): void;
+  setAwardedBadges(awardedBadges: readonly AwardedBadge[]): void;
   /** Starts a new ritual, dated today. */
   resetDraft(): void;
 }
 
 function newDraft(): RitualDraft {
-  return { date: localDayOf(new Date()), emotionCode: null, text: '', photo: null };
+  return {
+    date: localDayOf(new Date()),
+    emotionCode: null,
+    text: '',
+    photo: null,
+    awardedBadges: [],
+  };
 }
 
 const RitualDraftContext = createContext<RitualDraftContextValue | null>(null);
@@ -53,13 +62,17 @@ export function RitualDraftProvider({ children }: PropsWithChildren) {
     setDraft((current) => ({ ...current, photo }));
   }, []);
 
+  const setAwardedBadges = useCallback((awardedBadges: readonly AwardedBadge[]) => {
+    setDraft((current) => ({ ...current, awardedBadges }));
+  }, []);
+
   const resetDraft = useCallback(() => {
     setDraft(newDraft());
   }, []);
 
   const value = useMemo(
-    () => ({ ...draft, setEmotion, setText, setPhoto, resetDraft }),
-    [draft, setEmotion, setText, setPhoto, resetDraft],
+    () => ({ ...draft, setEmotion, setText, setPhoto, setAwardedBadges, resetDraft }),
+    [draft, setEmotion, setText, setPhoto, setAwardedBadges, resetDraft],
   );
 
   return <RitualDraftContext.Provider value={value}>{children}</RitualDraftContext.Provider>;
