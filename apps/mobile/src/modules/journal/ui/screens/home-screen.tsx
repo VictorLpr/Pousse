@@ -12,6 +12,10 @@ import { Divider } from '@/shared/ui/components/divider';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { StreakBadge } from '@/modules/journal/ui/components/streak-badge';
 import { childInitial } from '@/modules/auth/ui/format/child';
+import {
+  ritualDurationLabel,
+  ritualDurationSpokenLabel,
+} from '@/modules/journal/ui/format/ritual-duration';
 import { streakLabel } from '@/modules/journal/ui/format/streak';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useEveningStreak } from '@/modules/journal/ui/hooks/use-evening-streak';
@@ -76,13 +80,14 @@ export function HomeScreen() {
       ) : (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Commencer notre moment du soir"
-          accessibilityHint={`${RITUAL_STEP_COUNT} étapes, environ 5 minutes`}
+          accessibilityLabel={`Commencer notre moment du soir, ${RITUAL_STEP_COUNT} étapes, ${ritualDurationSpokenLabel()}`}
           onPress={startRitual}
           style={({ pressed }) => [styles.ritualCta, pressed && styles.pressed]}
         >
           <Text style={styles.ritualTitle}>Notre moment du soir</Text>
-          <Text style={styles.ritualSubtitle}>{RITUAL_STEP_COUNT} étapes · environ 5 min</Text>
+          <Text style={styles.ritualSubtitle}>
+            {RITUAL_STEP_COUNT} étapes · {ritualDurationLabel()}
+          </Text>
         </Pressable>
       )}
 
