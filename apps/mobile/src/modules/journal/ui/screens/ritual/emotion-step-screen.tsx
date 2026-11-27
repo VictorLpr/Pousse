@@ -17,7 +17,11 @@ export function EmotionStepScreen() {
   const emotions = catalog.status === 'ready' ? catalog.emotions : [];
 
   return (
-    <RitualStepLayout step={1} title="Comment tu te sens ?" subtitle="Choisis ton émotion du soir">
+    <RitualStepLayout
+      step={1}
+      title="Comment tu te sens ?"
+      subtitle="Choisis ton émotion, on en parle ensemble"
+    >
       {catalog.status === 'failed' ? (
         <Text accessibilityRole="alert" style={styles.error}>
           Impossible d'afficher les émotions pour l'instant.
