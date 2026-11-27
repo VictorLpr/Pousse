@@ -28,6 +28,14 @@ export class InMemoryAuthGateway implements AuthGateway {
     private readonly idGenerator: IdGenerator,
   ) {}
 
+  /** The session lives in memory: a new launch never finds one. */
+  async getSession(): Promise<ParentProfile | null> {
+    const account = this.sessionAccountId
+      ? await this.accounts.findById(this.sessionAccountId)
+      : null;
+    return account ? toParentProfile(account) : null;
+  }
+
   async signUp({ email, password }: EmailCredentials): Promise<ParentProfile> {
     const normalizedEmail = validEmail(email);
     if (password.length < MIN_PASSWORD_LENGTH) {
