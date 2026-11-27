@@ -6,7 +6,8 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 
 Pousse is a parent/child evening-ritual app (React Native + Expo SDK 57, expo-router,
 TypeScript strict). The app is moving onto the API module by module: auth (sign-up,
-sign-in, session) goes to BetterAuth, children and their consent to `/children`; the other
+sign-in, session) goes to BetterAuth, children and their consent to `/children`, the
+journal, its streak and the emotion catalog to `/journal`; the other
 data still lives in in-memory repositories that act as a fake backend, until HTTP adapters
 replace them. These rules are mandatory for
 any change.

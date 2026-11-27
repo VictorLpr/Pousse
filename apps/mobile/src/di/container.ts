@@ -27,6 +27,10 @@ import { FetchHttpClient } from '@/shared/infrastructure/http/fetch-http-client'
 import type { HttpClient } from '@/shared/infrastructure/http/http-client';
 import { SequentialIdGenerator } from '@/shared/infrastructure/ids/sequential-id-generator';
 import type { AuthGateway } from '@/modules/auth/domain/ports/auth-gateway';
+import type { EmotionCatalog } from '@/modules/journal/domain/ports/emotion-catalog';
+import type { JournalEntryRepository } from '@/modules/journal/domain/ports/journal-entry-repository';
+import { HttpEmotionCatalog } from '@/modules/journal/infrastructure/http/http-emotion-catalog';
+import { HttpJournalEntryRepository } from '@/modules/journal/infrastructure/http/http-journal-entry-repository';
 import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-auth-gateway';
 import { InMemoryChildRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
 import { InMemoryConsentRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-consent-repository';
@@ -133,10 +137,11 @@ function createChildAdapters(
 }
 
 /**
- * Composition root: wires use cases to their adapters. Auth, children and
- * consent go to the API (`connectToApi`) unless the fake backend is on; the
- * other in-memory adapters still act as a fake backend: like the API, they
- * generate ids and timestamps. Switching to the API only changes the adapters.
+ * Composition root: wires use cases to their adapters. Auth, children,
+ * consent, the journal and the emotion catalog go to the API (`connectToApi`)
+ * unless the fake backend is on; the other in-memory adapters still act as a
+ * fake backend: like the API, they generate ids and timestamps. Switching to
+ * the API only changes the adapters.
  */
 export function createAppServices(): AppServices {
   const idGenerator = new SequentialIdGenerator('pousse');
@@ -148,14 +153,18 @@ export function createAppServices(): AppServices {
     : new InMemoryAuthGateway(new InMemoryParentAccountRepository(seedParentAccounts), idGenerator);
   // No use case reads the consent yet: the child profile screens will.
   const { children: childRepository } = createChildAdapters(api, idGenerator, clock);
-  const journalRepository = new InMemoryJournalEntryRepository(
-    seedJournalEntries,
-    seedEmotions,
-    async (childId) => (await childRepository.findById(childId)) !== null,
-    idGenerator,
-    clock,
-  );
-  const emotionCatalog = new InMemoryEmotionCatalog(seedEmotions);
+  const journalRepository: JournalEntryRepository = api
+    ? new HttpJournalEntryRepository(api.http)
+    : new InMemoryJournalEntryRepository(
+        seedJournalEntries,
+        seedEmotions,
+        async (childId) => (await childRepository.findById(childId)) !== null,
+        idGenerator,
+        clock,
+      );
+  const emotionCatalog: EmotionCatalog = api
+    ? new HttpEmotionCatalog(api.http)
+    : new InMemoryEmotionCatalog(seedEmotions);
   const challengeRepository = new InMemoryWeeklyChallengeRepository(
     seedWeeklyChallenges,
     challengeTitlePool,
