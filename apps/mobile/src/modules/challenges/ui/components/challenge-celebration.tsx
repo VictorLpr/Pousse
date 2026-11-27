@@ -76,7 +76,7 @@ export function ChallengeCelebration({
   const popStyle = useAnimatedStyle(() => ({ transform: [{ scale: pop.get() }] }));
 
   return (
-    <View style={styles.container}>
+    <View>
       <View>
         {/* The button stays mounted through the celebration: it keeps the screen reader's focus. */}
         <Animated.View style={popStyle}>{children}</Animated.View>
@@ -147,9 +147,6 @@ function BurstParticle({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    gap: 10,
-  },
   burst: {
     ...StyleSheet.absoluteFill,
     alignItems: 'center',
@@ -160,6 +157,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
   message: {
+    marginTop: 10,
     fontFamily: fonts.bodySemiBold,
     fontSize: 15,
     lineHeight: 21,

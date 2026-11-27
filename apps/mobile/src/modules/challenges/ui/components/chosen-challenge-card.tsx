@@ -2,10 +2,7 @@ import { Check } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type {
-  ChildChallenge,
-  ChildChallengeStatus,
-} from '@/modules/challenges/domain/entities/child-challenge';
+import type { ChildChallenge } from '@/modules/challenges/domain/entities/child-challenge';
 import { ChallengeCelebration } from '@/modules/challenges/ui/components/challenge-celebration';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -20,11 +17,6 @@ interface ChosenChallengeCardProps {
   onComplete(): void;
 }
 
-interface ShownChallenge {
-  readonly id: string;
-  readonly status: ChildChallengeStatus;
-}
-
 /** The week's chosen challenge and the button that marks it done together. */
 export function ChosenChallengeCard({
   childChallenge,
@@ -35,13 +27,18 @@ export function ChosenChallengeCard({
   const isCompleted = childChallenge.status === 'completed';
   const isDisabled = isCompleted || isSubmitting;
 
-  // Celebrate only a completion seen on this screen, not a challenge that loads already done.
-  const [shown, setShown] = useState<ShownChallenge>(childChallenge);
+  // Celebrate only the completion pressed here: not a challenge that loads already
+  // done, nor one completed on another device and picked up by a reload.
+  const [isAwaitingCompletion, setIsAwaitingCompletion] = useState(false);
   const [isCelebrating, setIsCelebrating] = useState(false);
-  if (shown.id !== childChallenge.id || shown.status !== childChallenge.status) {
-    setIsCelebrating(shown.id === childChallenge.id && shown.status === 'chosen' && isCompleted);
-    setShown({ id: childChallenge.id, status: childChallenge.status });
+  if (isAwaitingCompletion && !isSubmitting) {
+    setIsAwaitingCompletion(false);
+    setIsCelebrating(isCompleted);
   }
+  const complete = () => {
+    setIsAwaitingCompletion(true);
+    onComplete();
+  };
 
   return (
     <View style={styles.challengeBlock}>
@@ -56,7 +53,7 @@ export function ChosenChallengeCard({
           }
           accessibilityState={{ disabled: isDisabled, busy: isSubmitting }}
           disabled={isDisabled}
-          onPress={onComplete}
+          onPress={complete}
           style={({ pressed }) => [
             styles.challengeButton,
             isCompleted && styles.challengeButtonDone,
