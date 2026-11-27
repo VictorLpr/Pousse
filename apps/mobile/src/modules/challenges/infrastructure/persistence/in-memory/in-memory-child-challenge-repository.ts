@@ -1,14 +1,20 @@
-import type { Challenge, ChildAgeRange } from '@/modules/challenges/domain/entities/challenge';
+import type {
+  Challenge,
+  ChallengeCategory,
+  ChildAgeRange,
+} from '@/modules/challenges/domain/entities/challenge';
 import {
   isTaken,
   withChallengeChosen,
   withChallengeCompleted,
   withChallengeExpired,
   type ChildChallenge,
+  type CompletedChallenge,
   type WeekChallenges,
 } from '@/modules/challenges/domain/entities/child-challenge';
 import { ChallengeError } from '@/modules/challenges/domain/errors/challenge-error';
 import type { ChildChallengeRepository } from '@/modules/challenges/domain/ports/child-challenge-repository';
+import type { InMemoryBadgeRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-badge-repository';
 import type { IdGenerator } from '@/shared/infrastructure/ids/id-generator';
 import {
   daysBetween,
@@ -36,9 +42,10 @@ export interface StoredChildChallenge {
 
 /**
  * Fake challenges API (`/challenges/week`, `/challenges/:id/choose`,
- * `/challenges/:id/complete`): same rules, codes and English messages. The
- * family's local day always comes from the client; the clock only bounds it
- * and stamps `chosenAt` and `completedAt`.
+ * `/challenges/:id/complete`): same rules, codes and English messages, and a
+ * completion awards the challenge badges it earns. The family's local day
+ * always comes from the client; the clock only bounds it and stamps
+ * `chosenAt` and `completedAt`.
  */
 export class InMemoryChildChallengeRepository implements ChildChallengeRepository {
   private readonly rowsById = new Map<string, StoredChildChallenge>();
@@ -48,6 +55,7 @@ export class InMemoryChildChallengeRepository implements ChildChallengeRepositor
     seed: readonly StoredChildChallenge[],
     /** The child's age range, null for an unknown child: the API asks the auth module (ADR-0006). */
     private readonly childAgeRange: (childId: string) => Promise<ChildAgeRange | null>,
+    private readonly badges: InMemoryBadgeRepository,
     private readonly idGenerator: IdGenerator,
     private readonly clock: Clock,
   ) {
@@ -88,7 +96,7 @@ export class InMemoryChildChallengeRepository implements ChildChallengeRepositor
     return this.store(childId, withChallengeChosen(childChallenge, this.clock.now()));
   }
 
-  async complete(childChallengeId: string): Promise<ChildChallenge> {
+  async complete(childChallengeId: string): Promise<CompletedChallenge> {
     const { childId, childChallenge } = this.rowOf(childChallengeId);
     if (childChallenge.status !== 'chosen') {
       throw new ChallengeError(
@@ -96,7 +104,11 @@ export class InMemoryChildChallengeRepository implements ChildChallengeRepositor
         `Cannot complete a ${childChallenge.status} challenge: ${childChallengeId}`,
       );
     }
-    return this.store(childId, withChallengeCompleted(childChallenge, this.clock.now()));
+    const completed = this.store(childId, withChallengeCompleted(childChallenge, this.clock.now()));
+    const awardedBadges = this.badges.awardForChallenges(childId, {
+      completedCategories: this.completedCategoriesOf(childId),
+    });
+    return { ...completed, awardedBadges };
   }
 
   private rowOf(childChallengeId: string): StoredChildChallenge {
@@ -108,6 +120,14 @@ export class InMemoryChildChallengeRepository implements ChildChallengeRepositor
       );
     }
     return row;
+  }
+
+  private completedCategoriesOf(childId: string): Set<ChallengeCategory> {
+    return new Set(
+      [...this.rowsById.values()]
+        .filter((row) => row.childId === childId && row.childChallenge.status === 'completed')
+        .map((row) => row.childChallenge.challenge.category),
+    );
   }
 
   private store(childId: string, childChallenge: ChildChallenge): ChildChallenge {

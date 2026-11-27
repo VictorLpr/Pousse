@@ -3,6 +3,7 @@ import { useState } from 'react';
 
 import { useServices } from '@/di/services-provider';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import { withBadgesAwarded, type AwardedBadge } from '@/modules/challenges/domain/entities/badge';
 import {
   takenChallengeOf,
   type ChildChallenge,
@@ -27,6 +28,17 @@ interface Submission {
   readonly errorMessage: string | null;
 }
 
+interface Awards {
+  readonly childId: string;
+  readonly badges: readonly AwardedBadge[];
+}
+
+/** What a choice or a completion sent back. */
+interface Sent {
+  readonly childChallenge: ChildChallenge;
+  readonly awardedBadges: readonly AwardedBadge[];
+}
+
 /** The week changed elsewhere since it loaded: what is on screen can't be acted on. */
 function isStaleWeekError(error: unknown): boolean {
   return (
@@ -46,14 +58,16 @@ export function ChallengesScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
   const { state, retry, update } = useAsyncData(activeChild?.id ?? null, async (childId) => {
-    const [week, trophies] = await Promise.all([
+    const [week, badges] = await Promise.all([
       services.getWeekChallenges.execute(childId, localDayOf(new Date())),
-      services.getTrophies.execute(childId),
+      services.getBadges.execute(childId),
     ]);
-    return { week, trophies };
+    return { week, badges };
   });
   // Keyed by child: switching child never shows another child's pending send or error.
   const [submission, setSubmission] = useState<Submission | null>(null);
+  // The badges the last send earned, announced with the challenge's celebration.
+  const [lastAwards, setLastAwards] = useState<Awards | null>(null);
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -76,7 +90,7 @@ export function ChallengesScreen() {
     );
   }
 
-  const { week, trophies } = state.data;
+  const { week, badges } = state.data;
   const takenChallenge = takenChallengeOf(week);
 
   const childId = activeChild.id;
@@ -84,11 +98,17 @@ export function ChallengesScreen() {
   const isSubmitting = current?.isSubmitting ?? false;
   const errorMessage = current?.errorMessage ?? null;
 
-  const submit = async (send: () => Promise<ChildChallenge>, fallback: string) => {
+  const awardedBadges = lastAwards?.childId === childId ? lastAwards.badges : [];
+
+  const submit = async (send: () => Promise<Sent>, fallback: string) => {
     setSubmission({ childId, isSubmitting: true, errorMessage: null });
     try {
-      const updated = await send();
-      update((data) => ({ ...data, week: withUpdatedChallenge(data.week, updated) }));
+      const { childChallenge, awardedBadges: awarded } = await send();
+      update((data) => ({
+        week: withUpdatedChallenge(data.week, childChallenge),
+        badges: withBadgesAwarded(data.badges, awarded),
+      }));
+      setLastAwards({ childId, badges: awarded });
       setSubmission(null);
     } catch (error) {
       setSubmission({
@@ -112,11 +132,13 @@ export function ChallengesScreen() {
           childChallenge={takenChallenge}
           isSubmitting={isSubmitting}
           errorMessage={errorMessage}
+          awardedBadges={awardedBadges}
           onComplete={() =>
-            submit(
-              () => services.completeChallenge.execute(takenChallenge.id),
-              'Impossible de valider le défi, réessayez.',
-            )
+            submit(async () => {
+              const { awardedBadges: awarded, ...childChallenge } =
+                await services.completeChallenge.execute(takenChallenge.id);
+              return { childChallenge, awardedBadges: awarded };
+            }, 'Impossible de valider le défi, réessayez.')
           }
         />
       ) : (
@@ -126,7 +148,10 @@ export function ChallengesScreen() {
           errorMessage={errorMessage}
           onChoose={(childChallengeId) =>
             submit(
-              () => services.chooseChallenge.execute(childChallengeId),
+              async () => ({
+                childChallenge: await services.chooseChallenge.execute(childChallengeId),
+                awardedBadges: [],
+              }),
               'Impossible de choisir ce défi, réessayez.',
             )
           }
@@ -135,7 +160,7 @@ export function ChallengesScreen() {
 
       <Divider variant="sprout" spacing={28} />
 
-      <BadgeShelf trophies={trophies} />
+      <BadgeShelf badges={badges} />
     </AppShell>
   );
 }

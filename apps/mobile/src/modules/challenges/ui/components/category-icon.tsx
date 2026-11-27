@@ -5,13 +5,14 @@ import { View } from 'react-native';
 import type { ChallengeCategory } from '@/modules/challenges/domain/entities/challenge';
 import { colors } from '@/shared/ui/theme';
 
-interface LucideIconProps {
+export interface LucideIconProps {
   size?: number | string;
   color?: string;
   strokeWidth?: number;
 }
 
-const CATEGORY_ICONS: Record<ChallengeCategory, ComponentType<LucideIconProps>> = {
+/** Also the icons of the category badges (`helping_challenge`…). */
+export const CATEGORY_ICONS: Record<ChallengeCategory, ComponentType<LucideIconProps>> = {
   helping: HandHelping,
   creativity: Palette,
   learning: Lightbulb,

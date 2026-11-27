@@ -1,158 +1,118 @@
-import {
-  Award,
-  Heart,
-  Lock,
-  PenTool,
-  Star,
-  Trophy as TrophyIcon,
-  Users,
-} from 'lucide-react-native';
-import type { ComponentType } from 'react';
+import { Award, Lock } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { Trophy } from '@/modules/challenges/domain/entities/trophy';
+import { isAwarded, type Badge } from '@/modules/challenges/domain/entities/badge';
+import { BadgeIcon } from '@/modules/challenges/ui/components/badge-icon';
+import { awardedCountLabel, badgeAccessibilityLabel } from '@/modules/challenges/ui/format/badge';
 import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { colors, fonts } from '@/shared/ui/theme';
 
-interface TrophyIconProps {
-  size?: number | string;
-  color?: string;
-  strokeWidth?: number;
-}
-
-const TROPHY_ICONS: Record<string, ComponentType<TrophyIconProps>> = {
-  teamwork: Users,
-  creative: PenTool,
-  kindness: Heart,
-  courage: Star,
-};
-
-/** Locked slots drawn after the earned trophies; they are never stored. */
-const LOCKED_TROPHY_SLOTS = 2;
-
-interface TrophySlot {
-  readonly key: string;
-  readonly name: string;
-  readonly isEarned: boolean;
-  readonly Icon: ComponentType<TrophyIconProps>;
-}
-
 interface BadgeShelfProps {
-  trophies: readonly Trophy[];
+  /** The whole catalog, in catalog order: the ones not yet earned are drawn locked. */
+  badges: readonly Badge[];
 }
 
-/** The child's earned trophies, then the locked slots still to win. */
-export function BadgeShelf({ trophies }: BadgeShelfProps) {
-  const earnedTrophies = trophies.filter((trophy) => trophy.status === 'earned');
-  const earnedCount = earnedTrophies.length;
-  const trophySlots: TrophySlot[] = [
-    ...earnedTrophies.map((trophy) => ({
-      key: trophy.id,
-      name: trophy.name,
-      isEarned: true,
-      Icon: TROPHY_ICONS[trophy.id] ?? Award,
-    })),
-    ...Array.from({ length: LOCKED_TROPHY_SLOTS }, (_, index) => ({
-      key: `locked-slot-${index + 1}`,
-      name: 'À venir',
-      isEarned: false,
-      Icon: Lock,
-    })),
-  ];
+/** Every badge of the catalog: the child's earned ones, and the locked ones still to earn. */
+export function BadgeShelf({ badges }: BadgeShelfProps) {
+  const earnedCount = badges.filter(isAwarded).length;
 
   return (
     <View>
-      <View style={styles.trophiesHeader}>
-        <View style={styles.trophiesTitle}>
-          <TrophyIcon size={18} color={colors.ink} strokeWidth={1.9} />
-          <Text style={styles.trophiesTitleText}>Mes trophées</Text>
+      <View style={styles.header}>
+        <View style={styles.title}>
+          <Award size={18} color={colors.ink} strokeWidth={1.9} />
+          <Text accessibilityRole="header" style={styles.titleText}>
+            Mes badges
+          </Text>
         </View>
-        <Text style={styles.trophiesCount}>
-          {earnedCount} gagné{earnedCount > 1 ? 's' : ''}
-        </Text>
+        <Text style={styles.count}>{awardedCountLabel(earnedCount)}</Text>
       </View>
 
-      <View style={styles.trophyGrid}>
-        {trophySlots.map(({ key, name, isEarned, Icon }) => (
-          <View
-            key={key}
-            accessible
-            accessibilityLabel={
-              isEarned ? `Trophée gagné : ${name}` : 'Trophée à venir, encore verrouillé'
-            }
-            style={styles.trophyCell}
-          >
-            <View style={styles.trophyCircle}>
-              {isEarned ? (
-                <SketchShape
-                  shape="circle"
-                  fill={colors.peach}
-                  stroke={colors.ink}
-                  strokeWidth={1.6}
-                />
-              ) : (
-                <SketchShape shape="circle" stroke={colors.dashedBorder} strokeWidth={2} dashed />
-              )}
-              <View>
-                <Icon
-                  size={isEarned ? 26 : 24}
-                  color={isEarned ? colors.ink : colors.moss}
-                  strokeWidth={1.8}
-                />
+      <View style={styles.grid}>
+        {badges.map((badge) => {
+          const isEarned = isAwarded(badge);
+          return (
+            <View
+              key={badge.code}
+              accessible
+              accessibilityLabel={badgeAccessibilityLabel(badge)}
+              style={styles.cell}
+            >
+              <View style={styles.circle}>
+                {isEarned ? (
+                  <SketchShape
+                    shape="circle"
+                    fill={colors.peach}
+                    stroke={colors.ink}
+                    strokeWidth={1.6}
+                  />
+                ) : (
+                  <SketchShape shape="circle" stroke={colors.dashedBorder} strokeWidth={2} dashed />
+                )}
+                {isEarned ? (
+                  <BadgeIcon code={badge.code} />
+                ) : (
+                  <View>
+                    <Lock size={22} color={colors.moss} strokeWidth={1.8} />
+                  </View>
+                )}
               </View>
+              <Text style={[styles.name, !isEarned && styles.lockedName]}>{badge.label}</Text>
             </View>
-            <Text style={[styles.trophyName, !isEarned && styles.lockedTrophyName]}>{name}</Text>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  trophiesHeader: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     marginBottom: 20,
   },
-  trophiesTitle: {
+  title: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  trophiesTitleText: {
+  titleText: {
     fontFamily: fonts.bodyBold,
     fontSize: 15,
     color: colors.ink,
   },
-  trophiesCount: {
+  count: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 13,
     color: colors.inkSoft,
   },
-  trophyGrid: {
+  grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     rowGap: 22,
   },
-  trophyCell: {
+  cell: {
     flexBasis: '33%',
     alignItems: 'center',
     gap: 8,
+    paddingHorizontal: 4,
   },
-  trophyCircle: {
+  circle: {
     width: 66,
     height: 66,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  trophyName: {
+  name: {
     fontFamily: fonts.bodySemiBold,
     fontSize: 12,
+    lineHeight: 16,
+    textAlign: 'center',
     color: colors.ink,
   },
-  lockedTrophyName: {
+  lockedName: {
     color: colors.moss,
   },
 });

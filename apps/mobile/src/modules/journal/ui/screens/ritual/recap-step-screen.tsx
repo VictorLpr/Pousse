@@ -28,7 +28,7 @@ export function RecapStepScreen() {
   const router = useRouter();
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
-  const { date, emotionCode, text, photo } = useRitualDraft();
+  const { date, emotionCode, text, photo, setAwardedBadges } = useRitualDraft();
   const catalog = useEmotions();
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -51,13 +51,14 @@ export function RecapStepScreen() {
     setIsSaving(true);
     setErrorMessage(null);
     try {
-      await services.completeEveningRitual.execute({
+      const { awardedBadges } = await services.completeEveningRitual.execute({
         childId: activeChild.id,
         emotionCode,
         text,
         date,
         photo: photo && entryPhotoOf(photo),
       });
+      setAwardedBadges(awardedBadges);
       router.replace('/ritual/done');
     } catch (error) {
       setErrorMessage(journalErrorMessage(error, 'Impossible de garder ce moment, réessayez.'));

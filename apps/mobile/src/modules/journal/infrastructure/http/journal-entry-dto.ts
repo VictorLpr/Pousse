@@ -1,4 +1,5 @@
 import type {
+  CreatedJournalEntry,
   JournalEntry,
   NewJournalEntry,
 } from '@/modules/journal/domain/entities/journal-entry';
@@ -13,6 +14,19 @@ export interface JournalEntryDto {
   readonly date: string;
   readonly createdAt: string;
   readonly photo: EntryPhoto | null;
+}
+
+/** A badge in the API's `awardedBadges`: `awardedAt` is an ISO string. */
+export interface AwardedBadgeDto {
+  readonly code: string;
+  readonly label: string;
+  readonly description: string | null;
+  readonly awardedAt: string;
+}
+
+/** The `POST /journal/entries` response: the entry and the badges it earned. */
+export interface CreatedJournalEntryDto extends JournalEntryDto {
+  readonly awardedBadges: readonly AwardedBadgeDto[];
 }
 
 /** The `POST /journal/entries` body: the API wants `photo` left out, not `null`. */
@@ -33,6 +47,18 @@ export function journalEntryFromDto(dto: JournalEntryDto): JournalEntry {
     date: dto.date,
     createdAt: new Date(dto.createdAt),
     photo: dto.photo,
+  };
+}
+
+export function createdJournalEntryFromDto(dto: CreatedJournalEntryDto): CreatedJournalEntry {
+  return {
+    ...journalEntryFromDto(dto),
+    awardedBadges: dto.awardedBadges.map((badge) => ({
+      code: badge.code,
+      label: badge.label,
+      description: badge.description,
+      awardedAt: new Date(badge.awardedAt),
+    })),
   };
 }
 

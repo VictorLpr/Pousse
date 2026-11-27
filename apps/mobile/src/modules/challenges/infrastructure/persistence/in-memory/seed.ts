@@ -1,6 +1,9 @@
 import type { Challenge } from '@/modules/challenges/domain/entities/challenge';
 import type { ChildChallenge } from '@/modules/challenges/domain/entities/child-challenge';
-import type { Trophy } from '@/modules/challenges/domain/entities/trophy';
+import type {
+  CatalogBadge,
+  StoredBadgeAward,
+} from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-badge-repository';
 import type {
   CatalogChallenge,
   StoredChildChallenge,
@@ -105,6 +108,8 @@ function catalogChallenge(code: string): Challenge {
 
 const thisWeek = mondayOf(localDayOf(new Date()));
 const lastWeek = mondayOf(previousDay(thisWeek));
+/** When Léa completed last week's challenge, her first one. */
+const leaFirstChallenge = new Date(`${lastWeek}T20:30:00`);
 
 function leaChallenge(
   id: string,
@@ -129,7 +134,7 @@ export const seedChildChallenges: readonly StoredChildChallenge[] = [
   leaChallenge('child-challenge-lea-1', lastWeek, 'set_the_table', {
     status: 'completed',
     chosenAt: new Date(`${lastWeek}T18:00:00`),
-    completedAt: new Date(`${lastWeek}T20:30:00`),
+    completedAt: leaFirstChallenge,
   }),
   leaChallenge('child-challenge-lea-2', lastWeek, 'funny_story', PROPOSED),
   leaChallenge('child-challenge-lea-3', lastWeek, 'help_cook', PROPOSED),
@@ -143,9 +148,68 @@ export const seedChildChallenges: readonly StoredChildChallenge[] = [
   leaChallenge('child-challenge-lea-6', thisWeek, 'say_thank_you', PROPOSED),
 ];
 
-export const seedTrophies: readonly Trophy[] = [
-  { id: 'teamwork', childId: LEA_ID, name: 'Entraide', status: 'earned' },
-  { id: 'creative', childId: LEA_ID, name: 'Créatif', status: 'earned' },
-  { id: 'kindness', childId: LEA_ID, name: 'Gentillesse', status: 'earned' },
-  { id: 'courage', childId: LEA_ID, name: 'Courage', status: 'earned' },
+/** The API's badge catalog (`apps/api/src/shared/db/catalogs/badges.ts`), in display order. */
+export const seedBadgeCatalog: readonly CatalogBadge[] = [
+  {
+    code: 'first_evening',
+    label: 'Premier soir',
+    description: 'Tu as raconté ta première soirée.',
+  },
+  {
+    code: 'three_evenings',
+    label: 'Trois soirs de suite',
+    description: 'Trois soirées racontées sans en manquer une.',
+  },
+  {
+    code: 'seven_evenings',
+    label: 'Une semaine de soirées',
+    description: 'Sept soirées de suite, bravo !',
+  },
+  {
+    code: 'thirty_evenings',
+    label: 'Un mois de soirées',
+    description: 'Trente soirées de suite, quel rituel !',
+  },
+  {
+    code: 'first_challenge',
+    label: 'Premier défi',
+    description: 'Tu as relevé ton premier défi.',
+  },
+  {
+    code: 'helping_challenge',
+    label: 'Entraide',
+    description: 'Tu as relevé un défi pour aider.',
+  },
+  {
+    code: 'creativity_challenge',
+    label: 'Créatif',
+    description: 'Tu as relevé un défi de création.',
+  },
+  {
+    code: 'learning_challenge',
+    label: 'Curieux',
+    description: 'Tu as relevé un défi pour apprendre.',
+  },
+  {
+    code: 'politeness_challenge',
+    label: 'Gentillesse',
+    description: 'Tu as relevé un défi de politesse.',
+  },
+];
+
+/** Six evenings ago at 20:15: Léa's oldest journal entry. */
+const leaFirstEvening = new Date();
+leaFirstEvening.setDate(leaFirstEvening.getDate() - 6);
+leaFirstEvening.setHours(20, 15, 0, 0);
+
+/**
+ * Léa's badges. Her streak of three evenings came before badges did, and
+ * the API awards nothing for past history: tonight's ritual earns her
+ * « Trois soirs de suite », and this week's challenge « Gentillesse ». Tom
+ * has none yet.
+ */
+export const seedBadgeAwards: readonly StoredBadgeAward[] = [
+  { childId: LEA_ID, code: 'first_evening', awardedAt: leaFirstEvening },
+  { childId: LEA_ID, code: 'first_challenge', awardedAt: leaFirstChallenge },
+  { childId: LEA_ID, code: 'helping_challenge', awardedAt: leaFirstChallenge },
 ];

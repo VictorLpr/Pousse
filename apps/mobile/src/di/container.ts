@@ -5,7 +5,7 @@ import { CreateChildProfile } from '@/modules/auth/application/use-cases/create-
 import { GetChild } from '@/modules/auth/application/use-cases/get-child';
 import { GetEveningStreak } from '@/modules/journal/application/use-cases/get-evening-streak';
 import { GetJournalEntries } from '@/modules/journal/application/use-cases/get-journal-entries';
-import { GetTrophies } from '@/modules/challenges/application/use-cases/get-trophies';
+import { GetBadges } from '@/modules/challenges/application/use-cases/get-badges';
 import { GetWeekChallenges } from '@/modules/challenges/application/use-cases/get-week-challenges';
 import { ListChildren } from '@/modules/auth/application/use-cases/list-children';
 import { ListEmotions } from '@/modules/journal/application/use-cases/list-emotions';
@@ -39,7 +39,7 @@ import { InMemoryEmotionCatalog } from '@/modules/journal/infrastructure/persist
 import { InMemoryJournalEntryRepository } from '@/modules/journal/infrastructure/persistence/in-memory/in-memory-journal-entry-repository';
 import { PlaceholderPhotoPicker } from '@/modules/journal/infrastructure/device/placeholder-photo-picker';
 import { InMemoryParentAccountRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-parent-account-repository';
-import { InMemoryTrophyRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-trophy-repository';
+import { InMemoryBadgeRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-badge-repository';
 import { InMemoryChildChallengeRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-child-challenge-repository';
 import {
   seedChildren,
@@ -47,9 +47,10 @@ import {
   seedParentAccounts,
 } from '@/modules/auth/infrastructure/persistence/in-memory/seed';
 import {
+  seedBadgeAwards,
+  seedBadgeCatalog,
   seedChallengeCatalog,
   seedChildChallenges,
-  seedTrophies,
 } from '@/modules/challenges/infrastructure/persistence/in-memory/seed';
 import {
   seedEmotions,
@@ -76,7 +77,7 @@ export interface AppServices {
   readonly getWeekChallenges: GetWeekChallenges;
   readonly chooseChallenge: ChooseChallenge;
   readonly completeChallenge: CompleteChallenge;
-  readonly getTrophies: GetTrophies;
+  readonly getBadges: GetBadges;
   readonly setEveningReminder: SetEveningReminder;
 }
 
@@ -155,12 +156,22 @@ export function createAppServices(): AppServices {
     : new InMemoryAuthGateway(new InMemoryParentAccountRepository(seedParentAccounts), idGenerator);
   // No use case reads the consent yet: the child profile screens will.
   const { children: childRepository } = createChildAdapters(api, idGenerator, clock);
+  const childExists = async (childId: string) => (await childRepository.findById(childId)) !== null;
+  // Badges and challenges stay on the fake backend until their HTTP adapters
+  // land ([MOB-5]); against the API, the journal's badges come from the API.
+  const badgeRepository = new InMemoryBadgeRepository(
+    seedBadgeCatalog,
+    seedBadgeAwards,
+    childExists,
+    clock,
+  );
   const journalRepository: JournalEntryRepository = api
     ? new HttpJournalEntryRepository(api.http)
     : new InMemoryJournalEntryRepository(
         seedJournalEntries,
         seedEmotions,
-        async (childId) => (await childRepository.findById(childId)) !== null,
+        childExists,
+        (childId, streak) => badgeRepository.awardForEvening(childId, { streak }),
         idGenerator,
         clock,
       );
@@ -171,10 +182,10 @@ export function createAppServices(): AppServices {
     seedChallengeCatalog,
     seedChildChallenges,
     async (childId) => (await childRepository.findById(childId))?.ageRange ?? null,
+    badgeRepository,
     idGenerator,
     clock,
   );
-  const trophyRepository = new InMemoryTrophyRepository(seedTrophies, idGenerator);
 
   return {
     hasDemoAccounts: USES_FAKE_BACKEND,
@@ -194,7 +205,7 @@ export function createAppServices(): AppServices {
     getWeekChallenges: new GetWeekChallenges(challengeRepository),
     chooseChallenge: new ChooseChallenge(challengeRepository),
     completeChallenge: new CompleteChallenge(challengeRepository),
-    getTrophies: new GetTrophies(trophyRepository),
+    getBadges: new GetBadges(badgeRepository),
     setEveningReminder: new SetEveningReminder(childRepository),
   };
 }

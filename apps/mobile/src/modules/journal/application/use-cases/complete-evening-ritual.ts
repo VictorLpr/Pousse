@@ -1,5 +1,5 @@
 import type { EmotionCode } from '@/modules/journal/domain/entities/emotion';
-import type { JournalEntry } from '@/modules/journal/domain/entities/journal-entry';
+import type { CreatedJournalEntry } from '@/modules/journal/domain/entities/journal-entry';
 import type { EntryPhoto } from '@/modules/journal/domain/entities/photo';
 import type { JournalEntryRepository } from '@/modules/journal/domain/ports/journal-entry-repository';
 
@@ -13,11 +13,14 @@ export interface CompleteEveningRitualInput {
   readonly photo: EntryPhoto | null;
 }
 
-/** Keeps tonight's memory; the streak follows from the journal (`GetEveningStreak`). */
+/**
+ * Keeps tonight's memory, with the badges it earned; the streak follows from
+ * the journal (`GetEveningStreak`).
+ */
 export class CompleteEveningRitual {
   constructor(private readonly journal: JournalEntryRepository) {}
 
-  execute(input: CompleteEveningRitualInput): Promise<JournalEntry> {
+  execute(input: CompleteEveningRitualInput): Promise<CreatedJournalEntry> {
     return this.journal.create({
       childId: input.childId,
       emotionCode: input.emotionCode,

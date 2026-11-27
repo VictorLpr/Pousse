@@ -20,6 +20,24 @@ export interface JournalEntry {
 /** What the client sends to keep an entry: the backend adds the id and `createdAt`. */
 export type NewJournalEntry = Omit<JournalEntry, 'id' | 'createdAt'>;
 
+/**
+ * A badge the entry earned. Badges belong to the challenges module, which
+ * the journal's domain can't import: this is the same shape, as the API's
+ * `awardedBadges` carries it.
+ */
+export interface AwardedBadge {
+  readonly code: string;
+  readonly label: string;
+  readonly description: string | null;
+  readonly awardedAt: Date;
+}
+
+/** The kept entry with the badges it earned, as `POST /journal/entries` returns it. */
+export interface CreatedJournalEntry extends JournalEntry {
+  /** Only the badges this entry earned, in catalog order; empty when none. */
+  readonly awardedBadges: readonly AwardedBadge[];
+}
+
 /** The local calendar day of `date`, formatted YYYY-MM-DD like the API's `date` column. */
 export function localDayOf(date: Date): string {
   const year = date.getFullYear();
