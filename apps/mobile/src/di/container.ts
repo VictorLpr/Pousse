@@ -83,7 +83,7 @@ export interface AppServices {
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 /**
- * Sign-up, sign-in and the session go to the API's BetterAuth, except under
+ * Auth (BetterAuth) and the journal go to the API, except under
  * `expo start` without an API URL: the dev preview has no Worker to forward
  * `/api`, so it keeps the fake backend and its demo accounts.
  */
