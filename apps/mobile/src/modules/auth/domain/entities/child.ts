@@ -11,9 +11,12 @@ export interface EveningReminder {
   readonly enabled: boolean;
 }
 
+/**
+ * A child of the signed-in parent, as the API returns it: no parent id, the
+ * backend scopes every read to the session.
+ */
 export interface Child {
   readonly id: string;
-  readonly parentId: string;
   readonly firstName: string;
   /** Calendar date, `YYYY-MM-DD`. */
   readonly birthDate: string;
@@ -24,8 +27,11 @@ export interface Child {
   readonly reminder: EveningReminder;
 }
 
-/** What creating a profile sends: the backend adds the id and the age range. */
-export type NewChild = Omit<Child, 'id' | 'ageRange'>;
+/**
+ * What creating a profile sends: the backend adds the id and the age range.
+ * `parentId` is for the fake backend; the API takes the session's parent.
+ */
+export type NewChild = Omit<Child, 'id' | 'ageRange'> & { readonly parentId: string };
 
 export function withReminderEnabled(child: Child, enabled: boolean): Child {
   return { ...child, reminder: { ...child.reminder, enabled } };
