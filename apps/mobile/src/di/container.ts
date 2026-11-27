@@ -17,8 +17,16 @@ import { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-par
 import { UpdateParentName } from '@/modules/auth/application/use-cases/update-parent-name';
 import { BetterAuthGateway } from '@/modules/auth/infrastructure/http/better-auth-gateway';
 import { createAuthClientSetup } from '@/modules/auth/infrastructure/http/auth-client-setup';
+import type { AuthClientSetup } from '@/modules/auth/infrastructure/http/parent-auth-client';
 import { SequentialIdGenerator } from '@/shared/infrastructure/ids/sequential-id-generator';
 import type { AuthGateway } from '@/modules/auth/domain/ports/auth-gateway';
+import type { EmotionCatalog } from '@/modules/journal/domain/ports/emotion-catalog';
+import type { JournalEntryRepository } from '@/modules/journal/domain/ports/journal-entry-repository';
+import { HttpEmotionCatalog } from '@/modules/journal/infrastructure/http/http-emotion-catalog';
+import { HttpJournalEntryRepository } from '@/modules/journal/infrastructure/http/http-journal-entry-repository';
+import { API_BASE_URL } from '@/shared/infrastructure/http/api-base-url';
+import { FetchHttpClient } from '@/shared/infrastructure/http/fetch-http-client';
+import type { HttpClient } from '@/shared/infrastructure/http/http-client';
 import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-auth-gateway';
 import { InMemoryChildRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
 import { InMemoryConsentRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-consent-repository';
@@ -81,30 +89,35 @@ const API_URL = process.env.EXPO_PUBLIC_API_URL;
  */
 const USES_FAKE_AUTH = __DEV__ && !API_URL;
 
-function createAuthGateway(
-  accounts: InMemoryParentAccountRepository,
-  idGenerator: SequentialIdGenerator,
-): AuthGateway {
-  if (USES_FAKE_AUTH) {
-    return new InMemoryAuthGateway(accounts, idGenerator);
-  }
-  // `sessionCookie()` of the same setup is what business requests add to
-  // their headers once they go to the API.
-  return new BetterAuthGateway(createAuthClientSetup(API_URL).client);
+/**
+ * The BetterAuth client and the one HTTP client of the business adapters,
+ * built once: business requests carry the session of that same client
+ * (`sessionCookie()`, native only).
+ */
+function connectToApi(): { readonly authSetup: AuthClientSetup; readonly http: HttpClient } {
+  const authSetup = createAuthClientSetup(API_URL);
+  const http = new FetchHttpClient({
+    baseUrl: API_BASE_URL,
+    sessionCookie: () => authSetup.sessionCookie(),
+  });
+  return { authSetup, http };
 }
 
 /**
- * Composition root: wires use cases to their adapters. Auth goes to the API
- * (`createAuthGateway`); the other in-memory adapters act as a fake backend:
- * like the API, they generate ids and timestamps. Switching to the API only
+ * Composition root: wires use cases to their adapters. Auth and the journal
+ * go to the API; the other in-memory adapters act as a fake backend: like
+ * the API, they generate ids and timestamps. Switching to the API only
  * changes the adapters.
  */
 export function createAppServices(): AppServices {
   const idGenerator = new SequentialIdGenerator('pousse');
   const clock = new SystemClock();
+  const api = USES_FAKE_AUTH ? null : connectToApi();
 
   const accountRepository = new InMemoryParentAccountRepository(seedParentAccounts);
-  const authGateway = createAuthGateway(accountRepository, idGenerator);
+  const authGateway: AuthGateway = api
+    ? new BetterAuthGateway(api.authSetup.client)
+    : new InMemoryAuthGateway(accountRepository, idGenerator);
   const consentRepository = new InMemoryConsentRepository(seedConsents, clock);
   const childRepository = new InMemoryChildRepository(
     seedChildren,
@@ -112,14 +125,18 @@ export function createAppServices(): AppServices {
     idGenerator,
     clock,
   );
-  const journalRepository = new InMemoryJournalEntryRepository(
-    seedJournalEntries,
-    seedEmotions,
-    async (childId) => (await childRepository.findById(childId)) !== null,
-    idGenerator,
-    clock,
-  );
-  const emotionCatalog = new InMemoryEmotionCatalog(seedEmotions);
+  const journalRepository: JournalEntryRepository = api
+    ? new HttpJournalEntryRepository(api.http)
+    : new InMemoryJournalEntryRepository(
+        seedJournalEntries,
+        seedEmotions,
+        async (childId) => (await childRepository.findById(childId)) !== null,
+        idGenerator,
+        clock,
+      );
+  const emotionCatalog: EmotionCatalog = api
+    ? new HttpEmotionCatalog(api.http)
+    : new InMemoryEmotionCatalog(seedEmotions);
   const challengeRepository = new InMemoryWeeklyChallengeRepository(
     seedWeeklyChallenges,
     challengeTitlePool,
