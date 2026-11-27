@@ -1,10 +1,10 @@
 ---
-name: ship
-description: Deliver one Pousse backlog ticket from Notion end to end — readiness check, worktree, plan approved by the user, implementation, review, PR, ticket updates. Use when asked to ship, implement or deliver a ticket (`/ship <ticket>`).
+name: deliver
+description: Deliver one Pousse backlog ticket from Notion end to end — readiness check, worktree, plan approved by the user, implementation, review, PR, ticket updates. Use when asked to ship, implement or deliver a ticket (`/deliver <ticket>`).
 argument-hint: <Notion ticket URL, code like [B1], or title>
 ---
 
-# Ship a ticket
+# Deliver a ticket
 
 One ticket, one branch, one PR. The ticket is the contract: its acceptance
 criteria decide what is in scope, and every criterion ends the run with a

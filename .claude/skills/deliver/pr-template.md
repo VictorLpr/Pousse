@@ -1,4 +1,4 @@
-# PR template for `/ship`
+# PR template for `/deliver`
 
 Title: the main commit's Conventional Commit line, with the ticket code at the
 end, e.g. `fix(mobile): show earned trophy icons [B1]`.

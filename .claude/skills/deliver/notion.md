@@ -1,4 +1,4 @@
-# Notion reference for `/ship`
+# Notion reference for `/deliver`
 
 Everything written in Notion is in French: it is the project-management space
 of the PFE. Property and option names below are the exact Notion names.
