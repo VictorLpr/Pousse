@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { Camera, ChevronRight, Image as ImageIcon } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -7,11 +6,12 @@ import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
+import { useRitualStepNavigation } from '@/modules/journal/ui/hooks/use-ritual-step-navigation';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
 export function PhotoStepScreen() {
-  const router = useRouter();
+  const { goNext } = useRitualStepNavigation('/ritual/recap');
   const services = useServices();
   const { setPhoto } = useRitualDraft();
   const [pickFailed, setPickFailed] = useState(false);
@@ -20,7 +20,7 @@ export function PhotoStepScreen() {
     setPickFailed(false);
     try {
       setPhoto(await services.pickRitualPhoto.execute());
-      router.push('/ritual/recap');
+      goNext();
     } catch {
       setPickFailed(true);
     }
@@ -28,7 +28,7 @@ export function PhotoStepScreen() {
 
   const skipPhoto = () => {
     setPhoto(null);
-    router.push('/ritual/recap');
+    goNext();
   };
 
   return (

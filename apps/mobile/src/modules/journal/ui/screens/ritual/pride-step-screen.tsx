@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { Sparkles } from 'lucide-react-native';
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
@@ -7,6 +6,7 @@ import { JOURNAL_TEXT_MAX_LENGTH } from '@/modules/journal/domain/entities/journ
 import { EmojiRow } from '@/modules/journal/ui/components/emoji-row';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
 import { textCounter } from '@/modules/journal/ui/format/text-counter';
+import { useRitualStepNavigation } from '@/modules/journal/ui/hooks/use-ritual-step-navigation';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
@@ -23,7 +23,7 @@ const WRITING_PROMPTS: readonly string[] = [
 ];
 
 export function PrideStepScreen() {
-  const router = useRouter();
+  const { goNext } = useRitualStepNavigation('/ritual/photo');
   const { text, setText } = useRitualDraft();
   const [promptIndex, setPromptIndex] = useState(0);
   const counter = textCounter(text.length);
@@ -82,11 +82,7 @@ export function PrideStepScreen() {
       <EmojiRow onPick={addEmoji} canAdd={fitsInText} />
       <Divider variant="stitched" spacing={18} />
 
-      <AppButton
-        label="Continuer"
-        disabled={text.trim().length === 0}
-        onPress={() => router.push('/ritual/photo')}
-      />
+      <AppButton label="Continuer" disabled={text.trim().length === 0} onPress={goNext} />
     </RitualStepLayout>
   );
 }
