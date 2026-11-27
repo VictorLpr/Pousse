@@ -5,9 +5,10 @@ import { ApiError } from '@/shared/infrastructure/http/api-error';
  * The fields of `POST /children` a screen can get wrong, and the code each
  * one's `VALIDATION_FAILED` stands for. The API's message names the field
  * first (`body/birthDate Invalid ISO date`), as Fastify formats schema errors.
+ * `firstName` is left out: `CreateChildProfile` refuses an empty one before
+ * the call, so the API only refuses it as too long, which has no copy.
  */
 const INVALID_FIELD_CODES: readonly (readonly [string, AuthErrorCode])[] = [
-  ['body/firstName', 'FIRST_NAME_REQUIRED'],
   ['body/birthDate', 'BIRTH_DATE_INVALID'],
   ['body/consent/guardianAttested', 'GUARDIAN_ATTESTATION_REQUIRED'],
   ['body/consent/policyVersion', 'POLICY_VERSION_INVALID'],
