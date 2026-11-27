@@ -32,7 +32,11 @@ export function PhotoStepScreen() {
   };
 
   return (
-    <RitualStepLayout step={3} title="Une photo du jour ?" subtitle="C'est toi qui choisis">
+    <RitualStepLayout
+      step={3}
+      title="Une photo du jour ?"
+      subtitle="C'est toi qui choisis, on la garde ensemble"
+    >
       <Pressable
         accessibilityRole="button"
         accessibilityLabel="Prendre une photo"
