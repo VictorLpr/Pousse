@@ -1,9 +1,11 @@
 import { beforeEach, describe, expect, it } from '@jest/globals';
 import { asc, eq, sql } from 'drizzle-orm';
 
+import { BADGE_CONDITION_CODES } from '#/modules/challenges/badge-service.js';
+import { BADGES } from '#/shared/db/catalogs/badges.js';
 import { CHALLENGES } from '#/shared/db/catalogs/challenges.js';
 import { seedCatalogs } from '#/shared/db/seed-catalogs.js';
-import { challenge } from '#/shared/db/schema.js';
+import { badge, challenge } from '#/shared/db/schema.js';
 import { useTestDatabase } from '../support/test-database.js';
 
 const AGE_RANGES = ['4-7', '8-12'] as const;
@@ -89,4 +91,50 @@ describe('seedCatalogs: challenge catalog', () => {
       expect(new Set(drawable.map((row) => row.category))).toEqual(new Set(CATEGORIES));
     },
   );
+});
+
+describe('seedCatalogs: badge catalog', () => {
+  const db = useTestDatabase();
+
+  const storedBadges = () =>
+    db()
+      .select({ code: badge.code, label: badge.label, description: badge.description })
+      .from(badge)
+      .orderBy(asc(badge.id));
+
+  const expectedBadges = BADGES.map((row) => ({ ...row, description: row.description ?? null }));
+
+  beforeEach(async () => {
+    await seedCatalogs(db());
+  });
+
+  it('loads the whole catalog, in catalog order, found by code', async () => {
+    expect(await storedBadges()).toEqual(expectedBadges);
+  });
+
+  it('restores the content changed in the database', async () => {
+    await db()
+      .update(badge)
+      .set({ label: 'Autre', description: null })
+      .where(eq(badge.code, 'first_evening'));
+
+    await seedCatalogs(db());
+
+    expect(await storedBadges()).toEqual(expectedBadges);
+  });
+
+  it('draws no identity value when re-seeding an up-to-date catalog', async () => {
+    const lastId = async () =>
+      (await db().execute<{ value: string }>(sql`select currval('badge_id_seq') as value`)).rows[0]
+        ?.value;
+    const before = await lastId();
+
+    await seedCatalogs(db());
+
+    expect(await lastId()).toBe(before);
+  });
+
+  it('gives every badge a condition, and every condition a badge', () => {
+    expect([...BADGE_CONDITION_CODES].sort()).toEqual(BADGES.map(({ code }) => code).sort());
+  });
 });

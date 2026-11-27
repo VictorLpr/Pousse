@@ -5,6 +5,7 @@ import { parentIdOf } from '#/modules/auth/index.js';
 import {
   childChallengeParams,
   childChallengeResponse,
+  completeChallengeResponse,
   weekQuery,
   weekResponse,
 } from '#/modules/challenges/challenge-schemas.js';
@@ -53,7 +54,14 @@ export function registerChallengeRoutes(app: FastifyInstance, challenges: Challe
     challenges.choose(parentIdOf(request), request.params.id),
   );
 
-  routes.post('/:id/complete', { schema: transitionSchema }, async (request) =>
-    challenges.complete(parentIdOf(request), request.params.id),
+  routes.post(
+    '/:id/complete',
+    {
+      schema: {
+        ...transitionSchema,
+        response: { ...transitionSchema.response, 200: completeChallengeResponse },
+      },
+    },
+    async (request) => challenges.complete(parentIdOf(request), request.params.id),
   );
 }

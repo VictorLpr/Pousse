@@ -2,7 +2,7 @@ import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastif
 import { serializerCompiler, validatorCompiler } from 'fastify-type-provider-zod';
 
 import { authModule, createAuth, createChildService } from '#/modules/auth/index.js';
-import { challengesModule } from '#/modules/challenges/index.js';
+import { challengesModule, createBadgeService } from '#/modules/challenges/index.js';
 import { journalModule } from '#/modules/journal/index.js';
 import { lettersModule } from '#/modules/letters/index.js';
 import { memoriesModule } from '#/modules/memories/index.js';
@@ -51,8 +51,11 @@ export function buildApp({
   // The journal and the challenges check that a child belongs to the parent
   // through the auth module's service, never its repository (ADR-0006).
   const children = createChildService(db);
-  app.register(journalModule, { prefix: '/journal', db, auth, children });
-  app.register(challengesModule, { prefix: '/challenges', db, auth, children });
+  // One badge service, owned by the challenges module: the journal calls it
+  // after an entry, never the other way around.
+  const badges = createBadgeService(db, { children });
+  app.register(journalModule, { prefix: '/journal', db, auth, children, badges });
+  app.register(challengesModule, { prefix: '/challenges', db, auth, children, badges });
   app.register(memoriesModule, { prefix: '/memories' });
   app.register(lettersModule, { prefix: '/letters' });
 

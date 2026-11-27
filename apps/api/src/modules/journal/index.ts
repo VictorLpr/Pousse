@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 
 import { requireParent, type Auth, type ChildService } from '#/modules/auth/index.js';
+import type { BadgeService } from '#/modules/challenges/index.js';
 import { createEmotionRepository } from '#/modules/journal/emotion-repository.js';
 import { registerEmotionRoutes } from '#/modules/journal/emotion-routes.js';
 import { createEmotionService } from '#/modules/journal/emotion-service.js';
@@ -14,6 +15,8 @@ export interface JournalModuleOptions {
   readonly auth: Auth;
   /** The auth module's service, to check that a child belongs to the parent. */
   readonly children: ChildService;
+  /** The challenges module's badge service, to award the evening badges after an entry. */
+  readonly badges: BadgeService;
 }
 
 /**
@@ -27,12 +30,17 @@ export interface JournalModuleOptions {
  */
 export async function journalModule(
   app: FastifyInstance,
-  { db, auth, children }: JournalModuleOptions,
+  { db, auth, children, badges }: JournalModuleOptions,
 ): Promise<void> {
   const emotions = createEmotionRepository(db);
   registerEmotionRoutes(app, createEmotionService(emotions));
 
-  const entries = createEntryService({ entries: createEntryRepository(db), emotions, children });
+  const entries = createEntryService({
+    entries: createEntryRepository(db),
+    emotions,
+    children,
+    badges,
+  });
   await app.register(async (scope) => {
     scope.decorateRequest('parentId', undefined);
     scope.addHook('onRequest', requireParent(auth));

@@ -1,6 +1,7 @@
 import { createHash } from 'node:crypto';
 
 import type { ChildService } from '#/modules/auth/index.js';
+import type { BadgeService } from '#/modules/challenges/badge-service.js';
 import type {
   ChallengeRepository,
   ChildChallengeRow,
@@ -9,6 +10,7 @@ import type {
 import type {
   ChildChallengeResponse,
   ChildChallengeStatus,
+  CompleteChallengeResponse,
   WeekResponse,
 } from '#/modules/challenges/challenge-schemas.js';
 import { addDays, daysBetween, mondayOf } from '#/modules/challenges/week.js';
@@ -103,7 +105,12 @@ export function createChallengeService(
   {
     challenges,
     children,
-  }: { readonly challenges: ChallengeRepository; readonly children: ChildService },
+    badges,
+  }: {
+    readonly challenges: ChallengeRepository;
+    readonly children: ChildService;
+    readonly badges: BadgeService;
+  },
   { now = () => new Date() }: { readonly now?: () => Date } = {},
 ) {
   function assertNearToday(date: string): void {
@@ -179,8 +186,8 @@ export function createChallengeService(
       return reread(id);
     },
 
-    /** Completes the chosen challenge. */
-    async complete(parentId: string, id: string): Promise<ChildChallengeResponse> {
+    /** Completes the chosen challenge, then awards the challenge badges it earns. */
+    async complete(parentId: string, id: string): Promise<CompleteChallengeResponse> {
       const row = await findOwn(parentId, id);
       // Never before `chosen_at`, which the database checks, even if the
       // clock stepped back since the choice.
@@ -188,7 +195,9 @@ export function createChallengeService(
       if (row.status !== 'chosen' || !(await challenges.complete(id, completedAt))) {
         throw invalidTransition(row, 'completed');
       }
-      return reread(id);
+      const completedCategories = new Set(await challenges.listCompletedCategories(row.childId));
+      const awardedBadges = await badges.awardForChallenges(row.childId, { completedCategories });
+      return { ...(await reread(id)), awardedBadges };
     },
   };
 }
