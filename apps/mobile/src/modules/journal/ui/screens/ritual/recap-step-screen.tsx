@@ -42,6 +42,11 @@ export function RecapStepScreen() {
 
   const label = emotionLabel(catalog, emotionCode);
 
+  const editStep = (step: 'emotion' | 'pride' | 'photo') => {
+    setErrorMessage(null);
+    router.push(`/ritual/${step}?from=${FROM_RECAP}`);
+  };
+
   const saveRitual = async () => {
     setIsSaving(true);
     setErrorMessage(null);
@@ -71,8 +76,14 @@ export function RecapStepScreen() {
         accessibilityRole="button"
         accessibilityLabel="Modifier l'émotion"
         accessibilityHint={EDIT_HINT}
-        onPress={() => router.push(`/ritual/emotion?from=${FROM_RECAP}`)}
-        style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
+        disabled={isSaving}
+        accessibilityState={{ disabled: isSaving }}
+        onPress={() => editStep('emotion')}
+        style={({ pressed }) => [
+          styles.editButton,
+          isSaving && styles.disabled,
+          pressed && styles.pressed,
+        ]}
         hitSlop={8}
       >
         <Text style={styles.editLabel}>Modifier</Text>
@@ -88,8 +99,14 @@ export function RecapStepScreen() {
         accessibilityRole="button"
         accessibilityLabel="Modifier le moment de fierté"
         accessibilityHint={EDIT_HINT}
-        onPress={() => router.push(`/ritual/pride?from=${FROM_RECAP}`)}
-        style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
+        disabled={isSaving}
+        accessibilityState={{ disabled: isSaving }}
+        onPress={() => editStep('pride')}
+        style={({ pressed }) => [
+          styles.editButton,
+          isSaving && styles.disabled,
+          pressed && styles.pressed,
+        ]}
         hitSlop={8}
       >
         <Text style={styles.editLabel}>Modifier</Text>
@@ -108,8 +125,14 @@ export function RecapStepScreen() {
             accessibilityRole="button"
             accessibilityLabel="Modifier la photo"
             accessibilityHint={EDIT_HINT}
-            onPress={() => router.push(`/ritual/photo?from=${FROM_RECAP}`)}
-            style={({ pressed }) => [styles.editButton, pressed && styles.pressed]}
+            disabled={isSaving}
+            accessibilityState={{ disabled: isSaving }}
+            onPress={() => editStep('photo')}
+            style={({ pressed }) => [
+              styles.editButton,
+              isSaving && styles.disabled,
+              pressed && styles.pressed,
+            ]}
             hitSlop={8}
           >
             <Text style={styles.editLabel}>Modifier</Text>
@@ -120,8 +143,14 @@ export function RecapStepScreen() {
           accessibilityRole="button"
           accessibilityLabel="Ajouter une photo"
           accessibilityHint={EDIT_HINT}
-          onPress={() => router.push(`/ritual/photo?from=${FROM_RECAP}`)}
-          style={({ pressed }) => [styles.addPhoto, pressed && styles.pressed]}
+          disabled={isSaving}
+          accessibilityState={{ disabled: isSaving }}
+          onPress={() => editStep('photo')}
+          style={({ pressed }) => [
+            styles.addPhoto,
+            isSaving && styles.disabled,
+            pressed && styles.pressed,
+          ]}
         >
           <SketchShape
             shape="rectangle"
@@ -191,6 +220,9 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.6,
+  },
+  disabled: {
+    opacity: 0.45,
   },
   editLabel: {
     fontFamily: fonts.bodySemiBold,
