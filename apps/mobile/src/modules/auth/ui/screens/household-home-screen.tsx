@@ -1,6 +1,6 @@
 import { Redirect, useFocusEffect, useRouter } from 'expo-router';
 import { ChevronRight, Plus } from 'lucide-react-native';
-import { Fragment, useCallback, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import type { Child } from '@/modules/auth/domain/entities/child';
@@ -22,17 +22,28 @@ export function HouseholdHomeScreen() {
   const router = useRouter();
   const services = useServices();
   const { account } = useSession();
-  const { selectChild, isLoading: isSelecting } = useActiveChild();
+  const { activeChild, selectChild, adoptOnlyChild, isLoading: isSelecting } = useActiveChild();
   const { state, retry } = useAsyncData(account?.id ?? null, (parentId) =>
     services.listChildren.execute(parentId),
   );
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [selectionError, setSelectionError] = useState<string | null>(null);
+  const listedChildren = state.status === 'ready' ? state.data : null;
 
   useFocusEffect(useCallback(() => setSelectionError(null), []));
 
+  useEffect(() => {
+    if (listedChildren && adoptOnlyChild(listedChildren)) {
+      router.replace('/home');
+    }
+  }, [listedChildren, adoptOnlyChild, router]);
+
   if (!account) {
     return <Redirect href="/" />;
+  }
+  if (listedChildren?.length === 1 && !activeChild) {
+    // Opening the only child's home: don't flash a one-row list on the way.
+    return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
   }
 
   const chooseChild = async (child: Child) => {
@@ -48,7 +59,7 @@ export function HouseholdHomeScreen() {
     }
   };
 
-  const children = state.status === 'ready' ? state.data : [];
+  const children = listedChildren ?? [];
 
   return (
     <ScreenContainer>

@@ -18,6 +18,12 @@ interface ActiveChildContextValue {
   /** Fetches the child and makes it active; rejects when it can't be loaded. */
   selectChild(childId: string): Promise<void>;
   adoptChild(child: Child): void;
+  /**
+   * A household of one child skips the list: when no child is active yet (just
+   * signed in), adopts that child and returns true. Once a child is active, the
+   * list stays reachable to switch or add one.
+   */
+  adoptOnlyChild(children: readonly Child[]): boolean;
   clearActiveChild(): void;
 }
 
@@ -59,6 +65,18 @@ export function ActiveChildProvider({ children }: PropsWithChildren) {
     setActiveChild(child);
   }, []);
 
+  const adoptOnlyChild = useCallback(
+    (children: readonly Child[]) => {
+      const [onlyChild] = children;
+      if (activeChild || isLoading || children.length !== 1 || !onlyChild) {
+        return false;
+      }
+      adoptChild(onlyChild);
+      return true;
+    },
+    [activeChild, isLoading, adoptChild],
+  );
+
   const clearActiveChild = useCallback(() => {
     latestSelection.current += 1;
     setIsLoading(false);
@@ -66,8 +84,8 @@ export function ActiveChildProvider({ children }: PropsWithChildren) {
   }, []);
 
   const value = useMemo(
-    () => ({ activeChild, isLoading, selectChild, adoptChild, clearActiveChild }),
-    [activeChild, isLoading, selectChild, adoptChild, clearActiveChild],
+    () => ({ activeChild, isLoading, selectChild, adoptChild, adoptOnlyChild, clearActiveChild }),
+    [activeChild, isLoading, selectChild, adoptChild, adoptOnlyChild, clearActiveChild],
   );
 
   return <ActiveChildContext.Provider value={value}>{children}</ActiveChildContext.Provider>;
