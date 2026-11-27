@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
-    maxWidth: 300,
+    maxWidth: 320,
   },
   icons: {
     flexDirection: 'row',

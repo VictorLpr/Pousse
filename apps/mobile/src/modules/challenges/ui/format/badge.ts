@@ -24,5 +24,7 @@ export function awardedBadgesMessage(badges: readonly Pick<Badge, 'label'>[]): s
   const labels = badges.map(({ label }) => label);
   const names =
     labels.length === 1 ? labels[0] : `${labels.slice(0, -1).join(', ')} et ${labels.at(-1)}`;
-  return `${badges.length === 1 ? 'Nouveau badge' : 'Nouveaux badges'} : ${names} !`;
+  // Non-breaking spaces before « : » and « ! », as French typography wants: the
+  // « ! » never wraps alone.
+  return `${badges.length === 1 ? 'Nouveau badge' : 'Nouveaux badges'} : ${names} !`;
 }
