@@ -48,15 +48,11 @@ export function buildApp({
   // No prefix: the module mounts BetterAuth under `/auth` and the child
   // profiles under `/children`.
   app.register(authModule, { db, auth, baseUrl: authConfig.baseUrl });
-  // The journal checks that a child belongs to the parent through the auth
-  // module's service, never its repository (ADR-0006).
-  app.register(journalModule, {
-    prefix: '/journal',
-    db,
-    auth,
-    children: createChildService(db),
-  });
-  app.register(challengesModule, { prefix: '/challenges' });
+  // The journal and the challenges check that a child belongs to the parent
+  // through the auth module's service, never its repository (ADR-0006).
+  const children = createChildService(db);
+  app.register(journalModule, { prefix: '/journal', db, auth, children });
+  app.register(challengesModule, { prefix: '/challenges', db, auth, children });
   app.register(memoriesModule, { prefix: '/memories' });
   app.register(lettersModule, { prefix: '/letters' });
 
