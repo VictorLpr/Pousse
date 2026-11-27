@@ -24,8 +24,10 @@ Ticket: <Notion URL>
 ## Not done
 
 <unverified items, follow-up tickets created (with links); "Nothing" if none>
-
-🤖 Generated with [Claude Code](https://claude.com/claude-code)
 ```
 
 Attach screenshots of changed UI under the criterion they prove.
+
+No AI attribution anywhere in git: no `Co-Authored-By` trailer in commits,
+no "Generated with" footer in the PR body, and the squash commit message
+written out by hand (GitHub's default body copies every trailer).
