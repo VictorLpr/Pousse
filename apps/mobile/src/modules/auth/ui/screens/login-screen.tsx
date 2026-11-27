@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useServices } from '@/di/services-provider';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
@@ -12,6 +13,7 @@ import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
 export function LoginScreen() {
+  const services = useServices();
   const router = useRouter();
   const { signIn } = useSession();
 
@@ -77,7 +79,9 @@ export function LoginScreen() {
         />
       </View>
 
-      <Text style={styles.demoHint}>Compte démo : parent@demo.fr · pousse123</Text>
+      {services.hasDemoAccounts && (
+        <Text style={styles.demoHint}>Compte démo : parent@demo.fr · pousse123</Text>
+      )}
     </ScreenContainer>
   );
 }

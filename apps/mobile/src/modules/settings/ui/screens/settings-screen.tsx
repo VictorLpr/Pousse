@@ -51,8 +51,14 @@ export function SettingsScreen() {
     }
   };
 
-  const logOut = () => {
-    signOut();
+  const logOut = async () => {
+    setErrorMessage(null);
+    try {
+      await signOut();
+    } catch {
+      setErrorMessage('Impossible de se déconnecter, réessayez.');
+      return;
+    }
     clearActiveChild();
     resetDraft();
     router.dismissAll();

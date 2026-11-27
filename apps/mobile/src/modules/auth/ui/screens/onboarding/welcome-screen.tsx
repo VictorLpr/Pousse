@@ -1,13 +1,20 @@
-import { useRouter } from 'expo-router';
+import { Redirect, useRouter } from 'expo-router';
 import { Sprout } from 'lucide-react-native';
 import { StyleSheet, Text, View } from 'react-native';
 
+import { useSession } from '@/modules/auth/ui/state/session-context';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { colors, fonts } from '@/shared/ui/theme';
 
 export function WelcomeScreen() {
   const router = useRouter();
+  const { account } = useSession();
+
+  // A session restored at launch skips the welcome page, as a sign-in does.
+  if (account) {
+    return <Redirect href={account.lastName ? '/household' : '/onboarding/household'} />;
+  }
 
   return (
     <ScreenContainer scrollable={false} contentStyle={styles.content}>

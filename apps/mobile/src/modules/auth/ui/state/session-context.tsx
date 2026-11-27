@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type PropsWithChildren,
@@ -25,6 +26,25 @@ const SessionContext = createContext<SessionContextValue | null>(null);
 export function SessionProvider({ children }: PropsWithChildren) {
   const services = useServices();
   const [account, setAccount] = useState<ParentProfile | null>(null);
+  const [isRestoring, setIsRestoring] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    services.restoreSession
+      .execute()
+      // An unreachable server leaves the parent signed out: the login
+      // screen is where they can try again.
+      .catch(() => null)
+      .then((restored) => {
+        if (!cancelled) {
+          setAccount(restored);
+          setIsRestoring(false);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [services]);
 
   const signIn = useCallback(
     async (email: string, password: string) => {
@@ -62,7 +82,11 @@ export function SessionProvider({ children }: PropsWithChildren) {
     [account, signIn, register, updateLastName, signOut],
   );
 
-  return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
+  // Screens render once the session is known, so a guard never redirects a
+  // parent whose session is still being restored.
+  return (
+    <SessionContext.Provider value={value}>{isRestoring ? null : children}</SessionContext.Provider>
+  );
 }
 
 export function useSession(): SessionContextValue {

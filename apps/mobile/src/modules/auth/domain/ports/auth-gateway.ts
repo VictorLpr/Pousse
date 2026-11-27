@@ -7,10 +7,15 @@ export interface EmailCredentials {
 
 /**
  * Mirrors BetterAuth's email/password client (`signUp.email`, `signIn.email`,
- * `signOut`, `updateUser`). The server owns validation and email uniqueness:
- * failures are thrown as `AuthError` with the API's codes.
+ * `signOut`, `updateUser`, `getSession`). The server owns validation and email
+ * uniqueness: failures are thrown as `AuthError` with the API's codes.
  */
 export interface AuthGateway {
+  /**
+   * The parent whose session is still open from a previous launch, or `null`
+   * (`GET /auth/get-session`). Throws when the server can't be reached.
+   */
+  getSession(): Promise<ParentProfile | null>;
   /** Creates the account and opens its session, as BetterAuth does. */
   signUp(credentials: EmailCredentials): Promise<ParentProfile>;
   signIn(credentials: EmailCredentials): Promise<ParentProfile>;

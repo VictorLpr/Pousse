@@ -10,11 +10,15 @@ import { ListChildren } from '@/modules/auth/application/use-cases/list-children
 import { ListEmotions } from '@/modules/journal/application/use-cases/list-emotions';
 import { PickRitualPhoto } from '@/modules/journal/application/use-cases/pick-ritual-photo';
 import { RegisterParent } from '@/modules/auth/application/use-cases/register-parent';
+import { RestoreSession } from '@/modules/auth/application/use-cases/restore-session';
 import { SetEveningReminder } from '@/modules/auth/application/use-cases/set-evening-reminder';
 import { SignInParent } from '@/modules/auth/application/use-cases/sign-in-parent';
 import { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-parent';
 import { UpdateParentName } from '@/modules/auth/application/use-cases/update-parent-name';
+import { BetterAuthGateway } from '@/modules/auth/infrastructure/http/better-auth-gateway';
+import { createAuthClientSetup } from '@/modules/auth/infrastructure/http/auth-client-setup';
 import { SequentialIdGenerator } from '@/shared/infrastructure/ids/sequential-id-generator';
+import type { AuthGateway } from '@/modules/auth/domain/ports/auth-gateway';
 import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-auth-gateway';
 import { InMemoryChildRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-child-repository';
 import { InMemoryConsentRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-consent-repository';
@@ -41,6 +45,9 @@ import {
 import { SystemClock } from '@/shared/infrastructure/time/system-clock';
 
 export interface AppServices {
+  /** True while auth runs on the fake backend, whose demo accounts the login screen lists. */
+  readonly hasDemoAccounts: boolean;
+  readonly restoreSession: RestoreSession;
   readonly signInParent: SignInParent;
   readonly registerParent: RegisterParent;
   readonly signOutParent: SignOutParent;
@@ -60,16 +67,44 @@ export interface AppServices {
 }
 
 /**
- * Composition root: wires use cases to the in-memory adapters. These act as
- * a fake backend: like the API, they generate ids and timestamps. Switching
- * to the API only changes the adapters.
+ * The API's public URL (e.g. `https://…/api`), inlined at bundle time.
+ * Required by a native build; the web app falls back to `/api` on its own
+ * origin, forwarded to the API by the Worker (ADR-0011). The API answers no
+ * CORS: on the web, only a URL on the page's own origin works.
+ */
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+/**
+ * Sign-up, sign-in and the session go to the API's BetterAuth, except under
+ * `expo start` without an API URL: the dev preview has no Worker to forward
+ * `/api`, so it keeps the fake backend and its demo accounts.
+ */
+const USES_FAKE_AUTH = __DEV__ && !API_URL;
+
+function createAuthGateway(
+  accounts: InMemoryParentAccountRepository,
+  idGenerator: SequentialIdGenerator,
+): AuthGateway {
+  if (USES_FAKE_AUTH) {
+    return new InMemoryAuthGateway(accounts, idGenerator);
+  }
+  // `sessionCookie()` of the same setup is what business requests add to
+  // their headers once they go to the API.
+  return new BetterAuthGateway(createAuthClientSetup(API_URL).client);
+}
+
+/**
+ * Composition root: wires use cases to their adapters. Auth goes to the API
+ * (`createAuthGateway`); the other in-memory adapters act as a fake backend:
+ * like the API, they generate ids and timestamps. Switching to the API only
+ * changes the adapters.
  */
 export function createAppServices(): AppServices {
   const idGenerator = new SequentialIdGenerator('pousse');
   const clock = new SystemClock();
 
   const accountRepository = new InMemoryParentAccountRepository(seedParentAccounts);
-  const authGateway = new InMemoryAuthGateway(accountRepository, idGenerator);
+  const authGateway = createAuthGateway(accountRepository, idGenerator);
   const consentRepository = new InMemoryConsentRepository(seedConsents, clock);
   const childRepository = new InMemoryChildRepository(
     seedChildren,
@@ -93,6 +128,8 @@ export function createAppServices(): AppServices {
   const trophyRepository = new InMemoryTrophyRepository(seedTrophies, idGenerator);
 
   return {
+    hasDemoAccounts: USES_FAKE_AUTH,
+    restoreSession: new RestoreSession(authGateway),
     signInParent: new SignInParent(authGateway),
     registerParent: new RegisterParent(authGateway),
     signOutParent: new SignOutParent(authGateway),
