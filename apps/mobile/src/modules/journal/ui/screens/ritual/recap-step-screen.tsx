@@ -1,20 +1,24 @@
 import { Redirect, useRouter } from 'expo-router';
-import { Image as ImageIcon } from 'lucide-react-native';
+import { Image as ImageIcon, ImagePlus } from 'lucide-react-native';
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { useServices } from '@/di/services-provider';
 import { entryPhotoOf } from '@/modules/journal/domain/entities/photo';
 import { AppButton } from '@/shared/ui/components/app-button';
 import { Divider } from '@/shared/ui/components/divider';
+import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
 import { emotionLabel } from '@/modules/journal/ui/format/emotion';
 import { journalErrorMessage } from '@/modules/journal/ui/format/journal-error';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useEmotions } from '@/modules/journal/ui/hooks/use-emotions';
+import { FROM_RECAP } from '@/modules/journal/ui/hooks/use-ritual-step-navigation';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
+
+const EDIT_HINT = "Ouvre l'étape, puis revient au récap";
 
 function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -37,6 +41,11 @@ export function RecapStepScreen() {
   }
 
   const label = emotionLabel(catalog, emotionCode);
+
+  const editStep = (step: 'emotion' | 'pride' | 'photo') => {
+    setErrorMessage(null);
+    router.push(`/ritual/${step}?from=${FROM_RECAP}`);
+  };
 
   const saveRitual = async () => {
     setIsSaving(true);
@@ -63,19 +72,97 @@ export function RecapStepScreen() {
         <EmotionIcon emotionCode={emotionCode} size={34} />
         <Text style={styles.emotionLabel}>{label ? capitalize(label) : null}</Text>
       </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Modifier l'émotion"
+        accessibilityHint={EDIT_HINT}
+        disabled={isSaving}
+        accessibilityState={{ disabled: isSaving }}
+        onPress={() => editStep('emotion')}
+        style={({ pressed }) => [
+          styles.editButton,
+          isSaving && styles.disabled,
+          pressed && styles.pressed,
+        ]}
+        hitSlop={8}
+      >
+        <Text style={styles.editLabel}>Modifier</Text>
+      </Pressable>
 
-      <Divider variant="stitched" spacing={20} />
+      <Divider variant="stitched" spacing={12} />
 
       <View style={styles.prideQuote}>
         <View style={styles.quoteBar} />
         <Text style={styles.prideText}>{text}</Text>
       </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel="Modifier le moment de fierté"
+        accessibilityHint={EDIT_HINT}
+        disabled={isSaving}
+        accessibilityState={{ disabled: isSaving }}
+        onPress={() => editStep('pride')}
+        style={({ pressed }) => [
+          styles.editButton,
+          isSaving && styles.disabled,
+          pressed && styles.pressed,
+        ]}
+        hitSlop={8}
+      >
+        <Text style={styles.editLabel}>Modifier</Text>
+      </Pressable>
 
       {photo ? (
-        <View accessible accessibilityLabel="Photo du jour ajoutée" style={styles.photoPlaceholder}>
-          <ImageIcon size={30} color={colors.overline} strokeWidth={1.8} />
-        </View>
-      ) : null}
+        <>
+          <View
+            accessible
+            accessibilityLabel="Photo du jour ajoutée"
+            style={styles.photoPlaceholder}
+          >
+            <ImageIcon size={30} color={colors.overline} strokeWidth={1.8} />
+          </View>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Modifier la photo"
+            accessibilityHint={EDIT_HINT}
+            disabled={isSaving}
+            accessibilityState={{ disabled: isSaving }}
+            onPress={() => editStep('photo')}
+            style={({ pressed }) => [
+              styles.editButton,
+              isSaving && styles.disabled,
+              pressed && styles.pressed,
+            ]}
+            hitSlop={8}
+          >
+            <Text style={styles.editLabel}>Modifier</Text>
+          </Pressable>
+        </>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Ajouter une photo"
+          accessibilityHint={EDIT_HINT}
+          disabled={isSaving}
+          accessibilityState={{ disabled: isSaving }}
+          onPress={() => editStep('photo')}
+          style={({ pressed }) => [
+            styles.addPhoto,
+            isSaving && styles.disabled,
+            pressed && styles.pressed,
+          ]}
+        >
+          <SketchShape
+            shape="rectangle"
+            radius={20}
+            stroke={colors.dashedBorder}
+            strokeWidth={2}
+            dashed
+          />
+          <ImagePlus size={24} color={colors.moss} strokeWidth={1.8} />
+          <Text style={styles.addPhotoLabel}>Ajouter une photo</Text>
+        </Pressable>
+      )}
 
       <View style={styles.footer}>
         {errorMessage ? (
@@ -124,7 +211,37 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
+    marginTop: 12,
+  },
+  editButton: {
+    alignSelf: 'flex-end',
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  pressed: {
+    opacity: 0.6,
+  },
+  disabled: {
+    opacity: 0.45,
+  },
+  editLabel: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 14,
+    color: colors.inkSoft,
+    textDecorationLine: 'underline',
+  },
+  addPhoto: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    minHeight: 72,
+    marginTop: 12,
+  },
+  addPhotoLabel: {
+    fontFamily: fonts.bodySemiBold,
+    fontSize: 15,
+    color: colors.moss,
   },
   error: {
     fontFamily: fonts.bodySemiBold,

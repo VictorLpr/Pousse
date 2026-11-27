@@ -1,4 +1,3 @@
-import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { AppButton } from '@/shared/ui/components/app-button';
@@ -6,11 +5,12 @@ import { EmotionGrid } from '@/modules/journal/ui/components/emotion-grid';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useEmotions } from '@/modules/journal/ui/hooks/use-emotions';
+import { useRitualStepNavigation } from '@/modules/journal/ui/hooks/use-ritual-step-navigation';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
 import { colors, fonts } from '@/shared/ui/theme';
 
 export function EmotionStepScreen() {
-  const router = useRouter();
+  const { goNext } = useRitualStepNavigation('/ritual/pride');
   const { activeChild } = useActiveChild();
   const { emotionCode, setEmotion } = useRitualDraft();
   const catalog = useEmotions();
@@ -34,11 +34,7 @@ export function EmotionStepScreen() {
         ageRange={activeChild?.ageRange}
       />
       <View style={styles.footer}>
-        <AppButton
-          label="Continuer"
-          disabled={!emotionCode}
-          onPress={() => router.push('/ritual/pride')}
-        />
+        <AppButton label="Continuer" disabled={!emotionCode} onPress={goNext} />
       </View>
     </RitualStepLayout>
   );
