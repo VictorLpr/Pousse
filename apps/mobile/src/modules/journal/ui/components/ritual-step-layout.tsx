@@ -44,10 +44,7 @@ export function RitualStepLayout({ step, title, subtitle, children }: RitualStep
         <View style={styles.backButtonBalance} />
       </View>
       {step === 1 ? (
-        <Text
-          accessibilityLabel={`Environ ${ritualDurationSpokenLabel()}`}
-          style={styles.duration}
-        >
+        <Text accessibilityLabel={`Environ ${ritualDurationSpokenLabel()}`} style={styles.duration}>
           Environ {ritualDurationLabel()}
         </Text>
       ) : null}
