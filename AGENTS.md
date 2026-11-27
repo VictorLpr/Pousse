@@ -46,4 +46,7 @@ npm test                  # test suites of every workspace (API: needs Docker ru
   shared options, each application extends it.
 - Kebab-case file names, one entity/use case/component/route per file.
 - No new dependency without a strong reason.
+- No AI attribution in git: commits carry no `Co-Authored-By` trailer for an
+  assistant, PR bodies no "Generated with" footer, and squash-merge messages
+  are written out without the trailers GitHub copies by default.
 - An ADR is never edited, it is superseded (see `docs/adr/README.md`).
