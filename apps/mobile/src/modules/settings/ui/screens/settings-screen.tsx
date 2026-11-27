@@ -117,8 +117,7 @@ export function SettingsScreen() {
       <SettingsRow
         icon={<Lock size={20} color={colors.ink} strokeWidth={1.9} />}
         title="Confidentialité"
-        accessibilityHint="Bientôt disponible"
-        onPress={showComingSoon}
+        onPress={() => router.push('/privacy')}
       />
       <Divider />
       <SettingsRow

@@ -12,6 +12,7 @@ import { Divider } from '@/shared/ui/components/divider';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
+import { TextLink } from '@/shared/ui/components/text-link';
 import { PRIVACY_POLICY_VERSION } from '@/modules/auth/domain/entities/consent';
 import { authErrorMessage, CHILD_AGE_HINT } from '@/modules/auth/ui/format/auth-error';
 import { birthDateFromParts, childInitial } from '@/modules/auth/ui/format/child';
@@ -148,11 +149,18 @@ export function ChildProfileScreen() {
       <Divider variant="stitched" spacing={26} />
 
       <Checkbox
-        label={guardianConsentLabel(PRIVACY_POLICY_VERSION)}
+        label={guardianConsentLabel(PRIVACY_POLICY_VERSION, firstName)}
         checked={guardianAttested}
         onChange={setGuardianAttested}
         accessibilityHint="Obligatoire pour créer le profil"
       />
+      <View style={styles.policyLink}>
+        <TextLink
+          label="Lire la politique de confidentialité"
+          accessibilityHint="Ce que Pousse garde, et pourquoi"
+          onPress={() => router.push('/privacy')}
+        />
+      </View>
 
       {errorMessage ? (
         <Text accessibilityRole="alert" style={styles.error}>
@@ -204,6 +212,9 @@ const styles = StyleSheet.create({
     fontFamily: fonts.bodySemiBold,
     fontSize: 16,
     color: colors.ink,
+  },
+  policyLink: {
+    paddingLeft: 34,
   },
   error: {
     fontFamily: fonts.bodySemiBold,

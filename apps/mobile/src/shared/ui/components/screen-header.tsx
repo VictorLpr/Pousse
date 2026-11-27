@@ -21,7 +21,8 @@ export function ScreenHeader({ title, subtitle, showBackButton = true }: ScreenH
         <Pressable
           accessibilityRole="button"
           accessibilityLabel="Revenir en arrière"
-          onPress={() => router.back()}
+          // A page opened from a link or a reload on web has no history.
+          onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
           style={({ pressed }) => [styles.backButton, pressed && styles.pressed]}
           hitSlop={12}
         >

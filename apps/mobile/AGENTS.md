@@ -170,7 +170,8 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
 
 - Every `Pressable` gets `accessibilityRole="button"` + a French `accessibilityLabel`
   describing the action (« Ouvrir le journal de Léa »), plus `accessibilityHint` when the
-  outcome isn't obvious.
+  outcome isn't obvious. Exception: an inline text link that only opens a page uses
+  `TextLink` (`accessibilityRole="link"`).
 - Selections: container `accessibilityRole="radiogroup"`, items `radio` with
   `accessibilityState={{ selected }}`. Disabled buttons expose
   `accessibilityState={{ disabled }}`.
@@ -195,6 +196,9 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
   `PRIVACY_POLICY_VERSION` accepted and `guardianAttested: true`), sent in the same
   `ChildRepository.create` call as `POST /children` does; the fake backend refuses it
   otherwise. A consent is never updated: `ConsentRepository` is read-only.
+  The policy text lives in `modules/auth/ui/format/privacy-policy.ts` (route
+  `/privacy`, readable signed out) and mirrors `docs/gdpr/record-of-processing.md`:
+  changing what it says means updating both and raising `PRIVACY_POLICY_VERSION`.
 - Passwords are stored in plain text in the in-memory adapter on purpose (front-only
   demo); hashing (scrypt, ADR-0003) is done by the API. Don't add crypto client-side.
 - Screens needing the active child use `useActiveChild()` and must handle **both** states:

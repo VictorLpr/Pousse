@@ -7,6 +7,7 @@ import { AppTextInput } from '@/shared/ui/components/app-text-input';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
+import { TextLink } from '@/shared/ui/components/text-link';
 import { authErrorMessage, PASSWORD_LENGTH_HINT } from '@/modules/auth/ui/format/auth-error';
 import { useSession } from '@/modules/auth/ui/state/session-context';
 import { colors, fonts } from '@/shared/ui/theme';
@@ -78,6 +79,14 @@ export function RegisterScreen() {
         spacing={24}
       />
 
+      <View style={styles.policyLink}>
+        <TextLink
+          label="Ce que Pousse garde, et pourquoi"
+          accessibilityHint="Ouvre la politique de confidentialité"
+          onPress={() => router.push('/privacy')}
+        />
+      </View>
+
       {errorMessage ? (
         <Text accessibilityRole="alert" style={styles.error}>
           {errorMessage}
@@ -99,6 +108,9 @@ export function RegisterScreen() {
 const styles = StyleSheet.create({
   fieldLabel: {
     marginBottom: 6,
+  },
+  policyLink: {
+    marginBottom: 12,
   },
   error: {
     fontFamily: fonts.bodySemiBold,
