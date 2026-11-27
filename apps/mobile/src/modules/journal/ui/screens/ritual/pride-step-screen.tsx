@@ -4,12 +4,12 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import { JOURNAL_TEXT_MAX_LENGTH } from '@/modules/journal/domain/entities/journal-entry';
-import { AppButton } from '@/shared/ui/components/app-button';
-import { Divider } from '@/shared/ui/components/divider';
 import { EmojiRow } from '@/modules/journal/ui/components/emoji-row';
 import { RitualStepLayout } from '@/modules/journal/ui/components/ritual-step-layout';
 import { textCounter } from '@/modules/journal/ui/format/text-counter';
 import { useRitualDraft } from '@/modules/journal/ui/state/ritual-draft-context';
+import { AppButton } from '@/shared/ui/components/app-button';
+import { Divider } from '@/shared/ui/components/divider';
 import { colors, fonts } from '@/shared/ui/theme';
 
 // Questions the parent can ask the child to get started.
@@ -124,7 +124,8 @@ const styles = StyleSheet.create({
   },
   nextIdea: {
     alignSelf: 'flex-start',
-    paddingVertical: 4,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   pressed: {
     opacity: 0.6,
