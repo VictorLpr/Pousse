@@ -29,9 +29,10 @@ src/modules/
   auth/       parent accounts, children, session (the household is the
               parent and their children, named after the parent's last name)
   journal/    evening ritual, journal entries
-  challenges/ weekly challenges, trophies (badges live here — they're
+  challenges/ weekly challenges, badges (badges live here — they're
               consumed only by this module, mirroring ADR-0006's rule for
-              transverse elements)
+              transverse elements; the journal only carries the
+              `awardedBadges` its API response returns)
   memories/   gallery — ui/ only, composes journal's public use-case
   settings/   preferences — ui/ only, composes auth's public use-case
 src/shared/   generic code with zero business logic (theme, generic
@@ -120,7 +121,7 @@ keep only ergonomic checks (the two passwords match).
 - No `any`, `import type` for type-only imports.
 - **Language: code in English, UI copy in French** (root `AGENTS.md`). Identifiers, file and
   folder names, module names, route paths and query params (`?from=household`),
-  stored/code values (`EmotionId`, trophy ids), comments, doc comments and every
+  stored/code values (`EmotionCode`, badge codes), comments, doc comments and every
   thrown `Error` message are in **English**. Only what the user reads is in
   **French**: labels, buttons, headings, `accessibilityLabel`/`accessibilityHint`,
   formatter output, and demo content in seeds. French copy lives in `ui/`
@@ -154,7 +155,7 @@ All values come from `src/shared/ui/theme/` — **never hardcode a color or font
 - At most **one** filled accent surface per screen (a coral CTA pill or a peach block) —
   if a screen already has one, everything else stays flat.
 - Icons are drawn bare (no circle/pastille behind them). A peach circle appears only to
-  mark a **selected** state (e.g. emotion choice) or an avatar/trophy.
+  mark a **selected** state (e.g. emotion choice) or an avatar/earned badge.
 - Inputs are underlined (2px `border` bottom), not boxed. Selectable chips are underlined
   with a 3px coral bar when selected (`ChoiceChip`).
 - Quotes/prompts use a 3px coral left bar (see pride step), not a tinted box.

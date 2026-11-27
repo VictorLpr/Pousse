@@ -22,7 +22,7 @@ src/
 ├── modules/
 │   ├── auth/         # parent accounts, children, session (household = parent + children)
 │   ├── journal/      # evening ritual, journal entries
-│   ├── challenges/   # weekly challenges, trophies
+│   ├── challenges/   # weekly challenges, badges
 │   ├── memories/     # photo gallery (ui/ only, consumes journal)
 │   └── settings/     # preferences (ui/ only, consumes auth)
 │       each business module carries domain/ application/ infrastructure/ ui/
@@ -43,8 +43,9 @@ Nothing else changes.
 - Sign-in: email + password (demo account: `parent@demo.fr` / `pousse123`)
 - Household: home page listing the parent's children, picking tonight's child
 - Child home: evening streak, starting the ritual
-- Evening ritual (4 steps): emotion → pride → photo → recap, then a "Bravo" screen
-- Memory journal, challenges & trophies, gallery
+- Evening ritual (4 steps): emotion → pride → photo → recap, then a "Bravo" screen that
+  announces the badges the evening earned
+- Memory journal, challenges & badges, gallery
 - Settings (reminder, sign-out) and switching child from the household page
 
 The UI copy itself is in French (the app targets French-speaking families);
