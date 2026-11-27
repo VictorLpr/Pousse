@@ -29,12 +29,16 @@ export function WeekProposals({
   const [pickedId, setPickedId] = useState<string | null>(null);
   // A reload may bring other proposals: a pick that isn't among them is dropped.
   const selectedId = proposals.some((proposal) => proposal.id === pickedId) ? pickedId : null;
+  // The error belongs to the card that was sent: picking another one hides it.
+  const [sentId, setSentId] = useState<string | null>(null);
+  const showsError = selectedId === null || selectedId === sentId;
 
-  const error = errorMessage ? (
-    <Text accessibilityRole="alert" style={styles.error}>
-      {errorMessage}
-    </Text>
-  ) : null;
+  const error =
+    errorMessage && showsError ? (
+      <Text accessibilityRole="alert" style={styles.error}>
+        {errorMessage}
+      </Text>
+    ) : null;
 
   return (
     <View style={styles.block}>
@@ -65,7 +69,10 @@ export function WeekProposals({
                       label="Oui, c’est mon défi"
                       accessibilityHint="Le choix vaut pour toute la semaine."
                       disabled={isSubmitting}
-                      onPress={() => onChoose(proposal.id)}
+                      onPress={() => {
+                        setSentId(proposal.id);
+                        onChoose(proposal.id);
+                      }}
                     />
                     <AppButton
                       label="Je regarde encore"
