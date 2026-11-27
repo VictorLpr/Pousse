@@ -135,7 +135,8 @@ export const seedChildChallenges: readonly StoredChildChallenge[] = [
   leaChallenge('child-challenge-lea-3', lastWeek, 'help_cook', PROPOSED),
   leaChallenge('child-challenge-lea-4', thisWeek, 'thank_you_note', {
     status: 'chosen',
-    chosenAt: new Date(`${thisWeek}T18:00:00`),
+    // Never in the future, or completing it on a Monday morning would end before it began.
+    chosenAt: new Date(Math.min(Date.now(), Date.parse(`${thisWeek}T18:00:00`))),
     completedAt: null,
   }),
   leaChallenge('child-challenge-lea-5', thisWeek, 'learn_a_word', PROPOSED),

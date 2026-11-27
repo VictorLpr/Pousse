@@ -8,6 +8,7 @@ import {
   type ChildChallenge,
   type WeekChallenges,
 } from '@/modules/challenges/domain/entities/child-challenge';
+import { ChallengeError } from '@/modules/challenges/domain/errors/challenge-error';
 import { BadgeShelf } from '@/modules/challenges/ui/components/badge-shelf';
 import { ChosenChallengeCard } from '@/modules/challenges/ui/components/chosen-challenge-card';
 import { WeekProposals } from '@/modules/challenges/ui/components/week-proposals';
@@ -19,6 +20,20 @@ import { LoadStatus } from '@/shared/ui/components/load-status';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
 import { useAsyncData } from '@/shared/ui/hooks/use-async-data';
+
+interface Submission {
+  readonly childId: string;
+  readonly isSubmitting: boolean;
+  readonly errorMessage: string | null;
+}
+
+/** The week changed elsewhere since it loaded: what is on screen can't be acted on. */
+function isStaleWeekError(error: unknown): boolean {
+  return (
+    error instanceof ChallengeError &&
+    (error.code === 'CHALLENGE_ALREADY_CHOSEN' || error.code === 'INVALID_CHALLENGE_TRANSITION')
+  );
+}
 
 function withUpdatedChallenge(week: WeekChallenges, updated: ChildChallenge): WeekChallenges {
   return {
@@ -37,8 +52,8 @@ export function ChallengesScreen() {
     ]);
     return { week, trophies };
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Keyed by child: switching child never shows another child's pending send or error.
+  const [submission, setSubmission] = useState<Submission | null>(null);
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -64,16 +79,27 @@ export function ChallengesScreen() {
   const { week, trophies } = state.data;
   const takenChallenge = takenChallengeOf(week);
 
+  const childId = activeChild.id;
+  const current = submission?.childId === childId ? submission : null;
+  const isSubmitting = current?.isSubmitting ?? false;
+  const errorMessage = current?.errorMessage ?? null;
+
   const submit = async (send: () => Promise<ChildChallenge>, fallback: string) => {
-    setErrorMessage(null);
-    setIsSubmitting(true);
+    setSubmission({ childId, isSubmitting: true, errorMessage: null });
     try {
       const updated = await send();
-      update((current) => ({ ...current, week: withUpdatedChallenge(current.week, updated) }));
+      update((data) => ({ ...data, week: withUpdatedChallenge(data.week, updated) }));
+      setSubmission(null);
     } catch (error) {
-      setErrorMessage(challengeErrorMessage(error, fallback));
-    } finally {
-      setIsSubmitting(false);
+      setSubmission({
+        childId,
+        isSubmitting: false,
+        errorMessage: challengeErrorMessage(error, fallback),
+      });
+      if (isStaleWeekError(error)) {
+        // Another device chose or completed meanwhile: show the week as it now is.
+        retry();
+      }
     }
   };
 
