@@ -182,7 +182,10 @@ export function createChallengeService(
     /** Completes the chosen challenge. */
     async complete(parentId: string, id: string): Promise<ChildChallengeResponse> {
       const row = await findOwn(parentId, id);
-      if (row.status !== 'chosen' || !(await challenges.complete(id, now()))) {
+      // Never before `chosen_at`, which the database checks, even if the
+      // clock stepped back since the choice.
+      const completedAt = new Date(Math.max(now().getTime(), row.chosenAt?.getTime() ?? 0));
+      if (row.status !== 'chosen' || !(await challenges.complete(id, completedAt))) {
         throw invalidTransition(row, 'completed');
       }
       return reread(id);
