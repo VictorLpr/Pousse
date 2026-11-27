@@ -6,8 +6,9 @@ Read the exact versioned docs at https://docs.expo.dev/versions/v57.0.0/ before 
 
 Pousse is a parent/child evening-ritual app (React Native + Expo SDK 57, expo-router,
 TypeScript strict). The app is moving onto the API module by module: auth (sign-up,
-sign-in, session) goes to BetterAuth; the other data still lives in in-memory repositories
-that act as a fake backend, until HTTP adapters replace them. These rules are mandatory for
+sign-in, session) goes to BetterAuth, children and their consent to `/children`; the other
+data still lives in in-memory repositories that act as a fake backend, until HTTP adapters
+replace them. These rules are mandatory for
 any change.
 
 ## 1. Modules by business domain, hexagonal inside each (non-negotiable)
@@ -101,10 +102,12 @@ email/password client; `getSession` restores the session at launch. Its API adap
 `BetterAuthGateway` (`modules/auth/infrastructure/http/`), over a BetterAuth client built
 per platform: on the web, the `HttpOnly` session cookie is the browser's, same origin
 through the Worker (`/api`); natively, the Expo plugin keeps it in `expo-secure-store`
-and `sessionCookie()` hands it to business requests. `container.ts` keeps the in-memory
-adapter (which holds the open session in memory) under `expo start` unless
-`EXPO_PUBLIC_API_URL` is set: the dev preview has no Worker to forward `/api`. An exported
-build always uses BetterAuth; a native build requires `EXPO_PUBLIC_API_URL`. Validation
+and `sessionCookie()` hands it to business requests. `container.ts` makes one choice for
+the whole app, `USES_FAKE_BACKEND`: under `expo start` without `EXPO_PUBLIC_API_URL` every
+port keeps its in-memory adapter (the auth one holds the open session in memory), since the
+dev preview has no Worker to forward `/api`; otherwise every port that has an HTTP adapter
+uses it. Never a mix: the fake backend's ids mean nothing to the API. An exported build
+always uses the API; a native build requires `EXPO_PUBLIC_API_URL`. Validation
 (email format, password length) and email uniqueness belong to the server: both adapters
 throw `AuthError` with the API's codes. Auth use cases hold no validation rule; screens
 keep only ergonomic checks (the two passwords match).
@@ -190,8 +193,10 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
   display name comes from `account.lastName` through `householdTitle()` /
   `householdLabel()` (`modules/auth/ui/format/household.ts`), which fall back when the
   name is empty. Screens behind login guard with `if (!account) return <Redirect href="/" />`
-  (or `!activeChild` for child-scoped screens). Children always belong to a parent
-  (`parentId`); list them via `listChildren.execute(account.id)`.
+  (or `!activeChild` for child-scoped screens). Children always belong to a parent:
+  list them via `listChildren.execute(account.id)`. A `Child` carries no `parentId`, as
+  the API returns none (it scopes `/children` to the session); only `NewChild` has one,
+  for the fake backend.
 - A child profile is created with its parental consent (`ConsentGrant`: the
   `PRIVACY_POLICY_VERSION` accepted and `guardianAttested: true`), sent in the same
   `ChildRepository.create` call as `POST /children` does; the fake backend refuses it
@@ -232,7 +237,9 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
   `src/shared/infrastructure/http/`: it depends on the `HttpClient`
   interface (`get`/`post`/`put`/`patch`/`delete`, JSON in and out), and
   `container.ts` builds the one `FetchHttpClient` (native `fetch`) the
-  adapters receive. No adapter
+  adapters receive, in `connectToApi()` along with the BetterAuth client
+  (`ApiConnection`, `null` on the fake backend). A module's HTTP adapter is
+  picked with `api ? new HttpXxx(api.http) : new InMemoryXxx(…)`. No adapter
   calls `fetch` itself, and no HTTP library is added.
 - Base URL: `API_BASE_URL` (`api-base-url.ts`) reads `EXPO_PUBLIC_API_URL`,
   inlined by Expo at build time, and defaults to `/api` — on the PWA the
@@ -245,7 +252,7 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
   `sessionCookie` option, which reads the cookie the BetterAuth client keeps
   in `expo-secure-store`, and the client sends it as the `Cookie` header
   (ADR-0003). The client never calls `Platform`: the choice is made at
-  composition.
+  composition (the web setup's `sessionCookie()` returns `null`).
 - Errors: a failed call rejects with `ApiError` (`api-error.ts`), carrying
   the HTTP `status` and the API's English `code` from its `{ code, message }`
   body, or a client-side code: `NETWORK_UNAVAILABLE` (no response),
@@ -253,8 +260,13 @@ module's entities goes in that module's `ui/components/`. Style with `StyleSheet
   API's JSON). The module's adapter catches the codes it knows and rethrows
   them as its domain error (`AuthError`, `JournalError`, whose codes already
   match the API's), so screens keep using their formatters; anything else
-  reaches the formatter's fallback copy. `ApiError.message` is English text
-  for logs, never shown.
+  reaches the formatter's fallback copy. The API answers a schema failure
+  with one generic `VALIDATION_FAILED` whose message names the field first
+  (`body/birthDate …`): the adapter may read that field to pick the domain
+  code (`auth/infrastructure/http/child-api-error.ts`). Where the port
+  announces `null` (`findById`), the adapter returns it on the API's
+  not-found code (`CHILD_NOT_FOUND`), not on any `404`. `ApiError.message`
+  is English text for logs, never shown.
 - Response bodies are typed by the caller (`get<ChildDto>(…)`), not
   validated: the adapter maps the API's shape onto the domain entity, in
   its own file next to the adapter.

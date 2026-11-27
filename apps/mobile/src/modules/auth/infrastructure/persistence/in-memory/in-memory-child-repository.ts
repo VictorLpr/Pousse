@@ -64,11 +64,15 @@ export class InMemoryChildRepository implements ChildRepository {
   }
 
   async save(child: Child): Promise<void> {
-    const { ageRange: _computed, ...record } = child;
-    if (record.birthDate !== this.recordsById.get(record.id)?.birthDate) {
-      this.assertAgeInRange(record.birthDate);
+    const stored = this.recordsById.get(child.id);
+    if (!stored) {
+      throw new Error(`Child not found: ${child.id}`);
     }
-    this.recordsById.set(record.id, record);
+    const { ageRange: _computed, ...fields } = child;
+    if (fields.birthDate !== stored.birthDate) {
+      this.assertAgeInRange(fields.birthDate);
+    }
+    this.recordsById.set(child.id, { ...fields, parentId: stored.parentId });
   }
 
   private assertAgeInRange(birthDate: string): void {
@@ -106,7 +110,7 @@ export class InMemoryChildRepository implements ChildRepository {
     return { policyVersion, guardianAttested: true };
   }
 
-  private toChild(record: ChildRecord): Child {
+  private toChild({ parentId: _owner, ...record }: ChildRecord): Child {
     return { ...record, ageRange: ageRangeOf(ageOn(record.birthDate, this.today())) };
   }
 
