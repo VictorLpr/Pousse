@@ -254,9 +254,13 @@ export const photo = pgTable(
   ],
 );
 
-/** Challenge catalog. Title and description may be in French (display content). */
+/**
+ * Challenge catalog. Title and description may be in French (display
+ * content); codes stay in English and are the seed's stable key.
+ */
 export const challenge = pgTable('challenge', {
   id: smallint('id').primaryKey().generatedAlwaysAsIdentity(),
+  code: varchar('code', { length: 40 }).notNull().unique(),
   title: varchar('title', { length: 100 }).notNull(),
   description: varchar('description', { length: 300 }).notNull(),
   ageRange: ageRange('age_range').notNull(),
