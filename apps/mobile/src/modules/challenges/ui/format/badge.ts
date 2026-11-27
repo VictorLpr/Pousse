@@ -1,12 +1,14 @@
 import type { Badge } from '@/modules/challenges/domain/entities/badge';
 import { formatDayMonth } from '@/shared/ui/format/date';
 
-/** E.g. « Badge Premier soir, obtenu le 21 novembre. Tu as raconté ta première soirée. » */
+/**
+ * « Badge Premier soir, obtenu le 21 novembre. Tu as raconté ta première
+ * soirée. » or « Badge Curieux, pas encore obtenu. ». The catalog's
+ * descriptions say what the child did, so only an earned badge reads it.
+ */
 export function badgeAccessibilityLabel(badge: Badge): string {
-  const status = badge.awardedAt
-    ? `obtenu le ${formatDayMonth(badge.awardedAt)}`
-    : 'pas encore obtenu';
-  const label = `Badge ${badge.label}, ${status}.`;
+  if (!badge.awardedAt) return `Badge ${badge.label}, pas encore obtenu.`;
+  const label = `Badge ${badge.label}, obtenu le ${formatDayMonth(badge.awardedAt)}.`;
   return badge.description ? `${label} ${badge.description}` : label;
 }
 
