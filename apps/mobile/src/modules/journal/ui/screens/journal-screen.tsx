@@ -1,19 +1,20 @@
 import { Redirect } from 'expo-router';
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import type { JournalEntry } from '@/modules/journal/domain/entities/journal-entry';
 import { useServices } from '@/di/services-provider';
 import { AppShell } from '@/shared/ui/components/app-shell';
 import { Divider } from '@/shared/ui/components/divider';
 import { EmotionIcon } from '@/modules/journal/ui/components/emotion-icon';
 import { emotionLabel } from '@/modules/journal/ui/format/emotion';
 import { useEmotions } from '@/modules/journal/ui/hooks/use-emotions';
+import { LoadStatus } from '@/shared/ui/components/load-status';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
 import { formatFullDate } from '@/shared/ui/format/date';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import { useAsyncData } from '@/shared/ui/hooks/use-async-data';
 import { colors, fonts } from '@/shared/ui/theme';
 
 function capitalize(text: string): string {
@@ -23,21 +24,10 @@ function capitalize(text: string): string {
 export function JournalScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
-  const [entries, setEntries] = useState<JournalEntry[]>([]);
-  const [loadFailed, setLoadFailed] = useState(false);
+  const { state, retry } = useAsyncData(activeChild?.id ?? null, (childId) =>
+    services.getJournalEntries.execute(childId),
+  );
   const catalog = useEmotions();
-
-  useEffect(() => {
-    if (activeChild) {
-      services.getJournalEntries
-        .execute(activeChild.id)
-        .then((loaded) => {
-          setEntries(loaded);
-          setLoadFailed(false);
-        })
-        .catch(() => setLoadFailed(true));
-    }
-  }, [services, activeChild]);
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -46,14 +36,27 @@ export function JournalScreen() {
     return <Redirect href="/" />;
   }
 
+  const entries = state.status === 'ready' ? state.data : [];
+
   return (
     <AppShell route="journal">
       <ScreenHeader
         title={`Le journal de ${activeChild.firstName}`}
-        subtitle={`${entries.length} souvenir${entries.length > 1 ? 's' : ''} gardé${entries.length > 1 ? 's' : ''}`}
+        subtitle={
+          state.status === 'ready'
+            ? `${entries.length} souvenir${entries.length > 1 ? 's' : ''} gardé${entries.length > 1 ? 's' : ''}`
+            : undefined
+        }
       />
 
       <OverlineLabel style={styles.sectionLabel}>Cette semaine</OverlineLabel>
+
+      <LoadStatus
+        status={state.status}
+        loadingLabel="Chargement du journal"
+        errorMessage="Impossible d'afficher le journal pour l'instant."
+        onRetry={retry}
+      />
 
       {entries.map((entry, index) => {
         const label = emotionLabel(catalog, entry.emotionCode) ?? '';
@@ -80,13 +83,7 @@ export function JournalScreen() {
         );
       })}
 
-      {loadFailed ? (
-        <Text accessibilityRole="alert" style={styles.error}>
-          Impossible d'afficher le journal pour l'instant.
-        </Text>
-      ) : null}
-
-      {!loadFailed && entries.length === 0 && (
+      {state.status === 'ready' && entries.length === 0 && (
         <Text style={styles.emptyText}>
           Aucun souvenir pour l'instant. Le rituel du soir remplira ce journal !
         </Text>
@@ -133,12 +130,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: colors.ink,
-  },
-  error: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.error,
-    marginTop: 24,
   },
   emptyText: {
     fontFamily: fonts.body,

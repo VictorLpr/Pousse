@@ -1,19 +1,19 @@
 import { Redirect } from 'expo-router';
 import { Plus } from 'lucide-react-native';
-import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { JournalEntry } from '@/modules/journal';
 import { useServices } from '@/di/services-provider';
 import { emotionLabel } from '@/modules/journal/ui/format/emotion';
 import { useEmotions } from '@/modules/journal/ui/hooks/use-emotions';
 import { AppShell } from '@/shared/ui/components/app-shell';
+import { LoadStatus } from '@/shared/ui/components/load-status';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
 import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { formatMonth, formatShortDate } from '@/shared/ui/format/date';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import { useAsyncData } from '@/shared/ui/hooks/use-async-data';
 import { colors, fonts } from '@/shared/ui/theme';
 
 function capitalize(text: string): string {
@@ -23,21 +23,11 @@ function capitalize(text: string): string {
 export function GalleryScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
-  const [entriesWithPhoto, setEntriesWithPhoto] = useState<JournalEntry[]>([]);
-  const [loadFailed, setLoadFailed] = useState(false);
+  const { state, retry } = useAsyncData(activeChild?.id ?? null, async (childId) => {
+    const entries = await services.getJournalEntries.execute(childId);
+    return entries.filter((entry) => entry.photo !== null);
+  });
   const catalog = useEmotions();
-
-  useEffect(() => {
-    if (activeChild) {
-      services.getJournalEntries
-        .execute(activeChild.id)
-        .then((entries) => {
-          setEntriesWithPhoto(entries.filter((entry) => entry.photo !== null));
-          setLoadFailed(false);
-        })
-        .catch(() => setLoadFailed(true));
-    }
-  }, [services, activeChild]);
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -46,6 +36,21 @@ export function GalleryScreen() {
     return <Redirect href="/" />;
   }
 
+  if (state.status !== 'ready') {
+    return (
+      <AppShell route="gallery">
+        <ScreenHeader title={`Galerie de ${activeChild.firstName}`} />
+        <LoadStatus
+          status={state.status}
+          loadingLabel="Chargement des photos"
+          errorMessage="Impossible d'afficher les photos pour l'instant."
+          onRetry={retry}
+        />
+      </AppShell>
+    );
+  }
+
+  const entriesWithPhoto = state.data;
   const photoCount = entriesWithPhoto.length;
   const monthLabel = photoCount > 0 ? formatMonth(entriesWithPhoto[0].createdAt) : null;
 
@@ -55,12 +60,6 @@ export function GalleryScreen() {
         title={`Galerie de ${activeChild.firstName}`}
         subtitle={`${photoCount} photo${photoCount > 1 ? 's' : ''} gardée${photoCount > 1 ? 's' : ''}`}
       />
-
-      {loadFailed ? (
-        <Text accessibilityRole="alert" style={styles.error}>
-          Impossible d'afficher les photos pour l'instant.
-        </Text>
-      ) : null}
 
       {monthLabel && <OverlineLabel style={styles.monthLabel}>{monthLabel}</OverlineLabel>}
 
@@ -119,12 +118,6 @@ export function GalleryScreen() {
 }
 
 const styles = StyleSheet.create({
-  error: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.error,
-    marginBottom: 14,
-  },
   monthLabel: {
     marginBottom: 14,
   },

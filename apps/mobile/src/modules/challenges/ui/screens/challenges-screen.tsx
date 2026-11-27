@@ -9,19 +9,19 @@ import {
   Trophy as TrophyIcon,
   Users,
 } from 'lucide-react-native';
-import { useEffect, useState, type ComponentType } from 'react';
+import { useState, type ComponentType } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import type { Trophy } from '@/modules/challenges/domain/entities/trophy';
-import type { WeeklyChallenge } from '@/modules/challenges/domain/entities/weekly-challenge';
 import { useServices } from '@/di/services-provider';
 import { AppShell } from '@/shared/ui/components/app-shell';
 import { Divider } from '@/shared/ui/components/divider';
+import { LoadStatus } from '@/shared/ui/components/load-status';
 import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
 import { SketchShape } from '@/shared/ui/components/sketch-shape';
 import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import { useAsyncData } from '@/shared/ui/hooks/use-async-data';
 import { colors, fonts } from '@/shared/ui/theme';
 
 interface TrophyIconProps {
@@ -50,16 +50,14 @@ interface TrophySlot {
 export function ChallengesScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
-  const [challenge, setChallenge] = useState<WeeklyChallenge | null>(null);
-  const [trophies, setTrophies] = useState<Trophy[]>([]);
+  const { state, retry, update } = useAsyncData(activeChild?.id ?? null, async (childId) => {
+    const [challenge, trophies] = await Promise.all([
+      services.getWeeklyChallenge.execute(childId),
+      services.getTrophies.execute(childId),
+    ]);
+    return { challenge, trophies };
+  });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (activeChild) {
-      services.getWeeklyChallenge.execute(activeChild.id).then(setChallenge);
-      services.getTrophies.execute(activeChild.id).then(setTrophies);
-    }
-  }, [services, activeChild]);
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -68,10 +66,27 @@ export function ChallengesScreen() {
     return <Redirect href="/" />;
   }
 
+  if (state.status !== 'ready') {
+    return (
+      <AppShell route="challenges">
+        <ScreenHeader title={`Les défis de ${activeChild.firstName}`} />
+        <LoadStatus
+          status={state.status}
+          loadingLabel="Chargement des défis"
+          errorMessage="Impossible d'afficher les défis pour l'instant."
+          onRetry={retry}
+        />
+      </AppShell>
+    );
+  }
+
+  const { challenge, trophies } = state.data;
+
   const completeChallenge = async () => {
     setErrorMessage(null);
     try {
-      setChallenge(await services.completeWeeklyChallenge.execute(activeChild.id));
+      const completed = await services.completeWeeklyChallenge.execute(activeChild.id);
+      update((current) => ({ ...current, challenge: completed }));
     } catch {
       setErrorMessage('Impossible de valider le défi, réessayez.');
     }
