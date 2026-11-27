@@ -17,6 +17,14 @@ import { SignOutParent } from '@/modules/auth/application/use-cases/sign-out-par
 import { UpdateParentName } from '@/modules/auth/application/use-cases/update-parent-name';
 import { BetterAuthGateway } from '@/modules/auth/infrastructure/http/better-auth-gateway';
 import { createAuthClientSetup } from '@/modules/auth/infrastructure/http/auth-client-setup';
+import { HttpChildRepository } from '@/modules/auth/infrastructure/http/http-child-repository';
+import { HttpConsentRepository } from '@/modules/auth/infrastructure/http/http-consent-repository';
+import type { ParentAuthClient } from '@/modules/auth/infrastructure/http/parent-auth-client';
+import type { ChildRepository } from '@/modules/auth/domain/ports/child-repository';
+import type { ConsentRepository } from '@/modules/auth/domain/ports/consent-repository';
+import { API_BASE_URL } from '@/shared/infrastructure/http/api-base-url';
+import { FetchHttpClient } from '@/shared/infrastructure/http/fetch-http-client';
+import type { HttpClient } from '@/shared/infrastructure/http/http-client';
 import { SequentialIdGenerator } from '@/shared/infrastructure/ids/sequential-id-generator';
 import type { AuthGateway } from '@/modules/auth/domain/ports/auth-gateway';
 import { InMemoryAuthGateway } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-auth-gateway';
@@ -75,43 +83,71 @@ export interface AppServices {
 const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 /**
- * Sign-up, sign-in and the session go to the API's BetterAuth, except under
- * `expo start` without an API URL: the dev preview has no Worker to forward
- * `/api`, so it keeps the fake backend and its demo accounts.
+ * The app talks to the API, except under `expo start` without an API URL:
+ * the dev preview has no Worker to forward `/api`, so it keeps the whole fake
+ * backend (in-memory adapters and their demo accounts). Never a mix: the fake
+ * backend's ids mean nothing to the API.
  */
-const USES_FAKE_AUTH = __DEV__ && !API_URL;
+const USES_FAKE_BACKEND = __DEV__ && !API_URL;
 
-function createAuthGateway(
-  accounts: InMemoryParentAccountRepository,
-  idGenerator: SequentialIdGenerator,
-): AuthGateway {
-  if (USES_FAKE_AUTH) {
-    return new InMemoryAuthGateway(accounts, idGenerator);
-  }
-  // `sessionCookie()` of the same setup is what business requests add to
-  // their headers once they go to the API.
-  return new BetterAuthGateway(createAuthClientSetup(API_URL).client);
+/** What every HTTP adapter shares: the BetterAuth client and the one HTTP client. */
+interface ApiConnection {
+  readonly authClient: ParentAuthClient;
+  readonly http: HttpClient;
 }
 
 /**
- * Composition root: wires use cases to their adapters. Auth goes to the API
- * (`createAuthGateway`); the other in-memory adapters act as a fake backend:
- * like the API, they generate ids and timestamps. Switching to the API only
- * changes the adapters.
+ * Built once. Business requests carry the session cookie the auth client
+ * keeps: on native, `sessionCookie()` reads it from secure storage; on the
+ * web it returns `null` and the browser sends its `HttpOnly` cookie.
+ */
+function connectToApi(): ApiConnection {
+  const setup = createAuthClientSetup(API_URL);
+  return {
+    authClient: setup.client,
+    http: new FetchHttpClient({ baseUrl: API_BASE_URL, sessionCookie: setup.sessionCookie }),
+  };
+}
+
+interface ChildAdapters {
+  readonly children: ChildRepository;
+  readonly consents: ConsentRepository;
+}
+
+function createChildAdapters(
+  api: ApiConnection | null,
+  idGenerator: SequentialIdGenerator,
+  clock: SystemClock,
+): ChildAdapters {
+  if (api) {
+    return {
+      children: new HttpChildRepository(api.http),
+      consents: new HttpConsentRepository(api.http),
+    };
+  }
+  const consents = new InMemoryConsentRepository(seedConsents, clock);
+  return {
+    children: new InMemoryChildRepository(seedChildren, consents, idGenerator, clock),
+    consents,
+  };
+}
+
+/**
+ * Composition root: wires use cases to their adapters. Auth, children and
+ * consent go to the API (`connectToApi`) unless the fake backend is on; the
+ * other in-memory adapters still act as a fake backend: like the API, they
+ * generate ids and timestamps. Switching to the API only changes the adapters.
  */
 export function createAppServices(): AppServices {
   const idGenerator = new SequentialIdGenerator('pousse');
   const clock = new SystemClock();
+  const api = USES_FAKE_BACKEND ? null : connectToApi();
 
-  const accountRepository = new InMemoryParentAccountRepository(seedParentAccounts);
-  const authGateway = createAuthGateway(accountRepository, idGenerator);
-  const consentRepository = new InMemoryConsentRepository(seedConsents, clock);
-  const childRepository = new InMemoryChildRepository(
-    seedChildren,
-    consentRepository,
-    idGenerator,
-    clock,
-  );
+  const authGateway: AuthGateway = api
+    ? new BetterAuthGateway(api.authClient)
+    : new InMemoryAuthGateway(new InMemoryParentAccountRepository(seedParentAccounts), idGenerator);
+  // No use case reads the consent yet: the child profile screens will.
+  const { children: childRepository } = createChildAdapters(api, idGenerator, clock);
   const journalRepository = new InMemoryJournalEntryRepository(
     seedJournalEntries,
     seedEmotions,
@@ -128,7 +164,7 @@ export function createAppServices(): AppServices {
   const trophyRepository = new InMemoryTrophyRepository(seedTrophies, idGenerator);
 
   return {
-    hasDemoAccounts: USES_FAKE_AUTH,
+    hasDemoAccounts: USES_FAKE_BACKEND,
     restoreSession: new RestoreSession(authGateway),
     signInParent: new SignInParent(authGateway),
     registerParent: new RegisterParent(authGateway),
