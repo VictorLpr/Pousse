@@ -1,63 +1,59 @@
 import { Redirect } from 'expo-router';
-import {
-  Award,
-  Check,
-  Heart,
-  Lock,
-  PenTool,
-  Star,
-  Trophy as TrophyIcon,
-  Users,
-} from 'lucide-react-native';
-import { useState, type ComponentType } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
 
 import { useServices } from '@/di/services-provider';
+import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
+import {
+  takenChallengeOf,
+  type ChildChallenge,
+  type WeekChallenges,
+} from '@/modules/challenges/domain/entities/child-challenge';
+import { ChallengeError } from '@/modules/challenges/domain/errors/challenge-error';
+import { BadgeShelf } from '@/modules/challenges/ui/components/badge-shelf';
+import { ChosenChallengeCard } from '@/modules/challenges/ui/components/chosen-challenge-card';
+import { WeekProposals } from '@/modules/challenges/ui/components/week-proposals';
+import { challengeErrorMessage } from '@/modules/challenges/ui/format/challenge-error';
+import { localDayOf } from '@/modules/journal';
 import { AppShell } from '@/shared/ui/components/app-shell';
 import { Divider } from '@/shared/ui/components/divider';
 import { LoadStatus } from '@/shared/ui/components/load-status';
-import { OverlineLabel } from '@/shared/ui/components/overline-label';
 import { ScreenContainer } from '@/shared/ui/components/screen-container';
 import { ScreenHeader } from '@/shared/ui/components/screen-header';
-import { SketchShape } from '@/shared/ui/components/sketch-shape';
-import { useActiveChild } from '@/modules/auth/ui/state/active-child-context';
 import { useAsyncData } from '@/shared/ui/hooks/use-async-data';
-import { colors, fonts } from '@/shared/ui/theme';
 
-interface TrophyIconProps {
-  size?: number | string;
-  color?: string;
-  strokeWidth?: number;
+interface Submission {
+  readonly childId: string;
+  readonly isSubmitting: boolean;
+  readonly errorMessage: string | null;
 }
 
-const TROPHY_ICONS: Record<string, ComponentType<TrophyIconProps>> = {
-  teamwork: Users,
-  creative: PenTool,
-  kindness: Heart,
-  courage: Star,
-};
+/** The week changed elsewhere since it loaded: what is on screen can't be acted on. */
+function isStaleWeekError(error: unknown): boolean {
+  return (
+    error instanceof ChallengeError &&
+    (error.code === 'CHALLENGE_ALREADY_CHOSEN' || error.code === 'INVALID_CHALLENGE_TRANSITION')
+  );
+}
 
-/** Locked slots drawn after the earned trophies; they are never stored. */
-const LOCKED_TROPHY_SLOTS = 2;
-
-interface TrophySlot {
-  readonly key: string;
-  readonly name: string;
-  readonly isEarned: boolean;
-  readonly Icon: ComponentType<TrophyIconProps>;
+function withUpdatedChallenge(week: WeekChallenges, updated: ChildChallenge): WeekChallenges {
+  return {
+    ...week,
+    challenges: week.challenges.map((current) => (current.id === updated.id ? updated : current)),
+  };
 }
 
 export function ChallengesScreen() {
   const services = useServices();
   const { activeChild, isLoading } = useActiveChild();
   const { state, retry, update } = useAsyncData(activeChild?.id ?? null, async (childId) => {
-    const [challenge, trophies] = await Promise.all([
-      services.getWeeklyChallenge.execute(childId),
+    const [week, trophies] = await Promise.all([
+      services.getWeekChallenges.execute(childId, localDayOf(new Date())),
       services.getTrophies.execute(childId),
     ]);
-    return { challenge, trophies };
+    return { week, trophies };
   });
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  // Keyed by child: switching child never shows another child's pending send or error.
+  const [submission, setSubmission] = useState<Submission | null>(null);
 
   if (isLoading) {
     return <ScreenContainer scrollable={false}>{null}</ScreenContainer>;
@@ -80,200 +76,66 @@ export function ChallengesScreen() {
     );
   }
 
-  const { challenge, trophies } = state.data;
+  const { week, trophies } = state.data;
+  const takenChallenge = takenChallengeOf(week);
 
-  const completeChallenge = async () => {
-    setErrorMessage(null);
+  const childId = activeChild.id;
+  const current = submission?.childId === childId ? submission : null;
+  const isSubmitting = current?.isSubmitting ?? false;
+  const errorMessage = current?.errorMessage ?? null;
+
+  const submit = async (send: () => Promise<ChildChallenge>, fallback: string) => {
+    setSubmission({ childId, isSubmitting: true, errorMessage: null });
     try {
-      const completed = await services.completeWeeklyChallenge.execute(activeChild.id);
-      update((current) => ({ ...current, challenge: completed }));
-    } catch {
-      setErrorMessage('Impossible de valider le défi, réessayez.');
+      const updated = await send();
+      update((data) => ({ ...data, week: withUpdatedChallenge(data.week, updated) }));
+      setSubmission(null);
+    } catch (error) {
+      setSubmission({
+        childId,
+        isSubmitting: false,
+        errorMessage: challengeErrorMessage(error, fallback),
+      });
+      if (isStaleWeekError(error)) {
+        // Another device chose or completed meanwhile: show the week as it now is.
+        retry();
+      }
     }
   };
-
-  const earnedTrophies = trophies.filter((trophy) => trophy.status === 'earned');
-  const earnedCount = earnedTrophies.length;
-  const trophySlots: TrophySlot[] = [
-    ...earnedTrophies.map((trophy) => ({
-      key: trophy.id,
-      name: trophy.name,
-      isEarned: true,
-      Icon: TROPHY_ICONS[trophy.id] ?? Award,
-    })),
-    ...Array.from({ length: LOCKED_TROPHY_SLOTS }, (_, index) => ({
-      key: `locked-slot-${index + 1}`,
-      name: 'À venir',
-      isEarned: false,
-      Icon: Lock,
-    })),
-  ];
 
   return (
     <AppShell route="challenges">
       <ScreenHeader title={`Les défis de ${activeChild.firstName}`} />
 
-      {challenge && (
-        <View style={styles.challengeBlock}>
-          <OverlineLabel>Le défi de la semaine</OverlineLabel>
-          <Text style={styles.challengeTitle}>{challenge.title}</Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={
-              challenge.completedTogether
-                ? 'Défi relevé ensemble'
-                : 'Marquer le défi comme fait ensemble'
-            }
-            accessibilityState={{ disabled: challenge.completedTogether }}
-            disabled={challenge.completedTogether}
-            onPress={completeChallenge}
-            style={({ pressed }) => [
-              styles.challengeButton,
-              challenge.completedTogether && styles.challengeButtonDone,
-              pressed && !challenge.completedTogether && styles.pressed,
-            ]}
-          >
-            <Check size={17} color={colors.ink} strokeWidth={2.4} />
-            <Text style={styles.challengeButtonLabel}>
-              {challenge.completedTogether ? 'Défi relevé ensemble !' : "On l'a fait ensemble"}
-            </Text>
-          </Pressable>
-          {errorMessage ? (
-            <Text accessibilityRole="alert" style={styles.error}>
-              {errorMessage}
-            </Text>
-          ) : null}
-        </View>
+      {takenChallenge ? (
+        <ChosenChallengeCard
+          childChallenge={takenChallenge}
+          isSubmitting={isSubmitting}
+          errorMessage={errorMessage}
+          onComplete={() =>
+            submit(
+              () => services.completeChallenge.execute(takenChallenge.id),
+              'Impossible de valider le défi, réessayez.',
+            )
+          }
+        />
+      ) : (
+        <WeekProposals
+          proposals={week.challenges}
+          isSubmitting={isSubmitting}
+          errorMessage={errorMessage}
+          onChoose={(childChallengeId) =>
+            submit(
+              () => services.chooseChallenge.execute(childChallengeId),
+              'Impossible de choisir ce défi, réessayez.',
+            )
+          }
+        />
       )}
 
       <Divider variant="sprout" spacing={28} />
 
-      <View style={styles.trophiesHeader}>
-        <View style={styles.trophiesTitle}>
-          <TrophyIcon size={18} color={colors.ink} strokeWidth={1.9} />
-          <Text style={styles.trophiesTitleText}>Mes trophées</Text>
-        </View>
-        <Text style={styles.trophiesCount}>
-          {earnedCount} gagné{earnedCount > 1 ? 's' : ''}
-        </Text>
-      </View>
-
-      <View style={styles.trophyGrid}>
-        {trophySlots.map(({ key, name, isEarned, Icon }) => (
-          <View
-            key={key}
-            accessible
-            accessibilityLabel={
-              isEarned ? `Trophée gagné : ${name}` : 'Trophée à venir, encore verrouillé'
-            }
-            style={styles.trophyCell}
-          >
-            <View style={styles.trophyCircle}>
-              {isEarned ? (
-                <SketchShape
-                  shape="circle"
-                  fill={colors.peach}
-                  stroke={colors.ink}
-                  strokeWidth={1.6}
-                />
-              ) : (
-                <SketchShape shape="circle" stroke={colors.dashedBorder} strokeWidth={2} dashed />
-              )}
-              <View>
-                <Icon
-                  size={isEarned ? 26 : 24}
-                  color={isEarned ? colors.ink : colors.moss}
-                  strokeWidth={1.8}
-                />
-              </View>
-            </View>
-            <Text style={[styles.trophyName, !isEarned && styles.lockedTrophyName]}>{name}</Text>
-          </View>
-        ))}
-      </View>
+      <BadgeShelf trophies={trophies} />
     </AppShell>
   );
 }
-
-const styles = StyleSheet.create({
-  challengeBlock: {
-    gap: 12,
-  },
-  challengeTitle: {
-    fontFamily: fonts.heading,
-    fontSize: 30,
-    lineHeight: 34,
-    color: colors.ink,
-  },
-  challengeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.peach,
-    borderRadius: 18,
-    paddingVertical: 14,
-    marginTop: 4,
-  },
-  challengeButtonDone: {
-    backgroundColor: colors.coral,
-  },
-  pressed: {
-    opacity: 0.8,
-  },
-  challengeButtonLabel: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 14,
-    color: colors.ink,
-  },
-  error: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 14,
-    color: colors.error,
-  },
-  trophiesHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  trophiesTitle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  trophiesTitleText: {
-    fontFamily: fonts.bodyBold,
-    fontSize: 15,
-    color: colors.ink,
-  },
-  trophiesCount: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 13,
-    color: colors.inkSoft,
-  },
-  trophyGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    rowGap: 22,
-  },
-  trophyCell: {
-    flexBasis: '33%',
-    alignItems: 'center',
-    gap: 8,
-  },
-  trophyCircle: {
-    width: 66,
-    height: 66,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  trophyName: {
-    fontFamily: fonts.bodySemiBold,
-    fontSize: 12,
-    color: colors.ink,
-  },
-  lockedTrophyName: {
-    color: colors.moss,
-  },
-});

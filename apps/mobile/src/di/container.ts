@@ -1,11 +1,12 @@
 import { CompleteEveningRitual } from '@/modules/journal/application/use-cases/complete-evening-ritual';
-import { CompleteWeeklyChallenge } from '@/modules/challenges/application/use-cases/complete-weekly-challenge';
+import { ChooseChallenge } from '@/modules/challenges/application/use-cases/choose-challenge';
+import { CompleteChallenge } from '@/modules/challenges/application/use-cases/complete-challenge';
 import { CreateChildProfile } from '@/modules/auth/application/use-cases/create-child-profile';
 import { GetChild } from '@/modules/auth/application/use-cases/get-child';
 import { GetEveningStreak } from '@/modules/journal/application/use-cases/get-evening-streak';
 import { GetJournalEntries } from '@/modules/journal/application/use-cases/get-journal-entries';
 import { GetTrophies } from '@/modules/challenges/application/use-cases/get-trophies';
-import { GetWeeklyChallenge } from '@/modules/challenges/application/use-cases/get-weekly-challenge';
+import { GetWeekChallenges } from '@/modules/challenges/application/use-cases/get-week-challenges';
 import { ListChildren } from '@/modules/auth/application/use-cases/list-children';
 import { ListEmotions } from '@/modules/journal/application/use-cases/list-emotions';
 import { PickRitualPhoto } from '@/modules/journal/application/use-cases/pick-ritual-photo';
@@ -39,16 +40,16 @@ import { InMemoryJournalEntryRepository } from '@/modules/journal/infrastructure
 import { PlaceholderPhotoPicker } from '@/modules/journal/infrastructure/device/placeholder-photo-picker';
 import { InMemoryParentAccountRepository } from '@/modules/auth/infrastructure/persistence/in-memory/in-memory-parent-account-repository';
 import { InMemoryTrophyRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-trophy-repository';
-import { InMemoryWeeklyChallengeRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-weekly-challenge-repository';
+import { InMemoryChildChallengeRepository } from '@/modules/challenges/infrastructure/persistence/in-memory/in-memory-child-challenge-repository';
 import {
   seedChildren,
   seedConsents,
   seedParentAccounts,
 } from '@/modules/auth/infrastructure/persistence/in-memory/seed';
 import {
-  challengeTitlePool,
+  seedChallengeCatalog,
+  seedChildChallenges,
   seedTrophies,
-  seedWeeklyChallenges,
 } from '@/modules/challenges/infrastructure/persistence/in-memory/seed';
 import {
   seedEmotions,
@@ -72,8 +73,9 @@ export interface AppServices {
   readonly getEveningStreak: GetEveningStreak;
   readonly listEmotions: ListEmotions;
   readonly pickRitualPhoto: PickRitualPhoto;
-  readonly getWeeklyChallenge: GetWeeklyChallenge;
-  readonly completeWeeklyChallenge: CompleteWeeklyChallenge;
+  readonly getWeekChallenges: GetWeekChallenges;
+  readonly chooseChallenge: ChooseChallenge;
+  readonly completeChallenge: CompleteChallenge;
   readonly getTrophies: GetTrophies;
   readonly setEveningReminder: SetEveningReminder;
 }
@@ -165,10 +167,12 @@ export function createAppServices(): AppServices {
   const emotionCatalog: EmotionCatalog = api
     ? new HttpEmotionCatalog(api.http)
     : new InMemoryEmotionCatalog(seedEmotions);
-  const challengeRepository = new InMemoryWeeklyChallengeRepository(
-    seedWeeklyChallenges,
-    challengeTitlePool,
+  const challengeRepository = new InMemoryChildChallengeRepository(
+    seedChallengeCatalog,
+    seedChildChallenges,
+    async (childId) => (await childRepository.findById(childId))?.ageRange ?? null,
     idGenerator,
+    clock,
   );
   const trophyRepository = new InMemoryTrophyRepository(seedTrophies, idGenerator);
 
@@ -187,8 +191,9 @@ export function createAppServices(): AppServices {
     getEveningStreak: new GetEveningStreak(journalRepository),
     listEmotions: new ListEmotions(emotionCatalog),
     pickRitualPhoto: new PickRitualPhoto(new PlaceholderPhotoPicker()),
-    getWeeklyChallenge: new GetWeeklyChallenge(challengeRepository),
-    completeWeeklyChallenge: new CompleteWeeklyChallenge(challengeRepository),
+    getWeekChallenges: new GetWeekChallenges(challengeRepository),
+    chooseChallenge: new ChooseChallenge(challengeRepository),
+    completeChallenge: new CompleteChallenge(challengeRepository),
     getTrophies: new GetTrophies(trophyRepository),
     setEveningReminder: new SetEveningReminder(childRepository),
   };

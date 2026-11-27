@@ -26,3 +26,10 @@ export function daysBetween(from: string, to: string): number {
 export function previousDay(day: string): string {
   return new Date(Date.parse(`${day}T00:00:00Z`) - DAY_MS).toISOString().slice(0, 10);
 }
+
+/** Monday of the ISO week holding `day`. */
+export function mondayOf(day: string): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  const daysSinceMonday = (date.getUTCDay() + 6) % 7;
+  return new Date(date.getTime() - daysSinceMonday * DAY_MS).toISOString().slice(0, 10);
+}

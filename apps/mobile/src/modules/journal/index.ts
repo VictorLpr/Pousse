@@ -9,5 +9,6 @@ export { GetJournalEntries } from '@/modules/journal/application/use-cases/get-j
 export { ListEmotions } from '@/modules/journal/application/use-cases/list-emotions';
 export { PickRitualPhoto } from '@/modules/journal/application/use-cases/pick-ritual-photo';
 export type { JournalEntry } from '@/modules/journal/domain/entities/journal-entry';
+export { localDayOf } from '@/modules/journal/domain/entities/journal-entry';
 export type { Emotion, EmotionCode } from '@/modules/journal/domain/entities/emotion';
 export type { EntryPhoto, LocalPhoto } from '@/modules/journal/domain/entities/photo';

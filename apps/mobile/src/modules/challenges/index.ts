@@ -3,8 +3,18 @@
  * import. Never import a `@/modules/challenges/domain/**` or
  * `@/modules/challenges/infrastructure/**` path from another module (see AGENTS.md).
  */
-export { CompleteWeeklyChallenge } from '@/modules/challenges/application/use-cases/complete-weekly-challenge';
+export { ChooseChallenge } from '@/modules/challenges/application/use-cases/choose-challenge';
+export { CompleteChallenge } from '@/modules/challenges/application/use-cases/complete-challenge';
 export { GetTrophies } from '@/modules/challenges/application/use-cases/get-trophies';
-export { GetWeeklyChallenge } from '@/modules/challenges/application/use-cases/get-weekly-challenge';
+export { GetWeekChallenges } from '@/modules/challenges/application/use-cases/get-week-challenges';
+export type {
+  Challenge,
+  ChallengeAgeRange,
+  ChallengeCategory,
+} from '@/modules/challenges/domain/entities/challenge';
+export type {
+  ChildChallenge,
+  ChildChallengeStatus,
+  WeekChallenges,
+} from '@/modules/challenges/domain/entities/child-challenge';
 export type { Trophy, TrophyStatus } from '@/modules/challenges/domain/entities/trophy';
-export type { WeeklyChallenge } from '@/modules/challenges/domain/entities/weekly-challenge';
