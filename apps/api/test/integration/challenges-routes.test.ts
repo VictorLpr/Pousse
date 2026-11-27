@@ -337,8 +337,13 @@ describe('challenge routes', () => {
         Date.parse(chosenBody.chosenAt ?? ''),
       );
 
+      // Only the completion answers the badges it earned; the week lists the challenge alone.
+      const { awardedBadges, ...completedChallenge } = completed.json<
+        ChildChallengeBody & { awardedBadges: unknown[] }
+      >();
+      expect(awardedBadges.length).toBeGreaterThan(0);
       const week = await weekOf(parent, child.id);
-      expect(week.challenges.find(({ id }) => id === picked.id)).toEqual(completedBody);
+      expect(week.challenges.find(({ id }) => id === picked.id)).toEqual(completedChallenge);
     });
 
     it('takes on one challenge per week only', async () => {

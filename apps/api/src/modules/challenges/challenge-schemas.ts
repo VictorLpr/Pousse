@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+import { awardedBadges } from '#/modules/challenges/badge-schemas.js';
 import { ageRange, challengeCategory } from '#/shared/db/schema.js';
 
 /** The family's local day, `YYYY-MM-DD`: the client knows it, the API doesn't. */
@@ -33,6 +34,11 @@ export const childChallengeResponse = z.object({
 });
 
 export type ChildChallengeResponse = z.infer<typeof childChallengeResponse>;
+
+/** The completed challenge, with the badges its completion earned the child. */
+export const completeChallengeResponse = childChallengeResponse.extend({ awardedBadges });
+
+export type CompleteChallengeResponse = z.infer<typeof completeChallengeResponse>;
 
 /** The challenges offered to a child for the ISO week starting on `weekStart` (a Monday). */
 export const weekResponse = z.object({

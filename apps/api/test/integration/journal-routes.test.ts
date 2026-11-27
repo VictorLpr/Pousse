@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from '@jest/globals';
 import { eq } from 'drizzle-orm';
 
 import { createEntryRepository } from '#/modules/journal/entry-repository.js';
-import { emotion, journalEntry, photo } from '#/shared/db/schema.js';
+import { badgeAward, emotion, journalEntry, photo } from '#/shared/db/schema.js';
 import { seedCatalogs } from '#/shared/db/seed-catalogs.js';
 import { insertChild, isoDate, signUpParent, type SignedInParent } from '../support/fixtures.js';
 import { useTestApp } from '../support/test-app.js';
@@ -138,6 +138,14 @@ describe('journal routes', () => {
         date,
         createdAt: expect.any(String),
         photo: null,
+        awardedBadges: [
+          {
+            code: 'first_evening',
+            label: expect.any(String),
+            description: expect.any(String),
+            awardedAt: expect.any(String),
+          },
+        ],
       });
       expect(await db().select().from(photo)).toHaveLength(0);
     });
@@ -179,6 +187,17 @@ describe('journal routes', () => {
       expect(response.statusCode).toBe(409);
       expect(response.json()).toMatchObject({ code: 'ENTRY_ALREADY_EXISTS' });
       expect(await db().select().from(journalEntry)).toHaveLength(1);
+      expect(await db().select().from(badgeAward)).toHaveLength(1);
+    });
+
+    it('answers no badge when the entry earns none it lacks', async () => {
+      const { parent, child } = await parentWithChild();
+      await createEntry(parent, { childId: child.id, date: isoDate({ days: -1 }) });
+
+      const response = await createEntry(parent, { childId: child.id });
+
+      expect(response.statusCode).toBe(201);
+      expect(response.json()).toMatchObject({ awardedBadges: [] });
     });
 
     it('lets a sibling write on the same day', async () => {

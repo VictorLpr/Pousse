@@ -80,7 +80,9 @@ hand-written SQL:
   enough deploys. It **never deletes** — a catalog row may be referenced by
   user data. A challenge is retired by setting `active: false` on its entry
   in `catalogs/challenges.ts`: the seed carries `active` too, so a flag
-  changed by hand in the database is reset on the next deploy.
+  changed by hand in the database is reset on the next deploy. A badge's
+  condition lives in `modules/challenges/badge-service.ts`, indexed by the
+  code of its entry in `catalogs/badges.ts`: add both together.
 - `npm run db:seed -w apps/api` runs it against `DATABASE_URL`. It runs
   right after `db:migrate` everywhere migrations run: the `migrate` service
   of `compose.yaml` and the deploy and reset workflows (from the GitHub

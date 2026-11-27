@@ -1,8 +1,10 @@
 import type { ChildService } from '#/modules/auth/index.js';
+import type { BadgeService } from '#/modules/challenges/index.js';
 import type { EmotionRepository } from '#/modules/journal/emotion-repository.js';
 import type { EntryRepository, EntryRow } from '#/modules/journal/entry-repository.js';
 import type {
   CreateEntryInput,
+  CreateEntryResponse,
   EntryResponse,
   StreakResponse,
   UpdateEntryInput,
@@ -49,7 +51,8 @@ function entryNotFound(id: string): NotFoundError {
 /**
  * The evening journal: one entry per child per day (the database's unique
  * constraint, answered as 409 `ENTRY_ALREADY_EXISTS`), editable for 24 hours
- * (a service rule, ADR-0005), and the streak of evenings counted from it.
+ * (a service rule, ADR-0005), the streak of evenings counted from it, and
+ * the evening badges a new entry earns.
  *
  * The local day comes from the client; a date more than a day away from the
  * UTC date can't be anyone's today and is refused. Whether a child belongs
@@ -60,10 +63,13 @@ export function createEntryService(
     entries,
     emotions,
     children,
+    badges,
   }: {
     readonly entries: EntryRepository;
     readonly emotions: EmotionRepository;
     readonly children: ChildService;
+    /** The challenges module's badge service: the journal hands it the facts, it never calls back. */
+    readonly badges: BadgeService;
   },
   { now = () => new Date() }: { readonly now?: () => Date } = {},
 ) {
@@ -104,15 +110,19 @@ export function createEntryService(
   }
 
   return {
-    async create(parentId: string, input: CreateEntryInput): Promise<EntryResponse> {
+    /**
+     * Writes the evening's entry, then awards the evening badges it earns,
+     * handing the badge service the streak up to the entry's day.
+     */
+    async create(parentId: string, input: CreateEntryInput): Promise<CreateEntryResponse> {
       await children.get(parentId, input.childId);
       assertNearToday(input.date);
       const emotionId = await emotionIdOf(input.emotionCode);
+      const values = { childId: input.childId, text: input.text, date: input.date };
+      const photo = input.photo ?? null;
+      let written: { id: string; createdAt: Date };
       try {
-        const values = { childId: input.childId, text: input.text, date: input.date };
-        const photo = input.photo ?? null;
-        const { id, createdAt } = await entries.insert({ ...values, emotionId }, photo);
-        return toResponse({ id, emotionCode: input.emotionCode, createdAt, photo, ...values });
+        written = await entries.insert({ ...values, emotionId }, photo);
       } catch (error) {
         if (isOneEntryPerDayViolation(error)) {
           throw new ConflictError(
@@ -122,6 +132,15 @@ export function createEntryService(
         }
         throw error;
       }
+      const streak = countEveningStreak(
+        await entries.listDatesUpTo(input.childId, input.date),
+        input.date,
+      );
+      const awardedBadges = await badges.awardForEvening(input.childId, { streak });
+      return {
+        ...toResponse({ ...written, emotionCode: input.emotionCode, photo, ...values }),
+        awardedBadges,
+      };
     },
 
     async list(parentId: string, childId: string): Promise<EntryResponse[]> {

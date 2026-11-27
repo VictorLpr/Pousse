@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { awardedBadges } from '#/modules/challenges/index.js';
+
 /** The child's memory of the evening: not blank, 500 characters at most. */
 const text = z.string().trim().min(1).max(500);
 /** Code of an emotion of the catalog (`GET /journal/emotions`). */
@@ -73,6 +75,11 @@ export const entryResponse = z.object({
 });
 
 export type EntryResponse = z.infer<typeof entryResponse>;
+
+/** The entry just written, with the badges it earned the child (the challenges module's badges). */
+export const createEntryResponse = entryResponse.extend({ awardedBadges });
+
+export type CreateEntryResponse = z.infer<typeof createEntryResponse>;
 
 /** Consecutive evenings with an entry, up to `today` or, failing that, the day before. */
 export const streakResponse = z.object({ streak: z.number().int().nonnegative() });

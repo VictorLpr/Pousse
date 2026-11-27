@@ -139,6 +139,18 @@ export function createChallengeRepository(db: DbExecutor) {
       });
     },
 
+    /** Categories of the challenges a child has completed, each once. */
+    async listCompletedCategories(
+      childId: string,
+    ): Promise<ChildChallengeRow['challenge']['category'][]> {
+      const rows = await db
+        .selectDistinct({ category: challenge.category })
+        .from(childChallenge)
+        .innerJoin(challenge, eq(childChallenge.challengeId, challenge.id))
+        .where(and(eq(childChallenge.childId, childId), eq(childChallenge.status, 'completed')));
+      return rows.map(({ category }) => category);
+    },
+
     /** Completes the challenge, if it is `chosen`. False when it wasn't. */
     async complete(id: string, completedAt: Date): Promise<boolean> {
       const rows = await db

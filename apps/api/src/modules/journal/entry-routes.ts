@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { parentIdOf } from '#/modules/auth/index.js';
 import {
   createEntryBody,
+  createEntryResponse,
   entriesQuery,
   entryParams,
   entryResponse,
@@ -30,7 +31,7 @@ export function registerEntryRoutes(app: FastifyInstance, entries: EntryService)
       schema: {
         body: createEntryBody,
         response: {
-          201: entryResponse,
+          201: createEntryResponse,
           400: errorResponse,
           401: errorResponse,
           404: errorResponse,

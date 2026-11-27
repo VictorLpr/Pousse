@@ -1,9 +1,10 @@
 import { eq } from 'drizzle-orm';
 
+import { BADGES } from '#/shared/db/catalogs/badges.js';
 import { CHALLENGES } from '#/shared/db/catalogs/challenges.js';
 import { EMOTIONS } from '#/shared/db/catalogs/emotions.js';
 import type { Db } from '#/shared/db/client.js';
-import { challenge, emotion } from '#/shared/db/schema.js';
+import { badge, challenge, emotion } from '#/shared/db/schema.js';
 
 type Transaction = Parameters<Parameters<Db['transaction']>[0]>[0];
 
@@ -21,7 +22,28 @@ export async function seedCatalogs(db: Db): Promise<void> {
   await db.transaction(async (tx) => {
     await seedEmotions(tx);
     await seedChallenges(tx);
+    await seedBadges(tx);
   });
+}
+
+async function seedBadges(tx: Transaction): Promise<void> {
+  const existing = new Map(
+    (
+      await tx
+        .select({ code: badge.code, label: badge.label, description: badge.description })
+        .from(badge)
+    ).map((row) => [row.code, row]),
+  );
+  const missing = BADGES.filter((row) => !existing.has(row.code));
+  if (missing.length > 0) await tx.insert(badge).values(missing);
+  for (const row of BADGES) {
+    const current = existing.get(row.code);
+    if (current === undefined) continue;
+    const wanted = { label: row.label, description: row.description ?? null };
+    if (current.label !== wanted.label || current.description !== wanted.description) {
+      await tx.update(badge).set(wanted).where(eq(badge.code, row.code));
+    }
+  }
 }
 
 async function seedEmotions(tx: Transaction): Promise<void> {
